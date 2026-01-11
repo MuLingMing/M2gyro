@@ -1,0 +1,321 @@
+{
+    "角色经验": {},
+    "武器经验": {},
+    "武器突破": {},
+    "深红凝珠": {},
+    "角色突破": {},
+    "皎皎信物": {},
+    "委托向右滑动": {
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [
+                    1200,
+                    350
+                ],
+                "end": [
+                    500,
+                    350
+                ]
+            }
+        }
+    },
+    "委托向左滑动": {
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [
+                    500,
+                    350
+                ],
+                "end": [
+                    1200,
+                    350
+                ]
+            }
+        }
+    },
+    "委托-角色经验": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "角色经验"
+                                ],
+                                "roi": [
+                                    425,
+                                    500,
+                                    855,
+                                    190
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "避险"
+                                ],
+                                "roi": [
+                                    425,
+                                    500,
+                                    855,
+                                    190
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "委托-武器经验": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "武器经验"
+                                ],
+                                "roi": [
+                                    425,
+                                    500,
+                                    855,
+                                    190
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "驱逐"
+                                ],
+                                "roi": [
+                                    425,
+                                    500,
+                                    855,
+                                    190
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "委托-武器突破": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "武器突破"
+                                ],
+                                "roi": [
+                                    425,
+                                    500,
+                                    855,
+                                    190
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "调停"
+                                ],
+                                "roi": [
+                                    425,
+                                    500,
+                                    855,
+                                    190
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "委托-深红凝珠": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "深红凝珠"
+                                ],
+                                "roi": [
+                                    425,
+                                    500,
+                                    855,
+                                    190
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "护送"
+                                ],
+                                "roi": [
+                                    425,
+                                    500,
+                                    855,
+                                    190
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "委托-角色突破": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "角色突破"
+                                ],
+                                "roi": [
+                                    425,
+                                    500,
+                                    855,
+                                    190
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "探险"
+                                ],
+                                "roi": [
+                                    425,
+                                    500,
+                                    855,
+                                    190
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "委托-皎皎信物": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "角色技能"
+                                ],
+                                "roi": [
+                                    425,
+                                    500,
+                                    855,
+                                    190
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "扼守"
+                                ],
+                                "roi": [
+                                    425,
+                                    500,
+                                    855,
+                                    190
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    }
+}
