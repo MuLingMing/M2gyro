@@ -1,0 +1,412 @@
+{
+    "主页面-角色面板": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/角色面板_图标.png"
+                ],
+                "roi": [
+                    45,
+                    22,
+                    25,
+                    25
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "test": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": "页面/历练_图标.png",
+                                "roi": [
+                                    128,
+                                    395,
+                                    40,
+                                    41
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": "历练",
+                                "roi": [
+                                    132,
+                                    437,
+                                    34,
+                                    19
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "角色面板-历练": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": {
+                    "type": "TemplateMatch",
+                    "param": {
+                        "template": "页面/历练_图标.png",
+                        "roi": [
+                            128,
+                            395,
+                            40,
+                            41
+                        ]
+                    }
+                }
+            },
+            {
+                "recognition": {
+                    "type": "OCR",
+                    "param": {
+                        "expected": "历练",
+                        "roi": [
+                            132,
+                            437,
+                            34,
+                            19
+                        ]
+                    }
+                }
+            }
+        ],
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "角色面板-铸造": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": {
+                    "type": "TemplateMatch",
+                    "param": {
+                        "template": "页面/铸造_图标.png",
+                        "roi": [
+                            217,
+                            394,
+                            39,
+                            41
+                        ]
+                    }
+                }
+            },
+            {
+                "recognition": {
+                    "type": "OCR",
+                    "param": {
+                        "expected": "铸造",
+                        "roi": [
+                            219,
+                            437,
+                            35,
+                            19
+                        ]
+                    }
+                }
+            }
+        ],
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "角色面板-地图": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": {
+                    "type": "TemplateMatch",
+                    "param": {
+                        "template": "页面/地图_图标.png",
+                        "roi": [
+                            390,
+                            480,
+                            45,
+                            45
+                        ]
+                    }
+                }
+            },
+            {
+                "recognition": {
+                    "type": "OCR",
+                    "param": {
+                        "expected": "地图",
+                        "roi": [
+                            395,
+                            525,
+                            35,
+                            20
+                        ]
+                    }
+                }
+            }
+        ],
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "角色面板-时间": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/时间_图标.png"
+                ],
+                "roi": [
+                    57,
+                    354,
+                    33,
+                    33
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "历练-委托": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/委托_图标.png",
+                    "页面/委托_图标已选中.png"
+                ],
+                "roi": [
+                    55,
+                    170,
+                    32,
+                    31
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "委托-委托": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "委托"
+                ],
+                "roi": [
+                    581,
+                    85,
+                    46,
+                    26
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "委托-夜航手册": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "夜航手册"
+                ],
+                "roi": [
+                    739,
+                    86,
+                    84,
+                    25
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "委托-密函委托": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "密函委托"
+                ],
+                "roi": [
+                    919,
+                    87,
+                    81,
+                    23
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "历练-歧路足音": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/歧路足音_图标.png",
+                    "页面/歧路足音_图标已选中.png"
+                ],
+                "roi": [
+                    54,
+                    310,
+                    34,
+                    33
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "歧路足音-迷津": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": {
+                    "type": "TemplateMatch",
+                    "param": {
+                        "template": "页面/迷津_图标.png",
+                        "roi": [
+                            450,
+                            565,
+                            200,
+                            105
+                        ]
+                    }
+                }
+            },
+            {
+                "recognition": {
+                    "type": "OCR",
+                    "param": {
+                        "expected": "迷津",
+                        "roi": [
+                            450,
+                            565,
+                            200,
+                            105
+                        ]
+                    }
+                }
+            }
+        ],
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "歧路足音_戏剧": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": {
+                    "type": "TemplateMatch",
+                    "param": {
+                        "template": "页面/戏剧_图标.png",
+                        "roi": [
+                            670,
+                            565,
+                            200,
+                            105
+                        ]
+                    }
+                }
+            },
+            {
+                "recognition": {
+                    "type": "OCR",
+                    "param": {
+                        "expected": "迷津",
+                        "roi": [
+                            670,
+                            565,
+                            200,
+                            105
+                        ]
+                    }
+                }
+            }
+        ],
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "返回": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/返回_图标.png"
+                ],
+                "roi": [
+                    50,
+                    20,
+                    40,
+                    25
+                ]
+            }
+        }
+    }
+}
