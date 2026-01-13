@@ -1,10 +1,4 @@
 {
-    "委托": {
-        "next": [
-            "委托-委托",
-            "[JumpBack]主页面-委托"
-        ]
-    },
     "夜航手册": {
         "next": [
             "委托-夜航手册",
@@ -94,9 +88,9 @@
         "any_of": [
             {
                 "recognition": {
-                    "type": "TemplateMatch",
+                    "type": "OCR",
                     "param": {
-                        "template": "页面/历练_图标.png",
+                        "expected": "历练",
                         "roi": [
                             20,
                             285,
@@ -108,9 +102,9 @@
             },
             {
                 "recognition": {
-                    "type": "OCR",
+                    "type": "TemplateMatch",
                     "param": {
-                        "expected": "历练",
+                        "template": "页面/历练_图标.png",
                         "roi": [
                             20,
                             285,
@@ -133,9 +127,9 @@
         "any_of": [
             {
                 "recognition": {
-                    "type": "TemplateMatch",
+                    "type": "OCR",
                     "param": {
-                        "template": "页面/铸造_图标.png",
+                        "expected": "铸造",
                         "roi": [
                             20,
                             285,
@@ -147,9 +141,9 @@
             },
             {
                 "recognition": {
-                    "type": "OCR",
+                    "type": "TemplateMatch",
                     "param": {
-                        "expected": "铸造",
+                        "template": "页面/铸造_图标.png",
                         "roi": [
                             20,
                             285,
@@ -172,9 +166,9 @@
         "any_of": [
             {
                 "recognition": {
-                    "type": "TemplateMatch",
+                    "type": "OCR",
                     "param": {
-                        "template": "页面/地图_图标.png",
+                        "expected": "地图",
                         "roi": [
                             20,
                             285,
@@ -186,9 +180,9 @@
             },
             {
                 "recognition": {
-                    "type": "OCR",
+                    "type": "TemplateMatch",
                     "param": {
-                        "expected": "地图",
+                        "template": "页面/地图_图标.png",
                         "roi": [
                             20,
                             285,
@@ -240,28 +234,6 @@
                     0,
                     155,
                     120,
-                    60
-                ]
-            }
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        }
-    },
-    "委托-委托": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "委托"
-                ],
-                "roi": [
-                    550,
-                    70,
-                    690,
                     60
                 ]
             }
@@ -467,7 +439,10 @@
         "recognition": {
             "type": "TemplateMatch",
             "param": {
-                "template": "页面/头像_关闭图标.png",
+                "template": [
+                    "页面/关闭_图标1.png",
+                    "页面/关闭_图标2.png"
+                ],
                 "roi": [
                     165,
                     110,

@@ -1,0 +1,260 @@
+{
+    "倍率选择": {
+        //option重写template
+        "anchor": [],
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "委托手册/0加成_图标.png"
+                ],
+                "roi": [
+                    165,
+                    110,
+                    950,
+                    480
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target_offset": [
+                    0,
+                    70,
+                    0,
+                    0
+                ]
+            }
+        },
+        "next": [
+            "弹窗确定"
+        ]
+    },
+    "下一波次": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "下一波次"
+                ],
+                "roi": [
+                    165,
+                    110,
+                    950,
+                    480
+                ]
+            }
+        },
+        "action": "Click",
+        "next": [
+            "倍率选择"
+        ]
+    },
+    "局内复位": {
+        "next": [
+            "局内设置-复位",
+            "设置其他",
+            "复位角色",
+            "弹窗确定",
+            "[JumpBack]局内放弃"
+        ]
+    },
+    "放弃委托": {
+        "next": [
+            "局内放弃-退出",
+            "弹窗确定",
+            "[JumpBack]局内放弃"
+        ]
+    },
+    "确认选择": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "开始挑战",
+                    "再次进行",
+                    "确认选择",
+                    "选择密函"
+                ],
+                "roi": [
+                    830,
+                    590,
+                    450,
+                    130
+                ]
+            }
+        },
+        "action": "Click",
+        "next": [
+            "倍率选择"
+        ]
+    },
+    "局内放弃": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/放弃挑战_云地图图标.png",
+                    "页面/放弃挑战_安卓地图图标.png"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    100,
+                    75
+                ]
+            }
+        },
+        "action": "Click"
+    },
+    "局内设置-复位": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "设置"
+                                ],
+                                "roi": [
+                                    710,
+                                    540,
+                                    570,
+                                    180
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/设置_图标.png"
+                                ],
+                                "roi": [
+                                    710,
+                                    540,
+                                    570,
+                                    180
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "Click",
+        "next": [
+            "设置其他"
+        ]
+    },
+    "设置其他": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/设置-其他_图标.png",
+                    "页面/设置-其他_图标已选中.png"
+                ],
+                "roi": [
+                    0,
+                    350,
+                    150,
+                    100
+                ]
+            }
+        },
+        "action": "Click",
+        "next": [
+            "复位角色"
+        ]
+    },
+    "复位角色": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "复位角色"
+                ],
+                "roi": [
+                    930,
+                    150,
+                    320,
+                    165
+                ]
+            }
+        },
+        "action": "Click",
+        "next": [
+            "弹窗确定"
+        ]
+    },
+    "局内放弃-退出": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/放弃挑战_设置图标.png"
+                                ],
+                                "roi": [
+                                    710,
+                                    540,
+                                    570,
+                                    180
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "放弃挑战"
+                                ],
+                                "roi": [
+                                    710,
+                                    540,
+                                    570,
+                                    180
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "Click",
+        "next": [
+            "弹窗确定"
+        ]
+    },
+    "弹窗确定": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "开始挑战",
+                    "确定"
+                ],
+                "roi": [
+                    165,
+                    110,
+                    950,
+                    480
+                ]
+            }
+        },
+        "action": "Click"
+    }
+}

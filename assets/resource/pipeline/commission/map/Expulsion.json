@@ -1,0 +1,49 @@
+{
+    //驱离
+    "驱离地图": {
+        //复位大法，不分地图
+        //单次
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "驱离"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    0,
+                                    0
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "已驱逐敌人：0/100"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    0,
+                                    0
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "next": [
+            "局内复位"
+        ]
+    }
+}
