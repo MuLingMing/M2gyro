@@ -1,6 +1,8 @@
 {
     //驱离
     "驱离地图": {
+        //option设置timeout
+        "timeout": 60000,
         //复位大法，不分地图
         //单次
         "recognition": {
@@ -28,7 +30,7 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "已驱逐敌人：0/100"
+                                    "已驱逐敌人：0/"
                                 ],
                                 "roi": [
                                     0,

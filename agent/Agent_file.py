@@ -7,11 +7,15 @@ Agent调试启动器
 from maa.agent.agent_server import AgentServer
 
 from action.ScreenShot import ScreenShot
+from action.Count import Count
 
 
 @AgentServer.custom_action("ScreenShot")
 class Agent_ScreenShot(ScreenShot):
     pass
 
+@AgentServer.custom_action("Count")
+class Agent_Count(Count):
+    pass
 
 # 这里可以添加更多自定义的Agent功能

@@ -1,12 +1,9 @@
 {
     "驱离": {
-        //option设置timeout
         //复位大法，不看地图
-        "timeout": 60000,
-        "post_wait_freezes": 0,
         "next": [
-            "[JumpBack]确认选择",
-            "[JumpBack]驱离地图"
+            "确认选择",
+            "驱离地图"
         ]
     },
     "驱逐": {

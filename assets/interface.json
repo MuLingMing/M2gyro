@@ -10,8 +10,8 @@
     "license": "MIT",
     "welcome": "首次使用！欢迎使用 M2gyro!",
     // 填写项目地址和版本号可实现自动更新功能
-    //"github": "https://github.com/MaaXYZ/MaaPracticeBoilerplate",
-    "version": "0.0.1",
+    "github": "https://github.com/MuLingMing/M2gyro",
+    "version": "0.1.1-alpha",
     // Mirror酱为第三方分发服务，新项目默认关闭
     // 若有需要请联系 Mirror酱 开通，直接自行开启是无法使用的
     // "mirrorchyan_rid": "MaaXXX",
@@ -62,7 +62,12 @@
         {
             "name": "驱离",
             "entry": "驱离",
-            "description": "测试版，仅限从驱离进入，无主控技能，仅复位"
+            "description": "测试版，仅限从驱离进入，无主控技能，仅复位",
+            "option": [
+                "重复次数",
+                "超时时间",
+                "倍率选择"
+            ]
         },
         {
             "name": "选项任务",
@@ -85,6 +90,147 @@
         }
     ],
     "option": {
+        "重复次数": {
+            "type": "select",
+            "cases": [
+                {
+                    "name": "10000次"
+                },
+                {
+                    "name": "1次",
+                    "pipeline_override": {
+                        "驱离": {
+                            "max_hit": 1
+                        }
+                    }
+                },
+                {
+                    "name": "15次",
+                    "pipeline_override": {
+                        "驱离": {
+                            "max_hit": 15
+                        }
+                    }
+                },
+                {
+                    "name": "50次",
+                    "pipeline_override": {
+                        "驱离": {
+                            "max_hit": 50
+                        }
+                    }
+                }
+            ]
+        },
+        "超时时间": {
+            "type": "select",
+            "cases": [
+                {
+                    "name": "60秒",
+                    "pipeline_override": {
+                        "驱离地图": {
+                            "timeout": 60000
+                        }
+                    }
+                },
+                {
+                    "name": "90秒",
+                    "pipeline_override": {
+                        "驱离地图": {
+                            "timeout": 90000
+                        }
+                    }
+                }
+            ]
+        },
+        "倍率选择": {
+            "type": "select",
+            "cases": [
+                {
+                    "name": "无加成"
+                },
+                {
+                    "name": "1倍绿书",
+                    "pipeline_override": {
+                        "倍率选择": {
+                            "recognition": {
+                                "param": {
+                                    "template": [
+                                        "委托手册/1绿书_图标.png"
+                                    ],
+                                    "roi": [
+                                        165,
+                                        110,
+                                        950,
+                                        480
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "2倍蓝书",
+                    "pipeline_override": {
+                        "倍率选择": {
+                            "recognition": {
+                                "param": {
+                                    "template": [
+                                        "委托手册/2蓝书_图标.png"
+                                    ],
+                                    "roi": [
+                                        165,
+                                        110,
+                                        950,
+                                        480
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "8倍蓝书",
+                    "pipeline_override": {
+                        "倍率选择": {
+                            "recognition": {
+                                "param": {
+                                    "template": [
+                                        "委托手册/8紫书_图标.png"
+                                    ],
+                                    "roi": [
+                                        165,
+                                        110,
+                                        950,
+                                        480
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "20倍金书",
+                    "pipeline_override": {
+                        "倍率选择": {
+                            "recognition": {
+                                "param": {
+                                    "template": [
+                                        "委托手册/20金书_图标.png"
+                                    ],
+                                    "roi": [
+                                        165,
+                                        110,
+                                        950,
+                                        480
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
         "任务选项1": {
             "type": "select",
             "cases": [

@@ -1,21 +1,6 @@
 {
     "倍率选择": {
-        //option重写template
-        "anchor": [],
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "委托手册/0加成_图标.png"
-                ],
-                "roi": [
-                    165,
-                    110,
-                    950,
-                    480
-                ]
-            }
-        },
+        //option重写template，选择倍率书
         "action": {
             "type": "Click",
             "param": {
@@ -52,6 +37,7 @@
         ]
     },
     "局内复位": {
+        "post_wait_freezes": 0,
         "next": [
             "局内设置-复位",
             "设置其他",
@@ -68,6 +54,7 @@
         ]
     },
     "确认选择": {
+        "post_wait_freezes": 0,
         "recognition": {
             "type": "OCR",
             "param": {

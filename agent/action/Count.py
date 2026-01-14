@@ -1,4 +1,28 @@
+# coding=utf-8
+'''
+提供一个自定义动作类 Count（继承自 CustomAction）
+用于在流水线中记录计数并根据计数结果分支执行不同节点
+（达标走 next_node，未达标走 else_node）。
 
+'''
+'''
+使用示例：
+"action": {
+    "type": "Count",
+    "param": {
+        "custom_action_param": {
+            "count": 0,
+            "target_count": 10,
+            "next_node": ["node1", "node2"],
+            "else_node": ["node3"]
+        }
+    }
+}
+结果：
+- 每次执行 Count 动作时，count 会自增 1。
+- 当 count 超过 target_count 时，执行 next_node 列表中的节点。
+- 否则，执行 else_node 列表中的节点。
+'''
 
 
 from maa.context import Context
@@ -7,6 +31,12 @@ import json
 
 
 class Count(CustomAction):
+    '''
+    动作主入口。
+    读取 argv.custom_action_param（JSON）
+    根据 count 与 target_count 决定走哪一组后续节点（next_node 或 else_node）
+    并把更新后的状态写回流水线。
+    '''
     def run(
         self, context: Context, argv: CustomAction.RunArg
     ) -> CustomAction.RunResult:
