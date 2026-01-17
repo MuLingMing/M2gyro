@@ -1,0 +1,275 @@
+{
+    //任务总层
+    //驱离Expulsion
+    "夜航手册": {
+        //驱离、扼守（2）、避险、驱逐
+    },
+    "角色经验": {
+        //避险
+    },
+    "角色突破": {
+        //探险/无尽
+    },
+    "武器经验": {
+        //驱逐
+    },
+    "武器突破": {
+        //调停
+    },
+    "魔之楔本": {
+        //任务entry启动层
+        //驱离
+        //识别"角色面板_图标"、"返回上一级"、"局内放弃"、"退出委托"证明在游戏内
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/角色面板_图标.png",
+                                    "页面/角色面板_安卓图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "Or",
+                            "param": {
+                                "any_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/返回_图标.png"
+                                                ],
+                                                "roi": [
+                                                    0,
+                                                    0,
+                                                    180,
+                                                    100
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/关闭_图标1.png",
+                                                    "页面/关闭_图标2.png"
+                                                ],
+                                                "roi": [
+                                                    165,
+                                                    110,
+                                                    950,
+                                                    480
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/放弃挑战_云地图图标.png",
+                                    "页面/放弃挑战_安卓地图图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "放弃挑战"
+                                ],
+                                "roi": [
+                                    830,
+                                    590,
+                                    450,
+                                    130
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "Count",
+                "custom_action_param": {
+                    "next_node": [
+                        "魔之楔本页面"
+                    ]
+                }
+            }
+        },
+        "next": [
+            "驱离"
+        ]
+    },
+    "深红凝珠": {
+        //护送
+    },
+    "皎皎信物": {
+        //扼守/无尽
+    },
+    "委托密函": {
+        //拆解、探险/无尽、扼守/无尽
+    },
+    "迷津任务": {},
+    "戏剧任务": {},
+    "铸造任务": {},
+    "钓鱼任务": {},
+    "重复次数": {
+        //"重复次数"option重写"custom_action_param"
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "开始挑战",
+                    "再次进行",
+                    "确认选择",
+                    "选择密函"
+                ],
+                "roi": [
+                    830,
+                    590,
+                    450,
+                    130
+                ]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "Count",
+                "custom_action_param": {
+                    "count": 0,
+                    "target_count": 10000,
+                    "else_node": [
+                        "确认选择"
+                    ],
+                    "next_node": [
+                        "放弃委托",
+                        "结束当前任务"
+                    ]
+                }
+            }
+        }
+    },
+    "委托等级识别": {
+        //option重写expected
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "40"
+                ],
+                "roi": [
+                    130,
+                    120,
+                    230,
+                    360
+                ]
+            }
+        },
+        "action": "Click"
+    },
+    "倍率选择": {
+        //option重写template，选择倍率书
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "委托手册/0加成_图标.png"
+                ],
+                "roi": [
+                    165,
+                    110,
+                    950,
+                    480
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target_offset": [
+                    0,
+                    70,
+                    0,
+                    0
+                ]
+            }
+        },
+        "next": [
+            "弹窗确定"
+        ]
+    }, //根据技能次数判断关内时间
+    "技能次数": {
+        //option重写custom_action_parm
+        //每隔三秒释放一次，仅限水母E，赛琪、黎瑟、菲娜Q
+        //识别在副本中
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/放弃挑战_云地图图标.png",
+                    "页面/放弃挑战_安卓地图图标.png"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    100,
+                    75
+                ]
+            }
+        },
+        //不识别静止
+        "post_wait_freezes": 0,
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "Count",
+                "custom_action_param": {
+                    "count": 0,
+                    "target_count": 20,
+                    "else_node": [
+                        "释放技能E",
+                        "释放状态Q"
+                    ],
+                    "next_node": [
+                        "放弃委托"
+                    ]
+                }
+            }
+        }
+    }
+}

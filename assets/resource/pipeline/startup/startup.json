@@ -1,0 +1,142 @@
+{
+    "结束当前任务": {
+        "action": "StopTask"
+    },
+    "启动游戏": {
+        //反转识别结果证明不在游戏内
+        "inverse": true,
+        //识别"角色面板_图标"、"返回上一级"、"局内放弃"、"退出委托"证明在游戏内
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/角色面板_图标.png",
+                                    "页面/角色面板_安卓图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "Or",
+                            "param": {
+                                "any_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/返回_图标.png"
+                                                ],
+                                                "roi": [
+                                                    0,
+                                                    0,
+                                                    180,
+                                                    100
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/关闭_图标1.png",
+                                                    "页面/关闭_图标2.png"
+                                                ],
+                                                "roi": [
+                                                    165,
+                                                    110,
+                                                    950,
+                                                    480
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/放弃挑战_云地图图标.png",
+                                    "页面/放弃挑战_安卓地图图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "放弃挑战"
+                                ],
+                                "roi": [
+                                    830,
+                                    590,
+                                    450,
+                                    130
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": {
+            "type": "StartApp",
+            "param": {
+                "package": "com.hero.dna.gf"
+            }
+        },
+        "post_wait_freezes": 0,
+        "next": [
+            "点击进入游戏",
+            "[JumpBack]返回上一级"
+        ]
+    },
+    "退出游戏": {
+        "action": {
+            "type": "StopApp",
+            "param": {
+                "package": "com.hero.dna.gf"
+            }
+        },
+        "next": [
+            "启动游戏"
+        ]
+    },
+    "点击进入游戏": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "点击进入游戏"
+                ]
+            }
+        },
+        "action": "Click"
+    }
+}
