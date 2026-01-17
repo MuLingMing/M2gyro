@@ -122,8 +122,8 @@ def install_chores():
 
 def install_agent():
     shutil.copytree(
-        working_dir / "/assets/costom",
-        install_path / "/assets/costom",
+        working_dir / "/assets/custom",
+        install_path / "/assets/custom",
         dirs_exist_ok=True,
     )
 
