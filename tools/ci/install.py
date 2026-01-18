@@ -51,8 +51,8 @@ def install_resource():
     configure_ocr_model()
 
     shutil.copytree(
-        working_dir / "assets" / "resource",
-        install_path / "resource",
+        working_dir / "assets",
+        install_path,
         dirs_exist_ok=True,
     )
     shutil.copy2(
@@ -116,7 +116,7 @@ def load_json_with_comment_and_quote(file_path, encoding="utf-8"):
 def install_agent():
     shutil.copytree(
         working_dir / "assets" / "custom",
-        install_path / "assets" / "custom",
+        install_path / "custom",
         dirs_exist_ok=True,
     )
 
