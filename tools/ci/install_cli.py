@@ -62,7 +62,7 @@ def install_resource():
 
 
 def install_chores():
-    for file in ["README.md", "LICENSE", "CONTACT", "requirements.txt"]:
+    for file in ["README.md", "LICENSE", "requirements.txt"]:
         shutil.copy2(
             working_dir / file,
             install_path,
@@ -97,8 +97,8 @@ def load_json_with_comment_and_quote(file_path, encoding="utf-8"):
 
 def install_agent():
     shutil.copytree(
-        working_dir / "assets" / "agent",
-        install_path / "assets" / "agent",
+        working_dir / "assets" / "custom",
+        install_path / "assets" / "custom",
         dirs_exist_ok=True,
     )
 
@@ -111,7 +111,7 @@ def install_agent():
     elif sys.platform.startswith("linux"):
         interface["agent"]["child_exec"] = r"python3"
 
-    interface["agent"]["child_args"] = ["-u", r"./agent/main.py"]
+    interface["agent"]["child_args"] = ["-u", r"./assets/custom/main.py"]
 
     with open(install_path / "interface.json", "w", encoding="utf-8") as f:
         json.dump(interface, f, ensure_ascii=False, indent=4)
