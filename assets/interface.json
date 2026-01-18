@@ -63,7 +63,8 @@
         "child_exec": "python",
         // "child_exec": "${command:python.interpreterPath}",
         "child_args": [
-            "./custom/main.py"
+            "./custom/main.py",
+            "-u"
         ]
     },
     "task": [
