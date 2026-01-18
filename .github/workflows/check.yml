@@ -42,4 +42,4 @@ jobs:
 
       - name: Check Resource
         run: |
-            python ./tools/ci/check_resource.py ./assets/resource
+            python ./tools/ci/check_resource.py ./assets/resource/base ./assets/resource/win32 ./assets/resource/yun

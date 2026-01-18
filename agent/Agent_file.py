@@ -6,9 +6,9 @@ Agent调试启动器
 
 from maa.agent.agent_server import AgentServer
 
-from action.Count import Count
-from action.ScreenShot import ScreenShot,CheckResolution
-from action.Node import DisableNode,NodeOverride
+from custom.action.Count import Count
+from custom.action.ScreenShot import ScreenShot,CheckResolution
+from custom.action.Node import DisableNode,NodeOverride
 
 
 

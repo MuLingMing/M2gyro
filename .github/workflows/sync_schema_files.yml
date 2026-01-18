@@ -17,11 +17,11 @@ jobs:
     steps:
       - id: check
         run: |
-          if [[ "${{ github.repository }}" == "MAA1999/M9A" ]]; then
-            echo "Repository is MAA1999/M9A, proceeding with sync"
+          if [[ "${{ github.repository }}" == "MuLingMing/M2gyro" ]]; then
+            echo "Repository is MuLingMing/M2gyro, proceeding with sync"
             echo "should_run=true" >> $GITHUB_OUTPUT
           else
-            echo "Repository is not MAA1999/M9A, skipping sync"
+            echo "Repository is not MuLingMing/M2gyro, skipping sync"
             echo "should_run=false" >> $GITHUB_OUTPUT
           fi
 

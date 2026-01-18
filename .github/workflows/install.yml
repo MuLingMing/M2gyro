@@ -212,10 +212,10 @@ jobs:
           name: M2gyro-win-${{ matrix.arch }}-${{ needs.meta.outputs.tag }}-Full
           path: "install"
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: M2gyro-win-${{ matrix.arch }}-${{ needs.meta.outputs.tag }}-Lite
-          path: "install-cli"
+      # - uses: actions/upload-artifact@v4
+      #   with:
+      #     name: M2gyro-win-${{ matrix.arch }}-${{ needs.meta.outputs.tag }}-Lite
+      #     path: "install-cli"
 
   linux:
     needs: meta
@@ -295,14 +295,14 @@ jobs:
           echo "Using Python executable: $PYTHON_EXECUTABLE for Linux"
           $PYTHON_EXECUTABLE ./tools/ci/install.py ${{ needs.meta.outputs.tag }} $PLATFORM_TAG
 
-      - name: Create CLI version
-        shell: bash
-        run: |
-          python ./tools/ci/install_cli.py ${{ needs.meta.outputs.tag }}
-          if [ -d "install/python" ]; then
-            cp -rpvn install/python/. install-cli/python/
-          fi
-          rm -rf install-cli/deps 2>/dev/null || true
+      # - name: Create CLI version
+      #   shell: bash
+      #   run: |
+      #     python ./tools/ci/install_cli.py ${{ needs.meta.outputs.tag }}
+      #     if [ -d "install/python" ]; then
+      #       cp -rpvn install/python/. install-cli/python/
+      #     fi
+      #     rm -rf install-cli/deps 2>/dev/null || true
 
       - name: Copy MFA files to main version
         shell: bash
@@ -338,10 +338,10 @@ jobs:
           name: M2gyro-linux-${{ matrix.arch }}-${{ needs.meta.outputs.tag }}-Full
           path: "install"
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: M2gyro-linux-${{ matrix.arch }}-${{ needs.meta.outputs.tag }}-Lite
-          path: "install-cli"
+      # - uses: actions/upload-artifact@v4
+      #   with:
+      #     name: M2gyro-linux-${{ matrix.arch }}-${{ needs.meta.outputs.tag }}-Lite
+      #     path: "install-cli"
 
   macos:
     needs: meta
@@ -436,12 +436,12 @@ jobs:
           echo "Using Python executable: $PYTHON_EXECUTABLE for macOS"
           $PYTHON_EXECUTABLE ./tools/ci/install.py ${{ needs.meta.outputs.tag }} $PLATFORM_TAG
 
-      - name: Create CLI version
-        shell: bash
-        run: |
-          ./install/python/bin/python3 ./tools/ci/install_cli.py ${{ needs.meta.outputs.tag }}
-          cp -rpvn install/python/. install-cli/python/
-          rm -rf install-cli/deps 2>/dev/null || true
+      # - name: Create CLI version
+      #   shell: bash
+      #   run: |
+      #     ./install/python/bin/python3 ./tools/ci/install_cli.py ${{ needs.meta.outputs.tag }}
+      #     cp -rpvn install/python/. install-cli/python/
+      #     rm -rf install-cli/deps 2>/dev/null || true
 
       - name: Copy MFA files to main version
         shell: bash
@@ -477,10 +477,10 @@ jobs:
           name: M2gyro-macos-${{ matrix.arch }}-${{ needs.meta.outputs.tag }}-Full
           path: "install"
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: M2gyro-macos-${{ matrix.arch }}-${{ needs.meta.outputs.tag }}-Lite
-          path: "install-cli"
+      # - uses: actions/upload-artifact@v4
+      #   with:
+      #     name: M2gyro-macos-${{ matrix.arch }}-${{ needs.meta.outputs.tag }}-Lite
+      #     path: "install-cli"
 
   changelog:
     name: Generate changelog

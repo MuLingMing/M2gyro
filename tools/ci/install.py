@@ -10,7 +10,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_dir)
 
 from configure import configure_ocr_model
-from generate_manifest_cache import generate_manifest_cache
+# from generate_manifest_cache import generate_manifest_cache
 
 working_dir = Path(__file__).parent.parent.parent
 install_path = working_dir / Path("install")
@@ -51,8 +51,8 @@ def install_resource():
     configure_ocr_model()
 
     shutil.copytree(
-        working_dir / "assets",
-        install_path,
+        working_dir / "assets" / "resource",
+        install_path / "resource",
         dirs_exist_ok=True,
     )
     shutil.copy2(
@@ -115,8 +115,8 @@ def load_json_with_comment_and_quote(file_path, encoding="utf-8"):
 
 def install_agent():
     shutil.copytree(
-        working_dir / "assets" / "custom",
-        install_path / "custom",
+        working_dir / "agent",
+        install_path / "agent",
         dirs_exist_ok=True,
     )
 
@@ -129,22 +129,22 @@ def install_agent():
     elif sys.platform.startswith("linux"):
         interface["agent"]["child_exec"] = r"python3"
 
-    interface["agent"]["child_args"] = ["-u", r"./assets/custom/main.py"]
+    interface["agent"]["child_args"] = ["-u", r"./agent/main.py"]
 
     with open(install_path / "interface.json", "w", encoding="utf-8") as f:
         json.dump(interface, f, ensure_ascii=False, indent=4)
 
 
-def install_manifest_cache():
-    """生成初始 manifest 缓存，加速用户首次启动"""
-    config_dir = install_path / "config"
-    success = generate_manifest_cache(config_dir)
-    if success:
-        print("Manifest cache generated successfully.")
-    else:
-        print(
-            "Warning: Manifest cache generation failed, users will do full check on first run."
-        )
+# def install_manifest_cache():
+#     """生成初始 manifest 缓存，加速用户首次启动"""
+#     config_dir = install_path / "config"
+#     success = generate_manifest_cache(config_dir)
+#     if success:
+#         print("Manifest cache generated successfully.")
+#     else:
+#         print(
+#             "Warning: Manifest cache generation failed, users will do full check on first run."
+#         )
 
 
 if __name__ == "__main__":
@@ -152,6 +152,6 @@ if __name__ == "__main__":
     install_resource()
     install_chores()
     install_agent()
-    install_manifest_cache()
+    # install_manifest_cache()
 
     print(f"Install to {install_path} successfully.")

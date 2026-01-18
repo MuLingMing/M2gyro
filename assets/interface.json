@@ -18,21 +18,21 @@
         {
             "name": "安卓本地游戏",
             "path": [
-                "./resource"
+                "./resource/base"
             ]
         },
         {
             "name": "安卓云游戏",
             "path": [
-                "./resource",
-                "./resource_yun"
+                "./resource/base",
+                "./resource/yun"
             ]
         },
         {
             "name": "PC",
             "path": [
-                "./resource",
-                "./resource_win32"
+                "./resource/base",
+                "./resource/win32"
             ]
         }
     ],
@@ -40,7 +40,7 @@
         "child_exec": "python",
         "child_args": [
             "-u",
-            "./custom/main.py"
+            "./../agent/main.py"
         ]
     },
     "task": [
