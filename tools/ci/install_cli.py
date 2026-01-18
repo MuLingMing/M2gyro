@@ -79,19 +79,29 @@ def load_json_with_comment_and_quote(file_path, encoding="utf-8"):
     # 1. 读取JSON文件全部内容
     with open(file_path, 'r', encoding=encoding) as f:
         content = f.read()
-    
-    # 2. 正则清理：删除 /*  */ 包裹的多行注释
+    # 2. 保护常见 URL 模式，避免将 URL 中的 // 误判为注释起始
+    mask = "::COLON_SLASH::"
+    content = content.replace('://', mask)
+
+    # 3. 正则清理：删除 /*  */ 包裹的多行注释
     content = re.sub(r"/\*[\s\S]*?\*/", "", content)
-    # 3. 正则清理：删除 // 开头的单行注释（你的核心问题）
+    # 4. 正则清理：删除 // 开头的单行注释（现在不会影响 URL）
     content = re.sub(r"//.*", "", content)
-    # 4. 正则清理：删除 # 开头的Python风格注释
+    # 5. 正则清理：删除 # 开头的Python风格注释
     content = re.sub(r"#.*", "", content)
-    # 5. 正则替换：把所有单引号 ' 替换为双引号 " （解决你的双引号报错）
+
+    # 6. 将单引号替换为双引号（注意：此替换仍然是简单替换，
+    #    若文件中大量使用单引号作为字符串边界且包含复杂转义，
+    #    更强健的解析器会更安全。）
     content = re.sub(r"'", '"', content)
-    # 6. 清理多余空行和空格（可选，不影响解析，优化格式）
+
+    # 7. 清理多余空行和首尾空格
     content = "\n".join([line.strip() for line in content.splitlines() if line.strip()])
-    
-    # 7. 用原生json解析处理后的纯净内容
+
+    # 8. 恢复被掩码的 URL
+    content = content.replace(mask, '://')
+
+    # 9. 用原生json解析处理后的纯净内容
     return json.loads(content)
 
 
