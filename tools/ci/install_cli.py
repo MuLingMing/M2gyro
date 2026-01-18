@@ -74,6 +74,26 @@ def install_chores():
     #     ignore=shutil.ignore_patterns("*.yaml"),
     # )
 
+# 万能带注释JSON解析函数：自动清理//注释、/*多行注释、#注释 + 单引号替换双引号
+def load_json_with_comment_and_quote(file_path, encoding="utf-8"):
+    # 1. 读取JSON文件全部内容
+    with open(file_path, 'r', encoding=encoding) as f:
+        content = f.read()
+    
+    # 2. 正则清理：删除 /*  */ 包裹的多行注释
+    content = re.sub(r"/\*[\s\S]*?\*/", "", content)
+    # 3. 正则清理：删除 // 开头的单行注释（你的核心问题）
+    content = re.sub(r"//.*", "", content)
+    # 4. 正则清理：删除 # 开头的Python风格注释
+    content = re.sub(r"#.*", "", content)
+    # 5. 正则替换：把所有单引号 ' 替换为双引号 " （解决你的双引号报错）
+    content = re.sub(r"'", '"', content)
+    # 6. 清理多余空行和空格（可选，不影响解析，优化格式）
+    content = "\n".join([line.strip() for line in content.splitlines() if line.strip()])
+    
+    # 7. 用原生json解析处理后的纯净内容
+    return json.loads(content)
+
 
 def install_agent():
     shutil.copytree(
@@ -82,21 +102,7 @@ def install_agent():
         dirs_exist_ok=True,
     )
 
-    with open(install_path / "interface.json", "r", encoding="utf-8") as f:
-        content = f.read()
-        # 正则表达式：匹配并删除 单行//注释、多行/* */注释、#井号注释
-        # 第一步：删除 /*  */ 包裹的多行注释
-        content = re.sub(r"/\*[\s\S]*?\*/", "", content)
-        # 第二步：删除 // 开头的单行注释
-        content = re.sub(r"//.*", "", content)
-        # 第三步：删除 # 开头的单行注释（Python风格注释）
-        content = re.sub(r"#.*", "", content)
-        # 第四步：把所有单引号 ' 替换为双引号 " （解决你的双引号报错）
-        content = re.sub(r"'", '"', content)
-        # 第五步：删除多余的空行（可选，美化内容，不影响解析）
-        content = "\n".join([line.strip() for line in content.splitlines() if line.strip()])
-        
-        interface = json.load(content)
+    interface = load_json_with_comment_and_quote(install_path / "interface.json")
 
     if sys.platform.startswith("win"):
         interface["agent"]["child_exec"] = r"./python/python.exe"
