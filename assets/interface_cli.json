@@ -1,7 +1,7 @@
 {
     "interface_version": 2,
     "name": "M2gyro",
-    "description": "这是一个使用 MaaFramework 创建的新项目,目标为二重螺旋。",
+    "description": "这是一个使用 MaaFramework 创建的新项目，目标为二重螺旋。",
     "contact": "QQ群: 暂无",
     "license": "MIT",
     "welcome": "首次使用！欢迎使用 M2gyro!",
