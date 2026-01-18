@@ -100,7 +100,9 @@ def install_agent():
         content = re.sub(r"//.*", "", content)
         # 第三步：删除 # 开头的单行注释（Python风格注释）
         content = re.sub(r"#.*", "", content)
-        # 第四步：删除多余的空行（可选，美化内容，不影响解析）
+        # 第四步：把所有单引号 ' 替换为双引号 " （解决你的双引号报错）
+        content = re.sub(r"'", '"', content)
+        # 第五步：删除多余的空行（可选，美化内容，不影响解析）
         content = "\n".join([line.strip() for line in content.splitlines() if line.strip()])
         
         interface = json.load(content)
