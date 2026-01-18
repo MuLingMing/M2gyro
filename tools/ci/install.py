@@ -2,7 +2,8 @@ from pathlib import Path
 
 import shutil
 import sys
-import json5 as json
+import json
+import re
 import os
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -91,7 +92,18 @@ def install_agent():
     )
 
     with open(install_path / "interface.json", "r", encoding="utf-8") as f:
-        interface = json.load(f)
+        content = f.read()
+        # 正则表达式：匹配并删除 单行//注释、多行/* */注释、#井号注释
+        # 第一步：删除 /*  */ 包裹的多行注释
+        content = re.sub(r"/\*[\s\S]*?\*/", "", content)
+        # 第二步：删除 // 开头的单行注释
+        content = re.sub(r"//.*", "", content)
+        # 第三步：删除 # 开头的单行注释（Python风格注释）
+        content = re.sub(r"#.*", "", content)
+        # 第四步：删除多余的空行（可选，美化内容，不影响解析）
+        content = "\n".join([line.strip() for line in content.splitlines() if line.strip()])
+        
+        interface = json.load(content)
 
     if sys.platform.startswith("win"):
         interface["agent"]["child_exec"] = r"./python/python.exe"

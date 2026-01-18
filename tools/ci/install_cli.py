@@ -2,7 +2,8 @@ from pathlib import Path
 
 import shutil
 import sys
-import json5 as json
+import json
+import re
 import os
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
