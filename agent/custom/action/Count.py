@@ -68,6 +68,10 @@ class Count(CustomAction):
 
         if current_count < target_count:
             argv_dict["count"] = current_count + 1
+            argv_dict["target_count"]=target_count
+            argv_dict["next_node"]=next_node
+            argv_dict["else_node"]=else_node
+
             context.override_pipeline(
                 {argv.node_name: {"custom_action_param": argv_dict}}
             )

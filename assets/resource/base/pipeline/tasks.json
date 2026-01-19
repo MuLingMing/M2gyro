@@ -262,8 +262,7 @@
                     "count": 0,
                     "target_count": 20,
                     "else_node": [
-                        "释放技能E",
-                        "释放状态Q"
+                        "挂机技能"
                     ],
                     "next_node": [
                         "放弃委托"

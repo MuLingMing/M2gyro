@@ -1,4 +1,19 @@
 {
+    "挂机技能": {
+        //不识别直接进入
+        "recognition": "DirectHit",
+        //无延时
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        //空保证仅识别一次
+        "next": [
+            "释放技能E",
+            "释放状态Q",
+            "空"
+        ]
+    },
     "释放状态Q": {
         //仅识别菲娜、赛琪、黎瑟Q
         "recognition": {
@@ -12,11 +27,10 @@
             }
         },
         //仅识别一次
-        "timeout": 0,
-        "on_error": [],
         "post_wait_freezes": 0,
         "next": [
-            "技能Q状态"
+            "技能Q状态",
+            "空"
         ]
     },
     "释放技能E": {
@@ -29,10 +43,7 @@
                 ]
             }
         },
-        "action": "Click",
-        //仅识别一次
-        "timeout": 0,
-        "on_error": []
+        "action": "Click"
     },
     "技能Q状态": {
         //技能Q蓝耗为0证明开着，反转结果后，点击
