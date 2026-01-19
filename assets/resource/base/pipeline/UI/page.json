@@ -1,0 +1,1317 @@
+{
+    "夜航手册页面": {
+        //识别"角色面板_图标"、"返回上一级"、"局内放弃"、"退出委托"证明在游戏内
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/角色面板_图标.png",
+                                    "页面/角色面板_安卓图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "Or",
+                            "param": {
+                                "any_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/返回_图标.png"
+                                                ],
+                                                "roi": [
+                                                    0,
+                                                    0,
+                                                    180,
+                                                    100
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/关闭_图标1.png",
+                                                    "页面/关闭_图标2.png"
+                                                ],
+                                                "roi": [
+                                                    165,
+                                                    110,
+                                                    950,
+                                                    480
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/放弃挑战_云地图图标.png",
+                                    "页面/放弃挑战_安卓地图图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "放弃挑战"
+                                ],
+                                "roi": [
+                                    830,
+                                    590,
+                                    450,
+                                    130
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "next": [
+            "委托-夜航手册",
+            "[JumpBack]主页面-委托"
+        ]
+    },
+    "委托密函页面": {
+        //识别"角色面板_图标"、"返回上一级"、"局内放弃"、"退出委托"证明在游戏内
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/角色面板_图标.png",
+                                    "页面/角色面板_安卓图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "Or",
+                            "param": {
+                                "any_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/返回_图标.png"
+                                                ],
+                                                "roi": [
+                                                    0,
+                                                    0,
+                                                    180,
+                                                    100
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/关闭_图标1.png",
+                                                    "页面/关闭_图标2.png"
+                                                ],
+                                                "roi": [
+                                                    165,
+                                                    110,
+                                                    950,
+                                                    480
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/放弃挑战_云地图图标.png",
+                                    "页面/放弃挑战_安卓地图图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "放弃挑战"
+                                ],
+                                "roi": [
+                                    830,
+                                    590,
+                                    450,
+                                    130
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "next": [
+            "委托-委托密函",
+            "[JumpBack]主页面-委托"
+        ]
+    },
+    "迷津": {
+        //识别"角色面板_图标"、"返回上一级"、"局内放弃"、"退出委托"证明在游戏内
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/角色面板_图标.png",
+                                    "页面/角色面板_安卓图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "Or",
+                            "param": {
+                                "any_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/返回_图标.png"
+                                                ],
+                                                "roi": [
+                                                    0,
+                                                    0,
+                                                    180,
+                                                    100
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/关闭_图标1.png",
+                                                    "页面/关闭_图标2.png"
+                                                ],
+                                                "roi": [
+                                                    165,
+                                                    110,
+                                                    950,
+                                                    480
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/放弃挑战_云地图图标.png",
+                                    "页面/放弃挑战_安卓地图图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "放弃挑战"
+                                ],
+                                "roi": [
+                                    830,
+                                    590,
+                                    450,
+                                    130
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "next": [
+            "歧路足音-迷津",
+            "[JumpBack]主页面-歧路足音"
+        ]
+    },
+    "戏剧": {
+        //识别"角色面板_图标"、"返回上一级"、"局内放弃"、"退出委托"证明在游戏内
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/角色面板_图标.png",
+                                    "页面/角色面板_安卓图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "Or",
+                            "param": {
+                                "any_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/返回_图标.png"
+                                                ],
+                                                "roi": [
+                                                    0,
+                                                    0,
+                                                    180,
+                                                    100
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/关闭_图标1.png",
+                                                    "页面/关闭_图标2.png"
+                                                ],
+                                                "roi": [
+                                                    165,
+                                                    110,
+                                                    950,
+                                                    480
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/放弃挑战_云地图图标.png",
+                                    "页面/放弃挑战_安卓地图图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "放弃挑战"
+                                ],
+                                "roi": [
+                                    830,
+                                    590,
+                                    450,
+                                    130
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "next": [
+            "歧路足音-戏剧",
+            "[JumpBack]主页面-歧路足音"
+        ]
+    },
+    "铸造": {
+        //识别"角色面板_图标"、"返回上一级"、"局内放弃"、"退出委托"证明在游戏内
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/角色面板_图标.png",
+                                    "页面/角色面板_安卓图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "Or",
+                            "param": {
+                                "any_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/返回_图标.png"
+                                                ],
+                                                "roi": [
+                                                    0,
+                                                    0,
+                                                    180,
+                                                    100
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/关闭_图标1.png",
+                                                    "页面/关闭_图标2.png"
+                                                ],
+                                                "roi": [
+                                                    165,
+                                                    110,
+                                                    950,
+                                                    480
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/放弃挑战_云地图图标.png",
+                                    "页面/放弃挑战_安卓地图图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "放弃挑战"
+                                ],
+                                "roi": [
+                                    830,
+                                    590,
+                                    450,
+                                    130
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]主页面-角色面板",
+            "角色面板-铸造",
+            "[JumpBack]返回上一级"
+        ]
+    },
+    "地图": {
+        //识别"角色面板_图标"、"返回上一级"、"局内放弃"、"退出委托"证明在游戏内
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/角色面板_图标.png",
+                                    "页面/角色面板_安卓图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "Or",
+                            "param": {
+                                "any_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/返回_图标.png"
+                                                ],
+                                                "roi": [
+                                                    0,
+                                                    0,
+                                                    180,
+                                                    100
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/关闭_图标1.png",
+                                                    "页面/关闭_图标2.png"
+                                                ],
+                                                "roi": [
+                                                    165,
+                                                    110,
+                                                    950,
+                                                    480
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/放弃挑战_云地图图标.png",
+                                    "页面/放弃挑战_安卓地图图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "放弃挑战"
+                                ],
+                                "roi": [
+                                    830,
+                                    590,
+                                    450,
+                                    130
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]主页面-角色面板",
+            "角色面板-地图",
+            "[JumpBack]返回上一级"
+        ]
+    },
+    "主页面-委托": {
+        //识别"角色面板_图标"、"返回上一级"、"局内放弃"、"退出委托"证明在游戏内
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/角色面板_图标.png",
+                                    "页面/角色面板_安卓图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "Or",
+                            "param": {
+                                "any_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/返回_图标.png"
+                                                ],
+                                                "roi": [
+                                                    0,
+                                                    0,
+                                                    180,
+                                                    100
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/关闭_图标1.png",
+                                                    "页面/关闭_图标2.png"
+                                                ],
+                                                "roi": [
+                                                    165,
+                                                    110,
+                                                    950,
+                                                    480
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/放弃挑战_云地图图标.png",
+                                    "页面/放弃挑战_安卓地图图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "放弃挑战"
+                                ],
+                                "roi": [
+                                    830,
+                                    590,
+                                    450,
+                                    130
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]主页面-角色面板",
+            "[JumpBack]角色面板-历练",
+            "历练-委托",
+            "[JumpBack]返回上一级",
+            "[JumpBack]放弃挑战"
+        ]
+    },
+    "主页面-歧路足音": {
+        //识别"角色面板_图标"、"返回上一级"、"局内放弃"、"退出委托"证明在游戏内
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/角色面板_图标.png",
+                                    "页面/角色面板_安卓图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "Or",
+                            "param": {
+                                "any_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/返回_图标.png"
+                                                ],
+                                                "roi": [
+                                                    0,
+                                                    0,
+                                                    180,
+                                                    100
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/关闭_图标1.png",
+                                                    "页面/关闭_图标2.png"
+                                                ],
+                                                "roi": [
+                                                    165,
+                                                    110,
+                                                    950,
+                                                    480
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/放弃挑战_云地图图标.png",
+                                    "页面/放弃挑战_安卓地图图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "放弃挑战"
+                                ],
+                                "roi": [
+                                    830,
+                                    590,
+                                    450,
+                                    130
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]主页面-角色面板",
+            "[JumpBack]角色面板-历练",
+            "历练-歧路足音",
+            "[JumpBack]返回上一级"
+        ]
+    },
+    "主页面-角色面板": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/角色面板_图标.png",
+                    "页面/角色面板_安卓图标.png"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    100,
+                    75
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "角色面板-历练": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": {
+                    "type": "OCR",
+                    "param": {
+                        "expected": "历练",
+                        "roi": [
+                            20,
+                            285,
+                            480,
+                            410
+                        ]
+                    }
+                }
+            },
+            {
+                "recognition": {
+                    "type": "TemplateMatch",
+                    "param": {
+                        "template": "页面/历练_图标.png",
+                        "roi": [
+                            20,
+                            285,
+                            480,
+                            410
+                        ]
+                    }
+                }
+            }
+        ],
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "角色面板-铸造": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": {
+                    "type": "OCR",
+                    "param": {
+                        "expected": "铸造",
+                        "roi": [
+                            20,
+                            285,
+                            480,
+                            410
+                        ]
+                    }
+                }
+            },
+            {
+                "recognition": {
+                    "type": "TemplateMatch",
+                    "param": {
+                        "template": "页面/铸造_图标.png",
+                        "roi": [
+                            20,
+                            285,
+                            480,
+                            410
+                        ]
+                    }
+                }
+            }
+        ],
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "角色面板-地图": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": {
+                    "type": "OCR",
+                    "param": {
+                        "expected": "地图",
+                        "roi": [
+                            20,
+                            285,
+                            480,
+                            410
+                        ]
+                    }
+                }
+            },
+            {
+                "recognition": {
+                    "type": "TemplateMatch",
+                    "param": {
+                        "template": "页面/地图_图标.png",
+                        "roi": [
+                            20,
+                            285,
+                            480,
+                            410
+                        ]
+                    }
+                }
+            }
+        ],
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "角色面板-时间": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/时间_图标.png"
+                ],
+                "roi": [
+                    20,
+                    285,
+                    480,
+                    410
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "历练-委托": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/委托_图标.png",
+                    "页面/委托_图标已选中.png"
+                ],
+                "roi": [
+                    0,
+                    155,
+                    120,
+                    60
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "委托-夜航手册": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "夜航手册"
+                ],
+                "roi": [
+                    550,
+                    70,
+                    690,
+                    60
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "委托-委托密函": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "委托密函"
+                ],
+                "roi": [
+                    550,
+                    70,
+                    690,
+                    60
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "历练-歧路足音": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/歧路足音_图标.png",
+                    "页面/歧路足音_图标已选中.png"
+                ],
+                "roi": [
+                    0,
+                    295,
+                    120,
+                    60
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "歧路足音-迷津": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": {
+                    "type": "TemplateMatch",
+                    "param": {
+                        "template": "页面/迷津_图标.png",
+                        "roi": [
+                            400,
+                            450,
+                            600,
+                            250
+                        ]
+                    }
+                }
+            },
+            {
+                "recognition": {
+                    "type": "OCR",
+                    "param": {
+                        "expected": "迷津",
+                        "roi": [
+                            400,
+                            450,
+                            600,
+                            250
+                        ]
+                    }
+                }
+            }
+        ],
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "next": [
+            "前往迷津/戏剧"
+        ]
+    },
+    "歧路足音-戏剧": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": {
+                    "type": "TemplateMatch",
+                    "param": {
+                        "template": "页面/戏剧_图标.png",
+                        "roi": [
+                            400,
+                            450,
+                            600,
+                            250
+                        ]
+                    }
+                }
+            },
+            {
+                "recognition": {
+                    "type": "OCR",
+                    "param": {
+                        "expected": "迷津",
+                        "roi": [
+                            400,
+                            450,
+                            600,
+                            250
+                        ]
+                    }
+                }
+            }
+        ],
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "next": [
+            "前往迷津/戏剧"
+        ]
+    },
+    "前往迷津/戏剧": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "前往"
+                ],
+                "roi": [
+                    900,
+                    430,
+                    370,
+                    175
+                ]
+            }
+        },
+        "action": "Click"
+    },
+    "返回上一级": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/返回_图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    180,
+                                    100
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/关闭_图标1.png",
+                                    "页面/关闭_图标2.png"
+                                ],
+                                "roi": [
+                                    165,
+                                    110,
+                                    950,
+                                    480
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "Click"
+    },
+    "左上角返回": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/返回_图标.png"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    180,
+                    100
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "弹窗取消": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/关闭_图标1.png",
+                    "页面/关闭_图标2.png"
+                ],
+                "roi": [
+                    165,
+                    110,
+                    950,
+                    480
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        }
+    },
+    "弹窗确定": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "开始挑战",
+                    "确定",
+                    "我知道了"
+                ],
+                "roi": [
+                    165,
+                    110,
+                    950,
+                    480
+                ]
+            }
+        },
+        "action": "Click"
+    }
+}

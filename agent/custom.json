@@ -1,0 +1,27 @@
+{
+    "Count": {
+        "type": "action",
+        "class": "Count",
+        "file_path": "{custom_path}/custom/action/Count.py"
+    },
+    "DisableNode": {
+        "type": "action",
+        "class": "DisableNode",
+        "file_path": "{custom_path}/custom/action/Node.py"
+    },
+    "NodeOverride": {
+        "type": "action",
+        "class": "NodeOverride",
+        "file_path": "{custom_path}/custom/action/Node.py"
+    },
+    "ScreenShot": {
+        "type": "action",
+        "class": "ScreenShot",
+        "file_path": "{custom_path}/custom/action/ScreenShot.py"
+    },
+    "CheckResolution": {
+        "type": "action",
+        "class": "CheckResolution",
+        "file_path": "{custom_path}/custom/action/ScreenShot.py"
+    }
+}
