@@ -163,12 +163,12 @@ jobs:
       #   run: |
       #     ./install/python/python.exe tools/ci/download_drop_core.py --os windows --arch ${{ matrix.arch }} || echo "drop_core download skipped"
 
-      # - name: Install
-      #   shell: bash
-      #   run: |
-      #     PLATFORM_TAG="win-${{ steps.platform.outputs.tag }}"
-      #     ./install/python/python.exe ./tools/ci/install.py ${{ needs.meta.outputs.tag }} $PLATFORM_TAG
-      #     cp -rpvn tools/registry/. install/
+      - name: Install
+        shell: bash
+        run: |
+          PLATFORM_TAG="win-${{ steps.platform.outputs.tag }}"
+          ./install/python/python.exe ./tools/ci/install.py ${{ needs.meta.outputs.tag }} $PLATFORM_TAG
+      #    cp -rpvn tools/registry/. install/
 
       # - name: Create CLI version
       #   shell: bash
