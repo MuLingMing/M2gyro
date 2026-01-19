@@ -35,7 +35,7 @@ print(f"set cwd: {os.getcwd()}")
 if current_script_dir not in sys.path:
     sys.path.insert(0, current_script_dir)
 
-from utils import logger
+from utils.logger import logger
 
 VENV_NAME = ".venv"  # 虚拟环境目录的名称
 VENV_DIR = Path(project_root_dir) / VENV_NAME
