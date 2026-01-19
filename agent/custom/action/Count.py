@@ -62,6 +62,9 @@ class Count(CustomAction):
 
         current_count = argv_dict.get("count", 0)
         target_count = argv_dict.get("target_count", 0)
+        next_node=argv_dict.get("next_node",[])
+        else_node=argv_dict.get("else_node",[])
+
 
         if current_count < target_count:
             argv_dict["count"] = current_count + 1
@@ -69,7 +72,7 @@ class Count(CustomAction):
                 {argv.node_name: {"custom_action_param": argv_dict}}
             )
             print(f"当前运行次数为{argv_dict['count']}, 目标次数为{target_count}")
-            self._run_nodes(context, argv_dict.get("else_node"))
+            self._run_nodes(context, else_node)
         else:
             context.override_pipeline(
                 {
@@ -77,8 +80,8 @@ class Count(CustomAction):
                         "custom_action_param": {
                             "count": 0,
                             "target_count": target_count,
-                            "else_node": argv_dict.get("else_node"),
-                            "next_node": argv_dict.get("next_node"),
+                            "else_node": else_node,
+                            "next_node": next_node,
                         }
                     }
                 }
