@@ -1,6 +1,9 @@
 {
     //驱离
     "驱离": {
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
         "post_wait_freezes": 0,
         "next": [
             //"历练-委托识别到说明已经退出，结束循环"
@@ -14,7 +17,7 @@
     },
     "驱离副本": {
         //复位大法，不分地图
-        //识别在驱离本内
+        //驱离and已驱逐敌人：0/，保证只进行一次
         "recognition": {
             "type": "And",
             "param": {
@@ -40,7 +43,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "已驱逐敌人：0/"
+                                    "已驱逐敌人：0/",
+                                    "敌人：0/"
                                 ],
                                 "roi": [
                                     0,
@@ -59,8 +63,11 @@
             "param": {
                 "custom_action": "Count",
                 "custom_action_param": {
-                    "next_node": [
+                    "else_node": [
                         "局内复位"
+                    ],
+                    "reset_node": [
+                        "技能次数"
                     ]
                 }
             }

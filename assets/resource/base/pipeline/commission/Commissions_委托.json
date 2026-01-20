@@ -86,7 +86,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -193,7 +194,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -300,7 +302,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -407,7 +410,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -514,7 +518,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -535,6 +540,107 @@
         ]
     },
     "角色突破任务": {
+        //识别"角色面板_图标"、"返回上一级"、"局内放弃"、"退出委托"证明在游戏内
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/角色面板_图标.png",
+                                    "页面/角色面板_安卓图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "Or",
+                            "param": {
+                                "any_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/返回_图标.png"
+                                                ],
+                                                "roi": [
+                                                    0,
+                                                    0,
+                                                    180,
+                                                    100
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/关闭_图标1.png",
+                                                    "页面/关闭_图标2.png"
+                                                ],
+                                                "roi": [
+                                                    165,
+                                                    110,
+                                                    950,
+                                                    480
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/放弃挑战_云地图图标.png",
+                                    "页面/放弃挑战_安卓地图图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "放弃挑战",
+                                    "放弃"
+                                ],
+                                "roi": [
+                                    830,
+                                    590,
+                                    450,
+                                    130
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
         "next": [
             "倍率选择",
             "确认选择",
@@ -542,6 +648,107 @@
         ]
     },
     "皎皎信物任务": {
+        //识别"角色面板_图标"、"返回上一级"、"局内放弃"、"退出委托"证明在游戏内
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/角色面板_图标.png",
+                                    "页面/角色面板_安卓图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "Or",
+                            "param": {
+                                "any_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/返回_图标.png"
+                                                ],
+                                                "roi": [
+                                                    0,
+                                                    0,
+                                                    180,
+                                                    100
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "template": [
+                                                    "页面/关闭_图标1.png",
+                                                    "页面/关闭_图标2.png"
+                                                ],
+                                                "roi": [
+                                                    165,
+                                                    110,
+                                                    950,
+                                                    480
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "页面/放弃挑战_云地图图标.png",
+                                    "页面/放弃挑战_安卓地图图标.png"
+                                ],
+                                "roi": [
+                                    0,
+                                    0,
+                                    100,
+                                    75
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "放弃挑战",
+                                    "放弃"
+                                ],
+                                "roi": [
+                                    830,
+                                    590,
+                                    450,
+                                    130
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
         "next": [
             "倍率选择",
             "确认选择",
@@ -635,7 +842,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -654,7 +862,7 @@
             "param": {
                 "custom_action": "Count",
                 "custom_action_param": {
-                    "next_node": [
+                    "else_node": [
                         "委托页面",
                         "委托-角色经验"
                     ]
@@ -749,7 +957,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -768,7 +977,7 @@
             "param": {
                 "custom_action": "Count",
                 "custom_action_param": {
-                    "next_node": [
+                    "else_node": [
                         "委托页面",
                         "委托-武器经验"
                     ]
@@ -863,7 +1072,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -882,7 +1092,7 @@
             "param": {
                 "custom_action": "Count",
                 "custom_action_param": {
-                    "next_node": [
+                    "else_node": [
                         "委托页面",
                         "委托-武器突破"
                     ]
@@ -977,7 +1187,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -996,7 +1207,7 @@
             "param": {
                 "custom_action": "Count",
                 "custom_action_param": {
-                    "next_node": [
+                    "else_node": [
                         "委托页面",
                         "委托-深红凝珠"
                     ]
@@ -1091,7 +1302,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -1110,7 +1322,7 @@
             "param": {
                 "custom_action": "Count",
                 "custom_action_param": {
-                    "next_node": [
+                    "else_node": [
                         "委托页面",
                         "委托-魔之楔本"
                     ]
@@ -1205,7 +1417,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -1224,7 +1437,7 @@
             "param": {
                 "custom_action": "Count",
                 "custom_action_param": {
-                    "next_node": [
+                    "else_node": [
                         "委托页面",
                         "委托-角色突破"
                     ]
@@ -1319,7 +1532,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -1338,7 +1552,7 @@
             "param": {
                 "custom_action": "Count",
                 "custom_action_param": {
-                    "next_node": [
+                    "else_node": [
                         "委托页面",
                         "委托-皎皎信物"
                     ]
@@ -1433,7 +1647,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -1539,7 +1754,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -1645,7 +1861,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -1751,7 +1968,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -1857,7 +2075,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -1963,7 +2182,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -2069,7 +2289,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -2089,10 +2310,11 @@
         ]
     },
     "角色经验识别": {
+        //角色经验or避险
         "recognition": {
-            "type": "And",
+            "type": "Or",
             "param": {
-                "all_of": [
+                "any_of": [
                     {
                         "recognition": {
                             "type": "OCR",
@@ -2128,21 +2350,17 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        },
+        "action": "Click",
         "next": [
             "委托等级识别"
         ]
     },
     "武器经验识别": {
+        //武器经验or驱逐
         "recognition": {
-            "type": "And",
+            "type": "Or",
             "param": {
-                "all_of": [
+                "any_of": [
                     {
                         "recognition": {
                             "type": "OCR",
@@ -2178,21 +2396,17 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        },
+        "action": "Click",
         "next": [
             "委托等级识别"
         ]
     },
     "武器突破识别": {
+        //武器突破or调停
         "recognition": {
-            "type": "And",
+            "type": "Or",
             "param": {
-                "all_of": [
+                "any_of": [
                     {
                         "recognition": {
                             "type": "OCR",
@@ -2228,27 +2442,25 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        },
+        "action": "Click",
         "next": [
             "委托等级识别"
         ]
     },
     "深红凝珠识别": {
+        //深红凝珠or护送
         "recognition": {
-            "type": "And",
+            "type": "Or",
             "param": {
-                "all_of": [
+                "any_of": [
                     {
                         "recognition": {
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "深红凝珠"
+                                    "深红凝珠",
+                                    "深红",
+                                    "凝珠"
                                 ],
                                 "roi": [
                                     425,
@@ -2278,27 +2490,24 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        },
+        "action": "Click",
         "next": [
             "委托等级识别"
         ]
     },
     "魔之楔本识别": {
+        //魔之楔or驱离
         "recognition": {
-            "type": "And",
+            "type": "Or",
             "param": {
-                "all_of": [
+                "any_of": [
                     {
                         "recognition": {
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "魔之楔"
+                                    "魔之楔",
+                                    "魔之"
                                 ],
                                 "roi": [
                                     425,
@@ -2328,21 +2537,17 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        },
+        "action": "Click",
         "next": [
             "委托等级识别"
         ]
     },
     "角色突破识别": {
+        //角色突破or探险
         "recognition": {
-            "type": "And",
+            "type": "Or",
             "param": {
-                "all_of": [
+                "any_of": [
                     {
                         "recognition": {
                             "type": "OCR",
@@ -2378,55 +2583,25 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        },
+        "action": "Click",
         "next": [
             "委托等级识别"
         ]
     },
     "皎皎信物识别": {
+        //扼守
         "recognition": {
-            "type": "And",
+            "type": "OCR",
             "param": {
-                "all_of": [
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "角色技能"
-                                ],
-                                "roi": [
-                                    425,
-                                    500,
-                                    855,
-                                    190
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "扼守"
-                                ],
-                                "roi": [
-                                    425,
-                                    500,
-                                    855,
-                                    190
-                                ]
-                            }
-                        }
-                    }
+                "expected": [
+                    "扼守"
                 ],
-                "box_index": 1
+                "roi": [
+                    425,
+                    500,
+                    855,
+                    190
+                ]
             }
         },
         "action": "Click",
@@ -2436,6 +2611,7 @@
     },
     "铜币识别-无": {
         //判断不在委托最左端
+        "inverse": true,
         "recognition": {
             "type": "OCR",
             "param": {
@@ -2450,7 +2626,6 @@
                 ]
             }
         },
-        "inverse": true,
         "next": [
             "委托-向左三次"
         ]
@@ -2542,7 +2717,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -2658,7 +2834,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -2773,7 +2950,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -2787,13 +2965,11 @@
                 ]
             }
         },
-        "timeout": 30000,
         "next": [
             "委托-委托",
             "[JumpBack]主页面-委托",
             "[JumpBack]放弃挑战"
-        ],
-        "on_error": []
+        ]
     },
     "委托-委托": {
         "recognition": {
@@ -2810,15 +2986,10 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        },
-        //保证只识别一次
+        "action": "Click",
+        //保证在委托最左端
         "next": [
-            "铜币识别-无",
+            "[JumpBack]铜币识别-无",
             "空"
         ]
     }

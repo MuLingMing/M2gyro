@@ -6,7 +6,7 @@
     "license": "MIT",
     "welcome": "首次使用！欢迎使用 M2gyro!",
     "github": "https://github.com/MuLingMing/M2gyro",
-    "version": "0.1.2",
+    "version": "0.2.0",
     "controller": [
         {
             "name": "安卓端",
@@ -37,10 +37,10 @@
         }
     ],
     "agent": {
-        "child_exec": "python",
+        "child_exec": "${command:python.interpreterPath}",
         "child_args": [
             "-u",
-            "./../agent/main.py"
+            "./../agent/main2.py"
         ]
     },
     "task": [
@@ -318,8 +318,8 @@
             "type": "select",
             "cases": [
                 {
-                    "name": "10000次",
-                    "description": "10000次约等于5000分钟等于83小时，适合挂机！"
+                    "name": "无限循环",
+                    "description": "该任务无限循环！"
                 },
                 {
                     "name": "1次",
@@ -414,10 +414,6 @@
                             "custom_action_param": {
                                 "count": 0,
                                 "target_count": 30,
-                                "else_node": [
-                                    "释放技能E",
-                                    "释放状态Q"
-                                ],
                                 "next_node": [
                                     "放弃委托"
                                 ]
@@ -433,10 +429,6 @@
                             "custom_action_param": {
                                 "count": 0,
                                 "target_count": 40,
-                                "else_node": [
-                                    "释放技能E",
-                                    "释放状态Q"
-                                ],
                                 "next_node": [
                                     "放弃委托"
                                 ]
@@ -452,10 +444,6 @@
                             "custom_action_param": {
                                 "count": 0,
                                 "target_count": 50,
-                                "else_node": [
-                                    "释放技能E",
-                                    "释放状态Q"
-                                ],
                                 "next_node": [
                                     "放弃委托"
                                 ]
@@ -471,10 +459,6 @@
                             "custom_action_param": {
                                 "count": 0,
                                 "target_count": 60,
-                                "else_node": [
-                                    "释放技能E",
-                                    "释放状态Q"
-                                ],
                                 "next_node": [
                                     "放弃委托"
                                 ]
@@ -490,10 +474,6 @@
                             "custom_action_param": {
                                 "count": 0,
                                 "target_count": 100,
-                                "else_node": [
-                                    "释放技能E",
-                                    "释放状态Q"
-                                ],
                                 "next_node": [
                                     "放弃委托"
                                 ]
@@ -514,6 +494,7 @@
                     "pipeline_override": {
                         "倍率选择": {
                             "recognition": {
+                                "type": "TemplateMatch",
                                 "param": {
                                     "template": [
                                         "委托手册/1绿书_图标.png"
@@ -534,6 +515,7 @@
                     "pipeline_override": {
                         "倍率选择": {
                             "recognition": {
+                                "type": "TemplateMatch",
                                 "param": {
                                     "template": [
                                         "委托手册/2蓝书_图标.png"
@@ -554,6 +536,7 @@
                     "pipeline_override": {
                         "倍率选择": {
                             "recognition": {
+                                "type": "TemplateMatch",
                                 "param": {
                                     "template": [
                                         "委托手册/8紫书_图标.png"
@@ -574,6 +557,7 @@
                     "pipeline_override": {
                         "倍率选择": {
                             "recognition": {
+                                "type": "TemplateMatch",
                                 "param": {
                                     "template": [
                                         "委托手册/20金书_图标.png"

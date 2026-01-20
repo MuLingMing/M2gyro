@@ -105,7 +105,12 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "再次进行",
+                                    "放弃挑战",
+                                    "退出委托",
+                                    "再次",
+                                    "放弃",
+                                    "退出"
                                 ],
                                 "roi": [
                                     830,
@@ -124,7 +129,7 @@
             "param": {
                 "custom_action": "Count",
                 "custom_action_param": {
-                    "next_node": [
+                    "else_node": [
                         "魔之楔本页面"
                     ]
                 }
@@ -156,7 +161,11 @@
                     "开始挑战",
                     "再次进行",
                     "确认选择",
-                    "选择密函"
+                    "选择密函",
+                    "开始",
+                    "再次",
+                    "确认",
+                    "密函"
                 ],
                 "roi": [
                     830,
@@ -172,7 +181,7 @@
                 "custom_action": "Count",
                 "custom_action_param": {
                     "count": 0,
-                    "target_count": 10000,
+                    "target_count": 0,
                     "else_node": [
                         "确认选择"
                     ],
@@ -203,7 +212,7 @@
         "action": "Click"
     },
     "倍率选择": {
-        //option重写template，选择倍率书
+        // option重写template，选择倍率书
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -232,28 +241,11 @@
         "next": [
             "弹窗确定"
         ]
-    }, //根据技能次数判断关内时间
+    },
     "技能次数": {
         //option重写custom_action_parm
-        //每隔三秒释放一次，仅限水母E，赛琪、黎瑟、菲娜Q
-        //识别在副本中
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "页面/放弃挑战_云地图图标.png",
-                    "页面/放弃挑战_安卓地图图标.png"
-                ],
-                "roi": [
-                    0,
-                    0,
-                    100,
-                    75
-                ]
-            }
-        },
-        //不识别静止
-        "post_wait_freezes": 0,
+        //不识别直接进入
+        "recognition": "DirectHit",
         "action": {
             "type": "Custom",
             "param": {
@@ -261,14 +253,20 @@
                 "custom_action_param": {
                     "count": 0,
                     "target_count": 20,
-                    "else_node": [
-                        "挂机技能"
-                    ],
                     "next_node": [
                         "放弃委托"
                     ]
                 }
             }
-        }
+        },
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        //空保证仅识别一次
+        "next": [
+            "释放技能E",
+            "释放状态Q",
+            "3s延时"
+        ]
     }
 }

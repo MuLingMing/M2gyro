@@ -86,7 +86,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -192,7 +193,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -298,7 +300,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -404,7 +407,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -510,7 +514,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -617,7 +622,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -724,7 +730,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -833,7 +840,8 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "放弃挑战",
+                                    "放弃"
                                 ],
                                 "roi": [
                                     830,
@@ -870,12 +878,7 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        }
+        "action": "Click"
     },
     "角色面板-历练": {
         "recognition": "Or",
@@ -909,12 +912,7 @@
                 }
             }
         ],
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        }
+        "action": "Click"
     },
     "角色面板-铸造": {
         "recognition": "Or",
@@ -948,12 +946,7 @@
                 }
             }
         ],
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        }
+        "action": "Click"
     },
     "角色面板-地图": {
         "recognition": "Or",
@@ -987,12 +980,7 @@
                 }
             }
         ],
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        }
+        "action": "Click"
     },
     "角色面板-时间": {
         "recognition": {
@@ -1009,12 +997,7 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        }
+        "action": "Click"
     },
     "历练-委托": {
         "recognition": {
@@ -1032,19 +1015,16 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        }
+        "action": "Click"
     },
     "委托-夜航手册": {
         "recognition": {
             "type": "OCR",
             "param": {
                 "expected": [
-                    "夜航手册"
+                    "夜航手册",
+                    "夜航",
+                    "手册"
                 ],
                 "roi": [
                     550,
@@ -1054,19 +1034,15 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        }
+        "action": "Click"
     },
     "委托-委托密函": {
         "recognition": {
             "type": "OCR",
             "param": {
                 "expected": [
-                    "委托密函"
+                    "委托密函",
+                    "密函"
                 ],
                 "roi": [
                     550,
@@ -1076,12 +1052,7 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        }
+        "action": "Click"
     },
     "历练-歧路足音": {
         "recognition": {
@@ -1099,12 +1070,7 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        }
+        "action": "Click"
     },
     "歧路足音-迷津": {
         "recognition": "Or",
@@ -1138,12 +1104,7 @@
                 }
             }
         ],
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        },
+        "action": "Click",
         "next": [
             "前往迷津/戏剧"
         ]
@@ -1169,7 +1130,7 @@
                 "recognition": {
                     "type": "OCR",
                     "param": {
-                        "expected": "迷津",
+                        "expected": "戏剧",
                         "roi": [
                             400,
                             450,
@@ -1180,12 +1141,7 @@
                 }
             }
         ],
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        },
+        "action": "Click",
         "next": [
             "前往迷津/戏剧"
         ]
@@ -1265,12 +1221,7 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        }
+        "action": "Click"
     },
     "弹窗取消": {
         "recognition": {
@@ -1288,12 +1239,7 @@
                 ]
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        }
+        "action": "Click"
     },
     "弹窗确定": {
         "recognition": {
@@ -1302,7 +1248,8 @@
                 "expected": [
                     "开始挑战",
                     "确定",
-                    "我知道了"
+                    "我知道了",
+                    "开始"
                 ],
                 "roi": [
                     165,
@@ -1314,5 +1261,10 @@
         },
         "action": "Click"
     },
-    "空": {}
+    "空": {
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0
+    }
 }
