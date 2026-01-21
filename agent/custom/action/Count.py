@@ -51,80 +51,32 @@ class Count(CustomAction):
         else_node = argv_dict.get("else_node", [])
         reset_node = argv_dict.get("reset_node", [])
 
-        try:
-            if reset_node != []:
-                if isinstance(reset_node, str):
-                    reset_node = [reset_node]
-                for node in reset_node:
-                    node_data = context.get_node_data(node)
+        # 重设reset_node的count为0
+        self._reset_nodes(context=context, nodes=reset_node, reset_count=0)
 
-                    node_custom_action_param = (
-                        node_data.get("action", {})
-                        .get("param", {})
-                        .get("custom_action_param", {})
-                    )
-
-                    # print(node_custom_action_param, type(node_custom_action_param))
-                    if node_custom_action_param != {}:
-                        context.override_pipeline(
-                            {
-                                node: {
-                                    "custom_action_param": {
-                                        "count": 0,
-                                        "target_count": node_custom_action_param.get(
-                                            "target_count", 0
-                                        ),
-                                        "next_node": node_custom_action_param.get(
-                                            "next_node", []
-                                        ),
-                                        "else_node": node_custom_action_param.get(
-                                            "else_node", []
-                                        ),
-                                        "reset_node": node_custom_action_param.get(
-                                            "reset_node", []
-                                        ),
-                                    }
-                                }
-                            }
-                        )
-                        # print(context.get_node_data(node))
-        except Exception as e:
-            print("修改节点失败：", e)
-
-        # target_count=0时，action运行else_node，使得可以option修改target_count逻辑相同
+        # target_count=0时，action运行else_node
+        # 使得可以option修改target_count逻辑相同
         if current_count < target_count or target_count == 0:
-            argv_dict["count"] = current_count + 1
-            argv_dict["target_count"] = target_count
-            argv_dict["next_node"] = next_node
-            argv_dict["else_node"] = else_node
-            argv_dict["reset_node"] = reset_node
-
-            context.override_pipeline(
-                {argv.node_name: {"custom_action_param": argv_dict}}
+            current_count = current_count + 1
+            self._reset_nodes(
+                context=context, nodes=argv.node_name, reset_count=current_count
             )
 
-            if argv_dict["count"] % 10 == 0 and argv_dict["target_count"] == 0:
-                print(f"当前运行次数为{argv_dict['count']}, 无限循环中...")
-            elif (
-                argv_dict["count"] % 10 == 0 or argv_dict["count"] == 1
-            ) and argv_dict["target_count"] != 0:
-                print(f"当前运行次数为{argv_dict['count']}, 目标次数为{target_count}")
+            # 运行播报
+            if target_count == 0 and (current_count % 10 == 0 or current_count == 1):
+                print(f"当前运行次数为{current_count}, 无限循环中...")
+            elif (current_count % 10 == 0 or current_count == 1) and target_count > 0:
+                print(f"当前运行次数为{current_count}, 目标次数为{target_count}")
+
             self._run_nodes(context, else_node)
+
         else:
-            context.override_pipeline(
-                {
-                    argv.node_name: {
-                        "custom_action_param": {
-                            "count": 0,
-                            "target_count": target_count,
-                            "else_node": else_node,
-                            "next_node": next_node,
-                            "reset_node": reset_node,
-                        },
-                    }
-                }
+            self._reset_nodes(context=context, nodes=argv.node_name, reset_count=0)
+
+            # 运行播报
+            print(
+                f"{argv.node_name}已达到目标次数{target_count}，执行后续节点{next_node}"
             )
-            print(f"已达到目标次数{target_count}，执行后续节点")
             self._run_nodes(context, argv_dict.get("next_node"))
 
         return CustomAction.RunResult(success=True)
@@ -137,3 +89,56 @@ class Count(CustomAction):
             nodes = [nodes]
         for node in nodes:
             context.run_task(node)
+
+    def _reset_nodes(self, context: Context, nodes: str | list, reset_count: int):
+        """重设节点的count为reset_count"""
+        if not nodes:
+            return
+        if isinstance(nodes, str):
+            nodes = [nodes]
+        for node in nodes:
+            # 获取node信息
+            node_data = context.get_node_data(node)
+            # get_node_data返回值为node_data:{"action":{"param":{"custom_action_param"}}}
+            node_action_param = node_data.get("action", {}).get("param", {})
+
+            if (
+                not node_action_param.get("custom_action", "")
+            ) or node_action_param.get("custom_action", "") != "Count":
+                return
+
+            node_custom_action_param = node_action_param.get("custom_action_param", {})
+
+            if not node_custom_action_param:
+                return
+
+            count = reset_count
+            target_count = node_custom_action_param.get("target_count", 0)
+            else_node = node_custom_action_param.get("else_node", [])
+            next_node = node_custom_action_param.get("next_node", [])
+            reset_node = node_custom_action_param.get("reset_node", [])
+
+            context.override_pipeline(
+                {
+                    node: {
+                        "custom_action_param": {
+                            "count": count,
+                            "target_count": target_count,
+                            "else_node": else_node,
+                            "next_node": next_node,
+                            "reset_node": reset_node,
+                        }
+                    }
+                }
+            )
+            if reset_count==0:
+                print(f"\"{node}\"节点已重置count为{count}！")
+
+            # if reset_count == 0:
+            #     node_custom_action_param_check = (
+            #         context.get_node_data(node)
+            #         .get("action", {})
+            #         .get("param", {})
+            #         .get("custom_action_param", {})
+            #     )
+            #     print(f"重设节点{node}内容检查为{node_custom_action_param_check}")
