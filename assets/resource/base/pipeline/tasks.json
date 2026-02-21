@@ -1,6 +1,9 @@
 {
     //任务总层
     //驱离Expulsion
+    "空任务层": {
+        //空任务，override任务进入层
+    },
     "夜航手册": {
         //驱离、扼守（2）、避险、驱逐
     },
@@ -130,7 +133,7 @@
                 "custom_action": "Count",
                 "custom_action_param": {
                     "else_node": [
-                        "魔之楔本页面"
+                        "魔之楔本任务"
                     ]
                 }
             }
@@ -244,8 +247,22 @@
     },
     "技能次数": {
         //option重写custom_action_parm
-        //不识别直接进入
-        "recognition": "DirectHit",
+        //识别到在副本内
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面/放弃挑战_云地图图标.png",
+                    "页面/放弃挑战_安卓地图图标.png"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    100,
+                    75
+                ]
+            }
+        },
         "action": {
             "type": "Custom",
             "param": {
@@ -259,6 +276,7 @@
                 }
             }
         },
+        "pre_delay": 0,
         "pre_wait_freezes": 0,
         "post_delay": 0,
         "post_wait_freezes": 0,

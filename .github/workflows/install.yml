@@ -18,8 +18,8 @@ on:
   workflow_dispatch:
 
 env:
-  MAA_FRAMEWORK_VERSION: "v5.3.3"
-  MFAA_VERSION: "v2.5.6"
+  MAA_FRAMEWORK_VERSION: "v5.5.0"
+  MFAA_VERSION: "v2.5.7"
 
 permissions:
   contents: write
