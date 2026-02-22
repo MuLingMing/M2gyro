@@ -1,4 +1,18 @@
 {
+    "释放技能E": {
+        //仅识别水母E
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "战斗/角色/水母E.png"
+                ]
+            }
+        },
+        "action": "Click",
+        //3s延时
+        "post_delay": 3000
+    },
     "释放状态Q": {
         //仅识别菲娜、赛琪、黎瑟Q
         "recognition": {
@@ -12,27 +26,11 @@
             }
         },
         //仅识别一次
-        "timeout": 0,
-        "on_error": [],
         "post_wait_freezes": 0,
         "next": [
-            "技能Q状态"
+            "技能Q状态",
+            "3s延时"
         ]
-    },
-    "释放技能E": {
-        //仅识别水母E
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "战斗/角色/水母E.png"
-                ]
-            }
-        },
-        "action": "Click",
-        //仅识别一次
-        "timeout": 0,
-        "on_error": []
     },
     "技能Q状态": {
         //技能Q蓝耗为0证明开着，反转结果后，点击
@@ -64,6 +62,15 @@
                 //"target": true
                 "target": "释放状态Q"
             }
-        }
+        },
+        //3s延时
+        "post_delay": 3000
+    },
+    "3s延时": {
+        //3s延时
+        "pre_delay": 3000,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0
     }
 }

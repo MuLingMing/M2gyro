@@ -6,7 +6,7 @@
     "license": "MIT",
     "welcome": "首次使用！欢迎使用 M2gyro!",
     "github": "https://github.com/MuLingMing/M2gyro",
-    "version": "0.1.2",
+    "version": "0.2.0",
     "controller": [
         {
             "name": "安卓端",
@@ -37,10 +37,10 @@
         }
     ],
     "agent": {
-        "child_exec": "python",
+        "child_exec": "${command:python.interpreterPath}",
         "child_args": [
             "-u",
-            "./../agent/main.py"
+            "./../agent/main2.py"
         ]
     },
     "task": [
@@ -51,92 +51,169 @@
             "description": "必选用于启动游戏"
         },
         {
-            "name": "角色经验",
-            "entry": "角色经验",
-            "description": "角色经验本，避险。仅支持50级副本。",
+            "name": "复位副本",
+            "entry": "复位副本",
+            "description": "测试用",
             "option": [
-                "角色经验等级",
                 "单次倍率",
                 "超时时间",
                 "重复次数"
             ]
         },
         {
-            "name": "角色突破",
-            "entry": "角色突破",
-            "description": "角色突破本，探险/无尽。仅支持每一五波使用倍率书",
+            "name": "委托任务",
+            "entry": "空任务层",
             "option": [
-                "角色突破等级",
-                "波次选择",
-                "角色突破倍率波次",
-                "超时时间",
-                "重复次数"
+                "委托任务"
             ]
-        },
-        {
-            "name": "武器经验",
-            "entry": "武器经验",
-            "description": "武器经验本，驱逐。仅支持50级副本。",
-            "option": [
-                "武器经验等级",
-                "单次倍率",
-                "超时时间",
-                "重复次数"
-            ]
-        },
-        {
-            "name": "武器突破",
-            "entry": "武器突破",
-            "description": "武器突破本，调停。仅支持70、80级副本。",
-            "option": [
-                "武器突破等级",
-                "单次倍率",
-                "超时时间",
-                "重复次数"
-            ]
-        },
-        {
-            "name": "魔之楔本",
-            "entry": "魔之楔本",
-            "description": "魔之楔副本，驱离。非夜航手册。",
-            "option": [
-                "魔之楔本等级",
-                "单次倍率",
-                "超时时间",
-                "重复次数"
-            ]
-        },
-        {
-            "name": "深红凝珠",
-            "entry": "深红凝珠",
-            "description": "护送红豆本，护送。仅支持50、80级副本。",
-            "option": [
-                "深红凝珠等级",
-                "单次倍率",
-                "超时时间",
-                "重复次数"
-            ]
-        },
-        {
-            "name": "皎皎信物",
-            "entry": "皎皎信物",
-            "description": "皎皎技能本，扼守/无尽。仅支持50、80级副本，仅支持每一三波使用倍率书。",
-            "option": [
-                "皎皎信物等级",
-                "波次选择",
-                "皎皎信物倍率波次",
-                "超时时间",
-                "重复次数"
-            ]
-        },
-        {
-            "name": "夜航手册",
-            "entry": "夜航手册"
         }
     ],
     "option": {
+        "任务选择": {
+            "type": "select",
+            "cases": [
+                {
+                    "name": "委托任务",
+                    "description": "委托任务：角色经验、角色突破、武器经验、武器突破、魔之楔本、深红凝珠、皎皎信物；夜航手册。",
+                    "option": [
+                        "委托任务",
+                        "重复次数"
+                    ]
+                },
+                {
+                    "name": "夜航手册"
+                }
+            ]
+        },
+        "委托任务": {
+            "type": "select",
+            "label": "任务选择",
+            "cases": [
+                {
+                    "name": "角色经验",
+                    "description": "角色经验本，避险。仅支持50级副本。",
+                    "option": [
+                        "角色经验等级",
+                        "单次倍率",
+                        "超时时间"
+                    ],
+                    "pipeline_override": {
+                        "空任务层": {
+                            "next": [
+                                "角色经验"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "角色突破",
+                    "description": "角色突破本，探险/无尽。仅支持每一五波使用倍率书",
+                    "option": [
+                        "角色突破等级",
+                        "波次选择",
+                        "角色突破倍率波次",
+                        "单次倍率",
+                        "超时时间"
+                    ],
+                    "pipeline_override": {
+                        "空任务层": {
+                            "next": [
+                                "角色突破"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "武器经验",
+                    "description": "武器经验本，驱逐。仅支持50级副本。",
+                    "option": [
+                        "武器经验等级",
+                        "单次倍率",
+                        "超时时间"
+                    ],
+                    "pipeline_override": {
+                        "空任务层": {
+                            "next": [
+                                "武器经验"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "武器突破",
+                    "description": "武器突破本，调停。仅支持70、80级副本。",
+                    "option": [
+                        "武器突破等级",
+                        "单次倍率",
+                        "超时时间"
+                    ],
+                    "pipeline_override": {
+                        "空任务层": {
+                            "next": [
+                                "武器突破"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "魔之楔本",
+                    "description": "魔之楔副本，驱离。非夜航手册。",
+                    "option": [
+                        "魔之楔本等级",
+                        "单次倍率",
+                        "超时时间"
+                    ],
+                    "pipeline_override": {
+                        "空任务层": {
+                            "next": [
+                                "魔之楔本"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "深红凝珠",
+                    "description": "护送红豆本，护送。仅支持50、80级副本。",
+                    "option": [
+                        "深红凝珠等级",
+                        "单次倍率",
+                        "超时时间"
+                    ],
+                    "pipeline_override": {
+                        "空任务层": {
+                            "next": [
+                                "深红凝珠"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "皎皎信物",
+                    "description": "皎皎技能本，扼守/无尽。仅支持50、80级副本，仅支持每一三波使用倍率书。",
+                    "option": [
+                        "皎皎信物等级",
+                        "波次选择",
+                        "皎皎信物倍率波次",
+                        "单次倍率",
+                        "超时时间"
+                    ],
+                    "pipeline_override": {
+                        "空任务层": {
+                            "next": [
+                                "皎皎信物"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "夜航手册": {
+            "type": "select",
+            "cases": []
+        },
         "角色经验等级": {
             "type": "select",
+            "label": "等级选择",
             "description": "仅支持50级。",
             "cases": [
                 {
@@ -146,6 +223,7 @@
         },
         "角色突破等级": {
             "type": "select",
+            "label": "等级选择",
             "description": "仅支持50级。",
             "cases": [
                 {
@@ -155,6 +233,7 @@
         },
         "武器经验等级": {
             "type": "select",
+            "label": "等级选择",
             "description": "仅支持50级。",
             "cases": [
                 {
@@ -164,6 +243,7 @@
         },
         "武器突破等级": {
             "type": "select",
+            "label": "等级选择",
             "description": "仅支持50级。",
             "cases": [
                 {
@@ -173,6 +253,7 @@
         },
         "魔之楔本等级": {
             "type": "select",
+            "label": "等级选择",
             "description": "40、60、80、100。",
             "cases": [
                 {
@@ -206,6 +287,7 @@
         },
         "深红凝珠等级": {
             "type": "select",
+            "label": "等级选择",
             "description": "仅支持50级。",
             "cases": [
                 {
@@ -215,6 +297,7 @@
         },
         "皎皎信物等级": {
             "type": "select",
+            "label": "等级选择",
             "description": "仅支持50级。",
             "cases": [
                 {
@@ -222,104 +305,12 @@
                 }
             ]
         },
-        "任务选择": {
-            "type": "select",
-            "cases": [
-                {
-                    "name": "委托任务",
-                    "description": "委托任务：角色经验、角色突破、武器经验、武器突破、魔之楔本、深红凝珠、皎皎信物；夜航手册。",
-                    "option": [
-                        "委托任务",
-                        "重复次数"
-                    ]
-                },
-                {
-                    "name": "夜航手册"
-                }
-            ]
-        },
-        "委托任务": {
-            "type": "select",
-            "cases": [
-                {
-                    "name": "角色经验",
-                    "description": "角色经验本，避险。仅支持50级副本。",
-                    "option": [
-                        "等级选择",
-                        "单次倍率",
-                        "超时时间"
-                    ]
-                },
-                {
-                    "name": "角色突破",
-                    "description": "角色突破本，探险/无尽。仅支持每一五波使用倍率书",
-                    "option": [
-                        "等级选择",
-                        "波次选择",
-                        "探险波次",
-                        "倍率选择",
-                        "超时时间"
-                    ]
-                },
-                {
-                    "name": "武器经验",
-                    "description": "武器经验本，驱逐。仅支持50级副本。",
-                    "option": [
-                        "等级选择",
-                        "单次倍率",
-                        "超时时间"
-                    ]
-                },
-                {
-                    "name": "武器突破",
-                    "description": "武器突破本，调停。仅支持70、80级副本。",
-                    "option": [
-                        "等级选择",
-                        "单次倍率",
-                        "超时时间"
-                    ]
-                },
-                {
-                    "name": "魔之楔本",
-                    "description": "魔之楔副本，驱离。非夜航手册。",
-                    "option": [
-                        "等级选择",
-                        "单次倍率",
-                        "超时时间"
-                    ]
-                },
-                {
-                    "name": "深红凝珠",
-                    "description": "护送红豆本，护送。仅支持50、80级副本。",
-                    "option": [
-                        "等级选择",
-                        "单次倍率",
-                        "超时时间"
-                    ]
-                },
-                {
-                    "name": "皎皎信物",
-                    "description": "皎皎技能本，扼守/无尽。仅支持50、80级副本，仅支持每一三波使用倍率书。",
-                    "option": [
-                        "等级选择",
-                        "波次选择",
-                        "扼守波次",
-                        "单次倍率",
-                        "超时时间"
-                    ]
-                }
-            ]
-        },
-        "夜航手册": {
-            "type": "select",
-            "cases": []
-        },
         "重复次数": {
             "type": "select",
             "cases": [
                 {
-                    "name": "10000次",
-                    "description": "10000次约等于5000分钟等于83小时，适合挂机！"
+                    "name": "无限循环",
+                    "description": "该任务无限循环！"
                 },
                 {
                     "name": "1次",
@@ -414,10 +405,6 @@
                             "custom_action_param": {
                                 "count": 0,
                                 "target_count": 30,
-                                "else_node": [
-                                    "释放技能E",
-                                    "释放状态Q"
-                                ],
                                 "next_node": [
                                     "放弃委托"
                                 ]
@@ -433,10 +420,6 @@
                             "custom_action_param": {
                                 "count": 0,
                                 "target_count": 40,
-                                "else_node": [
-                                    "释放技能E",
-                                    "释放状态Q"
-                                ],
                                 "next_node": [
                                     "放弃委托"
                                 ]
@@ -452,10 +435,6 @@
                             "custom_action_param": {
                                 "count": 0,
                                 "target_count": 50,
-                                "else_node": [
-                                    "释放技能E",
-                                    "释放状态Q"
-                                ],
                                 "next_node": [
                                     "放弃委托"
                                 ]
@@ -471,10 +450,6 @@
                             "custom_action_param": {
                                 "count": 0,
                                 "target_count": 60,
-                                "else_node": [
-                                    "释放技能E",
-                                    "释放状态Q"
-                                ],
                                 "next_node": [
                                     "放弃委托"
                                 ]
@@ -490,10 +465,6 @@
                             "custom_action_param": {
                                 "count": 0,
                                 "target_count": 100,
-                                "else_node": [
-                                    "释放技能E",
-                                    "释放状态Q"
-                                ],
                                 "next_node": [
                                     "放弃委托"
                                 ]
@@ -505,6 +476,8 @@
         },
         "单次倍率": {
             "type": "select",
+            "label": "单次倍率选择",
+            "description": "可选无加成、绿书、蓝书、紫书、金书。",
             "cases": [
                 {
                     "name": "无加成"
@@ -514,6 +487,7 @@
                     "pipeline_override": {
                         "倍率选择": {
                             "recognition": {
+                                "type": "TemplateMatch",
                                 "param": {
                                     "template": [
                                         "委托手册/1绿书_图标.png"
@@ -534,6 +508,7 @@
                     "pipeline_override": {
                         "倍率选择": {
                             "recognition": {
+                                "type": "TemplateMatch",
                                 "param": {
                                     "template": [
                                         "委托手册/2蓝书_图标.png"
@@ -554,6 +529,7 @@
                     "pipeline_override": {
                         "倍率选择": {
                             "recognition": {
+                                "type": "TemplateMatch",
                                 "param": {
                                     "template": [
                                         "委托手册/8紫书_图标.png"
@@ -574,6 +550,7 @@
                     "pipeline_override": {
                         "倍率选择": {
                             "recognition": {
+                                "type": "TemplateMatch",
                                 "param": {
                                     "template": [
                                         "委托手册/20金书_图标.png"
@@ -604,6 +581,7 @@
         },
         "角色突破倍率波次": {
             "type": "select",
+            "label": "波次选择",
             "cases": [
                 {
                     "name": "每一波",
@@ -617,6 +595,7 @@
         },
         "皎皎信物倍率波次": {
             "type": "select",
+            "label": "波次选择",
             "cases": [
                 {
                     "name": "每一波",

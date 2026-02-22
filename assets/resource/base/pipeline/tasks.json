@@ -1,6 +1,9 @@
 {
     //任务总层
     //驱离Expulsion
+    "空任务层": {
+        //空任务，override任务进入层
+    },
     "夜航手册": {
         //驱离、扼守（2）、避险、驱逐
     },
@@ -105,7 +108,12 @@
                             "type": "OCR",
                             "param": {
                                 "expected": [
-                                    "放弃挑战"
+                                    "再次进行",
+                                    "放弃挑战",
+                                    "退出委托",
+                                    "再次",
+                                    "放弃",
+                                    "退出"
                                 ],
                                 "roi": [
                                     830,
@@ -124,8 +132,8 @@
             "param": {
                 "custom_action": "Count",
                 "custom_action_param": {
-                    "next_node": [
-                        "魔之楔本页面"
+                    "else_node": [
+                        "魔之楔本任务"
                     ]
                 }
             }
@@ -156,7 +164,11 @@
                     "开始挑战",
                     "再次进行",
                     "确认选择",
-                    "选择密函"
+                    "选择密函",
+                    "开始",
+                    "再次",
+                    "确认",
+                    "密函"
                 ],
                 "roi": [
                     830,
@@ -172,7 +184,7 @@
                 "custom_action": "Count",
                 "custom_action_param": {
                     "count": 0,
-                    "target_count": 10000,
+                    "target_count": 0,
                     "else_node": [
                         "确认选择"
                     ],
@@ -203,7 +215,7 @@
         "action": "Click"
     },
     "倍率选择": {
-        //option重写template，选择倍率书
+        // option重写template，选择倍率书
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -232,11 +244,10 @@
         "next": [
             "弹窗确定"
         ]
-    }, //根据技能次数判断关内时间
+    },
     "技能次数": {
         //option重写custom_action_parm
-        //每隔三秒释放一次，仅限水母E，赛琪、黎瑟、菲娜Q
-        //识别在副本中
+        //识别到在副本内
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -252,8 +263,6 @@
                 ]
             }
         },
-        //不识别静止
-        "post_wait_freezes": 0,
         "action": {
             "type": "Custom",
             "param": {
@@ -261,15 +270,21 @@
                 "custom_action_param": {
                     "count": 0,
                     "target_count": 20,
-                    "else_node": [
-                        "释放技能E",
-                        "释放状态Q"
-                    ],
                     "next_node": [
                         "放弃委托"
                     ]
                 }
             }
-        }
+        },
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        //空保证仅识别一次
+        "next": [
+            "释放技能E",
+            "释放状态Q",
+            "3s延时"
+        ]
     }
 }

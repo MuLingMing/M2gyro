@@ -27,9 +27,9 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f tools/activity_data/requirements.txt ]; then pip install -r tools/activity_data/requirements.txt; fi
       
-      - name: Run Activity Update Script
-        run: |
-          python tools/activity_data/main.py
+      # - name: Run Activity Update Script
+      #   run: |
+      #     python tools/activity_data/main.py
       
       - name: Commit and Push Changes
         run: |

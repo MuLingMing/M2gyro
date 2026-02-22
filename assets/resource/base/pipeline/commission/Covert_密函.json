@@ -1,10 +1,5 @@
 {
-    "结束当前任务": {
-        "action": "StopTask"
-    },
-    "启动游戏": {
-        //反转识别结果证明不在游戏内
-        "inverse": true,
+    "委托密函页面": {
         //识别"角色面板_图标"、"返回上一级"、"局内放弃"、"退出委托"证明在游戏内
         "recognition": {
             "type": "Or",
@@ -106,40 +101,9 @@
                 ]
             }
         },
-        "action": {
-            "type": "StartApp",
-            "param": {
-                "package": "com.hero.dna.gf"
-            }
-        },
-        "post_wait_freezes": 0,
         "next": [
-            "点击进入游戏",
-            "[JumpBack]返回上一级"
+            "委托-委托密函",
+            "[JumpBack]主页面-委托"
         ]
-    },
-    "退出游戏": {
-        "action": {
-            "type": "StopApp",
-            "param": {
-                "package": "com.hero.dna.gf"
-            }
-        },
-        "next": [
-            "启动游戏"
-        ]
-    },
-    "点击进入游戏": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "点击进入游戏",
-                    "点击",
-                    "游戏"
-                ]
-            }
-        },
-        "action": "Click"
     }
 }

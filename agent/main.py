@@ -476,6 +476,7 @@ def agent(is_dev_mode=False):
         from maa.toolkit import Toolkit
         
         import custom
+        import Agent_file
 
         Toolkit.init_option("./")
 
