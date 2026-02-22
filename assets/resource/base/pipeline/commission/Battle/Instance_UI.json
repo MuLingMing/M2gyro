@@ -151,10 +151,10 @@
             }
         },
         "next": [
-            "局内设置-复位",
-            "设置其他",
-            "复位角色",
             "弹窗确定",
+            "[JumpBack]复位角色",
+            "[JumpBack]设置其他",
+            "[JumpBack]局内设置-复位",
             "[JumpBack]局内放弃"
         ]
     },
@@ -327,10 +327,7 @@
                 ]
             }
         },
-        "action": "Click",
-        "next": [
-            "设置其他"
-        ]
+        "action": "Click"
     },
     "设置其他": {
         "recognition": {
@@ -348,10 +345,7 @@
                 ]
             }
         },
-        "action": "Click",
-        "next": [
-            "复位角色"
-        ]
+        "action": "Click"
     },
     "复位角色": {
         "recognition": {
@@ -368,10 +362,7 @@
                 ]
             }
         },
-        "action": "Click",
-        "next": [
-            "弹窗确定"
-        ]
+        "action": "Click"
     },
     "局内放弃-退出": {
         "recognition": {

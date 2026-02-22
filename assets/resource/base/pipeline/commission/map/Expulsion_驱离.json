@@ -78,5 +78,42 @@
             "副本完成",
             "[JumpBack]技能次数"
         ]
+    },
+    "复位副本": {
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            //"历练-委托识别到说明已经退出，结束循环"
+            "历练-委托",
+            "[JumpBack]重复次数",
+            "[JumpBack]复位一次"
+        ],
+        "on_error": [
+            "放弃委托"
+        ]
+    },
+    "复位一次": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "Count",
+                "custom_action_param": {
+                    "else_node": [
+                        "局内复位"
+                    ],
+                    "reset_node": [
+                        "技能次数"
+                    ]
+                }
+            }
+        },
+        "post_wait_freezes": 0,
+        "on_error": [],
+        "next": [
+            "副本完成",
+            "[JumpBack]技能次数"
+        ]
     }
 }

@@ -1052,5 +1052,19 @@
         "pre_wait_freezes": 0,
         "post_delay": 0,
         "post_wait_freezes": 0
+    },
+    "游戏内": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    "主页面-角色面板",
+                    "角色面板-历练",
+                    "返回上一级",
+                    "放弃委托",
+                    "放弃挑战"
+                ]
+            }
+        }
     }
 }

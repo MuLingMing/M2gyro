@@ -51,8 +51,8 @@
             "description": "必选用于启动游戏"
         },
         {
-            "name": "驱离",
-            "entry": "驱离",
+            "name": "复位副本",
+            "entry": "复位副本",
             "description": "测试用",
             "option": [
                 "单次倍率",
