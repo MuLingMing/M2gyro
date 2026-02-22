@@ -11,7 +11,7 @@
 from maa.context import Context
 from maa.custom_action import CustomAction
 import json
-from utils import logger
+from utils.logger import logger
 
 
 class Count(CustomAction):
@@ -163,3 +163,6 @@ class Count(CustomAction):
         # 两位数及以上的通用逻辑：是当前数量级的倍数
         else:
             return count % magnitude == 0
+
+    def _count_focus(self, context: Context, count: int, node: str):
+        pass

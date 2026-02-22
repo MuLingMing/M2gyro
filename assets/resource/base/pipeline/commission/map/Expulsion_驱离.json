@@ -83,7 +83,7 @@
         "pre_delay": 0,
         "pre_wait_freezes": 0,
         "post_delay": 0,
-        "post_wait_freezes": 0,
+        "post_wait_freezes": 200,
         "next": [
             //"历练-委托识别到说明已经退出，结束循环"
             "历练-委托",
@@ -95,11 +95,20 @@
         ]
     },
     "复位一次": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    "局内放弃"
+                ]
+            }
+        },
         "action": {
             "type": "Custom",
             "param": {
                 "custom_action": "Count",
                 "custom_action_param": {
+                    "logger": true,
                     "else_node": [
                         "局内复位"
                     ],
