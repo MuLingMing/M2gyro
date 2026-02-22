@@ -19,7 +19,7 @@ on:
 
 env:
   MAA_FRAMEWORK_VERSION: "v5.7.0"
-  MFAA_VERSION: "v2.7.2"
+  MFAA_VERSION: "v2.8.0"
   # MAA_FRAMEWORK_VERSION: "v5.3.3"
   # MFAA_VERSION: "v2.5.6"
 

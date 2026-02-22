@@ -64,7 +64,7 @@ def install_resource():
         interface = json.load(f)
 
     interface["version"] = version
-    interface["custom_title"] = f"M2gyro 两个陀螺猛猛抽 | {version}"
+    interface["custom_title"] = f"M2gyro 两个陀螺 | {version}"
 
     with open(install_path / "interface.json", "w", encoding="utf-8") as f:
         json.dump(interface, f, ensure_ascii=False, indent=4)
@@ -91,25 +91,20 @@ def load_json_with_comment_and_quote(file_path, encoding="utf-8"):
     # 2. 保护常见 URL 模式，避免将 URL 中的 // 误判为注释起始
     mask = "::COLON_SLASH::"
     content = content.replace('://', mask)
-
     # 3. 正则清理：删除 /*  */ 包裹的多行注释
     content = re.sub(r"/\*[\s\S]*?\*/", "", content)
     # 4. 正则清理：删除 // 开头的单行注释（现在不会影响 URL）
     content = re.sub(r"//.*", "", content)
     # 5. 正则清理：删除 # 开头的Python风格注释
     content = re.sub(r"#.*", "", content)
-
     # 6. 将单引号替换为双引号（注意：此替换仍然是简单替换，
     #    若文件中大量使用单引号作为字符串边界且包含复杂转义，
     #    更强健的解析器会更安全。）
     content = re.sub(r"'", '"', content)
-
     # 7. 清理多余空行和首尾空格
     content = "\n".join([line.strip() for line in content.splitlines() if line.strip()])
-
     # 8. 恢复被掩码的 URL
     content = content.replace(mask, '://')
-
     # 9. 用原生json解析处理后的纯净内容
     return json.loads(content)
 
