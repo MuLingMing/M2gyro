@@ -127,9 +127,9 @@ class Count(CustomAction):
             context.override_pipeline(
                 {node: {"custom_action_param": node_custom_action_param}}
             )
-            if reset_count == 0:
-                print(f'"{node}"节点已重置count为{reset_count}！')
-
+            
+            # if reset_count == 0:
+            #     print(f'"{node}"节点已重置count为{reset_count}！')
             # node_custom_action_param_check = (
             #     context.get_node_data(node)
             #     .get("action", {})

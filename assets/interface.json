@@ -18,16 +18,16 @@
     ],
     "resource": [
         {
-            "name": "安卓本地游戏",
-            "path": [
-                "./resource/base"
-            ]
-        },
-        {
             "name": "安卓云游戏",
             "path": [
                 "./resource/base",
                 "./resource/yun"
+            ]
+        },
+        {
+            "name": "安卓本地游戏",
+            "path": [
+                "./resource/base"
             ]
         },
         {
