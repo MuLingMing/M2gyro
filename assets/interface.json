@@ -7,6 +7,8 @@
     "welcome": "首次使用！欢迎使用 M2gyro!",
     "github": "https://github.com/MuLingMing/M2gyro",
     "version": "0.2.0",
+    "mirrorchyan_multiplatform": false,
+    "icon": "./assets/logo.ico",
     "controller": [
         {
             "name": "安卓端",

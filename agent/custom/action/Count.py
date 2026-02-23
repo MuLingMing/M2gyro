@@ -11,7 +11,7 @@
 from maa.context import Context
 from maa.custom_action import CustomAction
 import json
-from utils import logger
+from utils.logger import logger
 
 
 class Count(CustomAction):
@@ -57,7 +57,8 @@ class Count(CustomAction):
         logger_flag = argv_dict.get("logger", False)
 
         # 重设reset_node的count为0
-        self._reset_nodes(context=context, nodes=reset_node, reset_count=0)
+        if reset_node:
+            self._reset_nodes(context=context, nodes=reset_node, reset_count=0)
 
         # target_count=0时，action运行else_node
         # 使得option修改target_count逻辑相同
@@ -111,17 +112,13 @@ class Count(CustomAction):
             node_data = context.get_node_data(node)
             # get_node_data返回值为node_data:{"action":{"param":{"custom_action_param"}}}
             node_action_param = node_data.get("action", {}).get("param", {})
-
             if (
                 not node_action_param.get("custom_action", "")
             ) or node_action_param.get("custom_action", "") != "Count":
                 return
 
             node_custom_action_param = node_action_param.get("custom_action_param", {})
-
             if not node_custom_action_param:
-                return
-            if not node_custom_action_param.get("count", ""):
                 return
 
             # 直接修改node_custom_action_param防止漏掉或新增参数
@@ -131,16 +128,15 @@ class Count(CustomAction):
                 {node: {"custom_action_param": node_custom_action_param}}
             )
             if reset_count == 0:
-                logger.info(f'"{node}"节点已重置count为{reset_count}！')
+                print(f'"{node}"节点已重置count为{reset_count}！')
 
-            # if reset_count == 0:
-            #     node_custom_action_param_check = (
-            #         context.get_node_data(node)
-            #         .get("action", {})
-            #         .get("param", {})
-            #         .get("custom_action_param", {})
-            #     )
-            #     print(f"重设节点{node}内容检查为{node_custom_action_param_check}")
+            # node_custom_action_param_check = (
+            #     context.get_node_data(node)
+            #     .get("action", {})
+            #     .get("param", {})
+            #     .get("custom_action_param", {})
+            # )
+            # print(f"重设节点{node}内容检查为{node_custom_action_param_check}")
 
     def _magnitude(self, count: int) -> bool:
         """
