@@ -77,8 +77,8 @@
                             "type": "TemplateMatch",
                             "param": {
                                 "template": [
-                                    "页面/放弃挑战_云地图图标.png",
-                                    "页面/放弃挑战_安卓地图图标.png"
+                                    "页面切换/放弃挑战_云地图图标.png",
+                                    "页面切换/放弃挑战_安卓地图图标.png"
                                 ],
                                 "roi": [
                                     0,
@@ -99,7 +99,7 @@
                                             "type": "TemplateMatch",
                                             "param": {
                                                 "template": [
-                                                    "页面/放弃挑战_设置图标.png"
+                                                    "页面切换/放弃挑战_设置图标.png"
                                                 ],
                                                 "roi": [
                                                     710,
@@ -170,8 +170,8 @@
                             "type": "TemplateMatch",
                             "param": {
                                 "template": [
-                                    "页面/放弃挑战_云地图图标.png",
-                                    "页面/放弃挑战_安卓地图图标.png"
+                                    "页面切换/放弃挑战_云地图图标.png",
+                                    "页面切换/放弃挑战_安卓地图图标.png"
                                 ],
                                 "roi": [
                                     0,
@@ -192,7 +192,7 @@
                                             "type": "TemplateMatch",
                                             "param": {
                                                 "template": [
-                                                    "页面/放弃挑战_设置图标.png"
+                                                    "页面切换/放弃挑战_设置图标.png"
                                                 ],
                                                 "roi": [
                                                     710,
@@ -274,8 +274,8 @@
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "页面/放弃挑战_云地图图标.png",
-                    "页面/放弃挑战_安卓地图图标.png"
+                    "页面切换/放弃挑战_云地图图标.png",
+                    "页面切换/放弃挑战_安卓地图图标.png"
                 ],
                 "roi": [
                     0,
@@ -313,7 +313,7 @@
                             "type": "TemplateMatch",
                             "param": {
                                 "template": [
-                                    "页面/设置_图标.png"
+                                    "页面切换/设置_图标.png"
                                 ],
                                 "roi": [
                                     710,
@@ -334,8 +334,8 @@
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "页面/设置-其他_图标.png",
-                    "页面/设置-其他_图标已选中.png"
+                    "页面切换/设置-其他_图标.png",
+                    "页面切换/设置-其他_图标已选中.png"
                 ],
                 "roi": [
                     0,
@@ -374,7 +374,7 @@
                             "type": "TemplateMatch",
                             "param": {
                                 "template": [
-                                    "页面/放弃挑战_设置图标.png"
+                                    "页面切换/放弃挑战_设置图标.png"
                                 ],
                                 "roi": [
                                     710,

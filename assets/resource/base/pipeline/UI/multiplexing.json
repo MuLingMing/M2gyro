@@ -1,0 +1,178 @@
+{
+    //记录可复用的识别模板
+    "返回上一级": {
+        //识别左上角返回或弹窗红叉或弹窗取消
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    "返回键匹配识别",
+                    "弹窗关闭匹配识别",
+                    "弹窗取消文字识别"
+                ]
+            }
+        },
+        "action": "Click"
+    },
+    "弹窗确定": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "开始挑战",
+                    "确定",
+                    "我知道了",
+                    "开始"
+                ],
+                "roi": [
+                    165,
+                    110,
+                    950,
+                    480
+                ]
+            }
+        },
+        "action": "Click"
+    },
+    "空": {
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0
+    },
+    "游戏内": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    "主页面-角色面板",
+                    "角色面板-历练",
+                    "返回上一级",
+                    "放弃委托",
+                    "放弃挑战"
+                ]
+            }
+        }
+    },
+    "主页面匹配识别": {
+        //主页面的角色面板图标
+        //判断在主页面
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "页面切换/主页面/角色面板/图标/",
+                "roi": [
+                    0,
+                    0,
+                    100,
+                    75
+                ]
+            }
+        }
+    },
+    "角色面板匹配识别": {
+        //角色面板-历练图标
+        //判断在角色面板
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": {
+                    "recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "template": "页面切换/主页面/角色面板/历练/",
+                            "roi": [
+                                20,
+                                285,
+                                480,
+                                410
+                            ]
+                        }
+                    }
+                },
+                "recognition": {
+                    "type": "OCR",
+                    "param": {
+                        "expected": "历练",
+                        "roi": [
+                            20,
+                            285,
+                            480,
+                            410
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "返回键匹配识别": {
+        //左上角的红色返回键
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面切换/主页面/返回/图标/"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    180,
+                    100
+                ]
+            }
+        }
+    },
+    "弹窗关闭匹配识别": {
+        //弹窗右上角的红叉
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面切换/主页面/弹窗关闭/图标/"
+                ],
+                "roi": [
+                    165,
+                    110,
+                    950,
+                    480
+                ]
+            }
+        }
+    },
+    "弹窗取消文字识别": {
+        //弹窗取消文字：放弃、取消
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "放弃",
+                    "取消"
+                ],
+                "roi": [
+                    165,
+                    110,
+                    950,
+                    480
+                ]
+            }
+        }
+    },
+    "局内放弃匹配识别": {
+        //副本内左上角离开副本图标
+        //判断在副本内
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "页面切换/局内退出_图标/离开副本_图标/"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    100,
+                    75
+                ]
+            }
+        }
+    }
+}
