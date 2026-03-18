@@ -127,7 +127,7 @@ class Count(CustomAction):
             context.override_pipeline(
                 {node: {"custom_action_param": node_custom_action_param}}
             )
-            
+
             # if reset_count == 0:
             #     print(f'"{node}"节点已重置count为{reset_count}！')
             # node_custom_action_param_check = (
@@ -140,6 +140,7 @@ class Count(CustomAction):
 
     def _magnitude(self, count: int) -> bool:
         """
+        修改为每50次计数
         判断count是否需要输出print：
         - 1-9：第1次、第5次输出
         - 10-99：10、20、30…输出
@@ -149,6 +150,7 @@ class Count(CustomAction):
         if count <= 0:  # 非正整数不输出
             return False
 
+        return count % 50 == 0 or count == 1 or count == 10
         # 计算count的数量级（科学计数法10^n）：如count=5→1，count=50→10，count=500→100
         count_str = str(count)
         magnitude = 10 ** (len(count_str) - 1)  # 当前数量级（0~9*10^n）
