@@ -5,7 +5,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "战斗/角色/水母E.png"
+                    "副本/角色/水母E.png"
                 ]
             }
         },
@@ -19,9 +19,9 @@
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "战斗/角色/菲娜Q.png",
-                    "战斗/角色/赛琪Q.png",
-                    "战斗/角色/黎瑟Q.png"
+                    "副本/角色/菲娜Q.png",
+                    "副本/角色/赛琪Q.png",
+                    "副本/角色/黎瑟Q.png"
                 ]
             }
         },
@@ -39,7 +39,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "战斗/角色/持续技能蓝耗0.png"
+                    "副本/角色/持续技能蓝耗0.png"
                 ],
                 // "roi": [
                 //     850,

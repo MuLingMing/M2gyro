@@ -27,12 +27,13 @@
         ]
     },
     "主页面-委托": {
+        //历练-委托页面
         "next": [
+            "[JumpBack]主页面-历练",
             "[JumpBack]主页面-角色面板",
             "[JumpBack]角色面板-历练",
             "历练-委托",
-            "[JumpBack]返回上一级",
-            "[JumpBack]放弃挑战"
+            "[JumpBack]返回上一级"
         ]
     },
     "主页面-歧路足音": {
@@ -49,13 +50,31 @@
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "页面切换/主页面/角色面板/图标/"
+                    "主页面/角色面板/图标/"
                 ],
                 "roi": [
                     0,
                     0,
                     100,
                     75
+                ]
+            }
+        },
+        "action": "Click"
+    },
+    "主页面-历练": {
+        //从主页面识别历练图标
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "主页面/历练/图标/"
+                ],
+                "roi": [
+                    1090,
+                    0,
+                    190,
+                    80
                 ]
             }
         },
@@ -69,7 +88,7 @@
                 "recognition": {
                     "type": "TemplateMatch",
                     "param": {
-                        "template": "页面切换/主页面/角色面板/历练/图标/",
+                        "template": "主页面/角色面板/历练/图标/",
                         "roi": [
                             20,
                             285,
@@ -103,7 +122,7 @@
                 "recognition": {
                     "type": "TemplateMatch",
                     "param": {
-                        "template": "页面切换/主页面/角色面板/铸造/图标/",
+                        "template": "主页面/角色面板/铸造/图标/",
                         "roi": [
                             20,
                             285,
@@ -137,7 +156,7 @@
                 "recognition": {
                     "type": "TemplateMatch",
                     "param": {
-                        "template": "页面切换/主页面/角色面板/地图/图标/",
+                        "template": "主页面/角色面板/地图/图标/",
                         "roi": [
                             20,
                             285,
@@ -169,7 +188,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "页面切换/主页面/角色面板/时间/图标/"
+                    "主页面/角色面板/时间/图标/"
                 ],
                 "roi": [
                     20,
@@ -186,7 +205,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "页面切换/主页面/角色面板/历练/委托/图标/"
+                    "主页面/历练/委托/图标/"
                 ],
                 "roi": [
                     0,
@@ -240,7 +259,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "页面切换/主页面/角色面板/历练/歧路足音/图标/"
+                    "主页面/历练/歧路足音/图标/"
                 ],
                 "roi": [
                     0,
@@ -261,7 +280,7 @@
                     "type": "TemplateMatch",
                     "param": {
                         "template": [
-                            "页面切换/主页面/角色面板/历练/歧路足音/迷津/图标/"
+                            "主页面/历练/歧路足音/迷津/图标/"
                         ],
                         "roi": [
                             400,
@@ -300,7 +319,7 @@
                     "type": "TemplateMatch",
                     "param": {
                         "template": [
-                            "页面切换/主页面/角色面板/历练/歧路足音/戏剧/图标/"
+                            "主页面/历练/歧路足音/戏剧/图标/"
                         ],
                         "roi": [
                             400,

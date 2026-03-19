@@ -1,7 +1,4 @@
 {
-    "结束当前任务": {
-        "action": "StopTask"
-    },
     "启动游戏": {
         "action": {
             "type": "StartApp",

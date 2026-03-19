@@ -1,5 +1,5 @@
 {
-    //记录可复用的识别模板
+    //记录可复用的节点
     "返回上一级": {
         //识别左上角返回或弹窗红叉或弹窗取消
         "recognition": {
@@ -34,6 +34,9 @@
         },
         "action": "Click"
     },
+    "结束当前任务": {
+        "action": "StopTask"
+    },
     "空": {
         "pre_delay": 0,
         "pre_wait_freezes": 0,
@@ -60,7 +63,7 @@
         "recognition": {
             "type": "TemplateMatch",
             "param": {
-                "template": "页面切换/主页面/角色面板/图标/",
+                "template": "主页面/角色面板/图标/",
                 "roi": [
                     0,
                     0,
@@ -80,7 +83,7 @@
                     "recognition": {
                         "type": "TemplateMatch",
                         "param": {
-                            "template": "页面切换/主页面/角色面板/历练/",
+                            "template": "主页面/角色面板/历练/",
                             "roi": [
                                 20,
                                 285,
@@ -111,7 +114,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "页面切换/主页面/返回/图标/"
+                    "主页面/返回/图标/"
                 ],
                 "roi": [
                     0,
@@ -128,7 +131,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "页面切换/主页面/弹窗关闭/图标/"
+                    "主页面/弹窗关闭/图标/"
                 ],
                 "roi": [
                     165,
@@ -164,7 +167,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "页面切换/局内退出_图标/离开副本_图标/"
+                    "副本/副本退出/离开副本/"
                 ],
                 "roi": [
                     0,
