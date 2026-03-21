@@ -98,32 +98,36 @@
         "recognition": {
             "type": "Or",
             "param": {
-                "any_of": {
-                    "recognition": {
-                        "type": "TemplateMatch",
-                        "param": {
-                            "template": "主页面/角色面板/历练/",
-                            "roi": [
-                                20,
-                                285,
-                                480,
-                                410
-                            ]
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": "主页面/角色面板/历练/图标",
+                                "roi": [
+                                    20,
+                                    285,
+                                    480,
+                                    410
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": "历练",
+                                "roi": [
+                                    20,
+                                    285,
+                                    480,
+                                    410
+                                ]
+                            }
                         }
                     }
-                },
-                "recognition": {
-                    "type": "OCR",
-                    "param": {
-                        "expected": "历练",
-                        "roi": [
-                            20,
-                            285,
-                            480,
-                            410
-                        ]
-                    }
-                }
+                ]
             }
         }
     },
