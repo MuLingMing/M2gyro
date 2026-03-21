@@ -22,9 +22,11 @@
     "魔之楔本": {
         //任务entry启动层
         //驱离
+        //未识别到"驱离"证明不在副本页面，导航到副本
+        "anthor": "任务开始层",
         "next": [
             "驱离",
-            "[JumpBack]魔之楔本副本"
+            "[JumpBack]魔之楔本页面"
         ]
     },
     "深红凝珠": {
@@ -40,8 +42,8 @@
     "戏剧任务": {},
     "铸造任务": {},
     "钓鱼任务": {},
-    "重复次数": {
-        //"重复次数"option重写"custom_action_param"
+    "副本次数": {
+        //"副本次数"option重写"custom_action_param"
         "recognition": {
             "type": "OCR",
             "param": {
@@ -71,7 +73,8 @@
                     "count": 0,
                     "target_count": 0,
                     "else_node": [
-                        "确认选择"
+                        "确认选择",
+                        "倍率选择/密函选择"
                     ],
                     "next_node": [
                         "放弃委托",
@@ -81,6 +84,7 @@
             }
         }
     },
+    "波次选择": {},
     "委托等级识别": {
         //option重写expected
         "recognition": {

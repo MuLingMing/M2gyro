@@ -1,11 +1,7 @@
 {
     //驱离
     "驱离": {
-        "pre_delay": 0,
-        "pre_wait_freezes": 0,
-        "post_delay": 0,
-        "post_wait_freezes": 0,
-        //识别到"驱离"证明在副本中
+        //识别到"驱离"证明在副本页面或者副本中
         "recognition": {
             "type": "OCR",
             "param": {
@@ -21,14 +17,14 @@
             }
         },
         "next": [
-            "[JumpBack]重复次数",
-            "[JumpBack]驱离副本"
+            "[JumpBack]副本次数",
+            "[JumpBack]驱离复位"
         ],
         "on_error": [
             "放弃委托"
         ]
     },
-    "驱离副本": {
+    "驱离复位": {
         //复位大法，不分地图
         //已驱逐敌人：0/，保证只进行一次
         "recognition": {
@@ -75,7 +71,7 @@
         "post_delay": 0,
         "post_wait_freezes": 0,
         "next": [
-            "[JumpBack]重复次数",
+            "[JumpBack]副本次数",
             "[JumpBack]复位一次"
         ]
     },

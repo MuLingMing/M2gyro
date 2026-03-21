@@ -53,13 +53,13 @@
             "description": "必选用于启动游戏"
         },
         {
-            "name": "复位副本",
-            "entry": "复位副本",
+            "name": "驱离测试",
+            "entry": "驱离",
             "description": "测试用",
             "option": [
                 "单次倍率",
                 "超时时间",
-                "重复次数"
+                "倍率书副本次数"
             ]
         },
         {
@@ -79,7 +79,7 @@
                     "description": "委托任务：角色经验、角色突破、武器经验、武器突破、魔之楔本、深红凝珠、皎皎信物；夜航手册。",
                     "option": [
                         "委托任务",
-                        "重复次数"
+                        "倍率书副本次数"
                     ]
                 },
                 {
@@ -307,7 +307,8 @@
                 }
             ]
         },
-        "重复次数": {
+        "倍率书副本次数": {
+            "label": "副本次数",
             "type": "select",
             "cases": [
                 {
@@ -318,12 +319,13 @@
                     "name": "1次",
                     "description": "虽然我也不知道1次有什么用，不过先放着吧。",
                     "pipeline_override": {
-                        "重复次数": {
+                        "副本次数": {
                             "custom_action_param": {
                                 "count": 0,
                                 "target_count": 1,
                                 "else_node": [
-                                    "确认选择"
+                                    "确认选择",
+                                    "倍率选择"
                                 ],
                                 "next_node": [
                                     "放弃委托",
@@ -337,12 +339,13 @@
                     "name": "15次",
                     "description": "15次，足够掉落一个主产物了。",
                     "pipeline_override": {
-                        "重复次数": {
+                        "副本次数": {
                             "custom_action_param": {
                                 "count": 0,
                                 "target_count": 15,
                                 "else_node": [
-                                    "确认选择"
+                                    "确认选择",
+                                    "倍率选择"
                                 ],
                                 "next_node": [
                                     "放弃委托",
@@ -356,12 +359,13 @@
                     "name": "60次",
                     "description": "60次能掉5个，够合金了。",
                     "pipeline_override": {
-                        "重复次数": {
+                        "副本次数": {
                             "custom_action_param": {
                                 "count": 0,
                                 "target_count": 60,
                                 "else_node": [
-                                    "确认选择"
+                                    "确认选择",
+                                    "倍率选择"
                                 ],
                                 "next_node": [
                                     "放弃委托",
@@ -375,12 +379,13 @@
                     "name": "120次",
                     "description": "120次能掉10个，更适合新版本宝宝体质。",
                     "pipeline_override": {
-                        "重复次数": {
+                        "副本次数": {
                             "custom_action_param": {
                                 "count": 0,
                                 "target_count": 120,
                                 "else_node": [
-                                    "确认选择"
+                                    "确认选择",
+                                    "倍率选择"
                                 ],
                                 "next_node": [
                                     "放弃委托",

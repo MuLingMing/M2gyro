@@ -1,419 +1,168 @@
 {
-    "角色经验副本": {
-        "next": [
-            "倍率选择",
-            "确认选择",
-            "[JumpBack]角色经验页面"
-        ]
-    },
-    "武器经验副本": {
-        "next": [
-            "倍率选择",
-            "确认选择",
-            "[JumpBack]武器经验页面"
-        ]
-    },
-    "武器突破副本": {
-        "next": [
-            "倍率选择",
-            "确认选择",
-            "[JumpBack]武器突破页面"
-        ]
-    },
-    "深红凝珠副本": {
-        "next": [
-            "倍率选择",
-            "确认选择",
-            "[JumpBack]深红凝珠页面"
-        ]
-    },
-    "魔之楔本副本": {
-        //进入魔之楔副本
-        "next": [
-            "倍率选择",
-            "[JumpBack]确认选择",
-            "[JumpBack]魔之楔本页面"
-        ]
-    },
-    "角色突破副本": {
-        "next": [
-            "倍率选择",
-            "确认选择",
-            "[JumpBack]角色突破页面"
-        ]
-    },
-    "皎皎信物副本": {
-        "next": [
-            "倍率选择",
-            "确认选择",
-            "[JumpBack]皎皎信物页面"
-        ]
-    },
     "角色经验页面": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "else_node": [
-                        "委托页面",
-                        "委托-角色经验"
-                    ]
-                }
-            }
-        }
-    },
-    "武器经验页面": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "else_node": [
-                        "委托页面",
-                        "委托-武器经验"
-                    ]
-                }
-            }
-        }
-    },
-    "武器突破页面": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "else_node": [
-                        "委托页面",
-                        "委托-武器突破"
-                    ]
-                }
-            }
-        }
-    },
-    "深红凝珠页面": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "else_node": [
-                        "委托页面",
-                        "委托-深红凝珠"
-                    ]
-                }
-            }
-        }
-    },
-    "魔之楔本页面": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "else_node": [
-                        "委托页面",
-                        "委托-魔之楔本"
-                    ]
-                }
-            }
-        }
-    },
-    "角色突破页面": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "else_node": [
-                        "委托页面",
-                        "委托-角色突破"
-                    ]
-                }
-            }
-        }
-    },
-    "皎皎信物页面": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "else_node": [
-                        "委托页面",
-                        "委托-皎皎信物"
-                    ]
-                }
-            }
-        }
-    },
-    "委托-角色经验": {
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
         "next": [
             "角色经验识别",
-            "[JumpBack]委托-向右"
-        ]
-    },
-    "委托-武器经验": {
-        "next": [
-            "武器经验识别",
-            "[JumpBack]委托-向右"
-        ]
-    },
-    "委托-武器突破": {
-        "next": [
-            "武器突破识别",
-            "[JumpBack]委托-向右"
-        ]
-    },
-    "委托-深红凝珠": {
-        "next": [
-            "深红凝珠识别",
-            "[JumpBack]委托-向右"
-        ]
-    },
-    "委托-魔之楔本": {
-        "next": [
-            "魔之楔本识别",
-            "[JumpBack]委托-向右"
-        ]
-    },
-    "委托-角色突破": {
-        "next": [
-            "角色突破识别",
-            "[JumpBack]委托-向右"
-        ]
-    },
-    "委托-皎皎信物": {
-        "next": [
-            "皎皎信物识别",
-            "[JumpBack]委托-向右"
+            "[JumpBack]委托-向右",
+            "[JumpBack]委托页面"
         ]
     },
     "角色经验识别": {
         //角色经验or避险
         "recognition": {
-            "type": "Or",
+            "type": "OCR",
             "param": {
-                "any_of": [
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "角色经验"
-                                ],
-                                "roi": [
-                                    425,
-                                    500,
-                                    855,
-                                    190
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "避险"
-                                ],
-                                "roi": [
-                                    425,
-                                    500,
-                                    855,
-                                    190
-                                ]
-                            }
-                        }
-                    }
+                "expected": [
+                    "角色经验",
+                    "色经",
+                    "避险"
+                ],
+                "roi": [
+                    425,
+                    500,
+                    855,
+                    190
                 ]
             }
         },
         "action": "Click",
         "next": [
             "委托等级识别"
+        ]
+    },
+    "武器经验页面": {
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "武器经验识别",
+            "[JumpBack]委托-向右",
+            "[JumpBack]委托页面"
         ]
     },
     "武器经验识别": {
         //武器经验or驱逐
         "recognition": {
-            "type": "Or",
+            "type": "OCR",
             "param": {
-                "any_of": [
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "武器经验"
-                                ],
-                                "roi": [
-                                    425,
-                                    500,
-                                    855,
-                                    190
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "驱逐"
-                                ],
-                                "roi": [
-                                    425,
-                                    500,
-                                    855,
-                                    190
-                                ]
-                            }
-                        }
-                    }
+                "expected": [
+                    "武器经验",
+                    "器经",
+                    "驱逐"
+                ],
+                "roi": [
+                    425,
+                    500,
+                    855,
+                    190
                 ]
             }
         },
         "action": "Click",
         "next": [
             "委托等级识别"
+        ]
+    },
+    "武器突破页面": {
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "武器突破识别",
+            "[JumpBack]委托-向右",
+            "[JumpBack]委托页面"
         ]
     },
     "武器突破识别": {
         //武器突破or调停
         "recognition": {
-            "type": "Or",
+            "type": "OCR",
             "param": {
-                "any_of": [
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "武器突破"
-                                ],
-                                "roi": [
-                                    425,
-                                    500,
-                                    855,
-                                    190
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "调停"
-                                ],
-                                "roi": [
-                                    425,
-                                    500,
-                                    855,
-                                    190
-                                ]
-                            }
-                        }
-                    }
+                "expected": [
+                    "武器突破",
+                    "器突",
+                    "调停"
+                ],
+                "roi": [
+                    425,
+                    500,
+                    855,
+                    190
                 ]
             }
         },
         "action": "Click",
         "next": [
             "委托等级识别"
+        ]
+    },
+    "深红凝珠页面": {
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "深红凝珠识别",
+            "[JumpBack]委托-向右",
+            "[JumpBack]委托页面"
         ]
     },
     "深红凝珠识别": {
         //深红凝珠or护送
         "recognition": {
-            "type": "Or",
+            "type": "OCR",
             "param": {
-                "any_of": [
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "深红凝珠",
-                                    "深红",
-                                    "凝珠"
-                                ],
-                                "roi": [
-                                    425,
-                                    500,
-                                    855,
-                                    190
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "护送"
-                                ],
-                                "roi": [
-                                    425,
-                                    500,
-                                    855,
-                                    190
-                                ]
-                            }
-                        }
-                    }
+                "expected": [
+                    "深红凝珠",
+                    "深红",
+                    "凝珠",
+                    "护送"
+                ],
+                "roi": [
+                    425,
+                    500,
+                    855,
+                    190
                 ]
             }
         },
         "action": "Click",
         "next": [
             "委托等级识别"
+        ]
+    },
+    "魔之楔本页面": {
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "魔之楔本识别",
+            "[JumpBack]委托-向右",
+            "[JumpBack]委托页面"
         ]
     },
     "魔之楔本识别": {
         //魔之楔or驱离
         "recognition": {
-            "type": "Or",
+            "type": "OCR",
             "param": {
-                "any_of": [
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "魔之楔",
-                                    "魔之"
-                                ],
-                                "roi": [
-                                    425,
-                                    500,
-                                    855,
-                                    190
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "驱离"
-                                ],
-                                "roi": [
-                                    425,
-                                    500,
-                                    855,
-                                    190
-                                ]
-                            }
-                        }
-                    }
+                "expected": [
+                    "魔之楔",
+                    "魔之",
+                    "之楔",
+                    "驱离"
+                ],
+                "roi": [
+                    425,
+                    500,
+                    855,
+                    190
                 ]
             }
         },
@@ -422,50 +171,49 @@
             "委托等级识别"
         ]
     },
+    "角色突破页面": {
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "角色突破识别",
+            "[JumpBack]委托-向右",
+            "[JumpBack]委托页面"
+        ]
+    },
     "角色突破识别": {
         //角色突破or探险
         "recognition": {
-            "type": "Or",
+            "type": "OCR",
             "param": {
-                "any_of": [
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "角色突破"
-                                ],
-                                "roi": [
-                                    425,
-                                    500,
-                                    855,
-                                    190
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "探险"
-                                ],
-                                "roi": [
-                                    425,
-                                    500,
-                                    855,
-                                    190
-                                ]
-                            }
-                        }
-                    }
+                "expected": [
+                    "角色突破",
+                    "色突",
+                    "探险"
+                ],
+                "roi": [
+                    425,
+                    500,
+                    855,
+                    190
                 ]
             }
         },
         "action": "Click",
         "next": [
             "委托等级识别"
+        ]
+    },
+    "皎皎信物页面": {
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "皎皎信物识别",
+            "[JumpBack]委托-向右",
+            "[JumpBack]委托页面"
         ]
     },
     "皎皎信物识别": {
@@ -490,6 +238,24 @@
         ]
     },
     "委托-向右": {
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    "角色经验识别",
+                    "武器经验识别",
+                    "武器突破识别",
+                    "深红凝珠识别",
+                    "魔之楔本识别",
+                    "角色突破识别",
+                    "皎皎信物识别"
+                ]
+            }
+        },
         "action": {
             "type": "Swipe",
             "param": {
@@ -506,6 +272,10 @@
     },
     "委托页面": {
         //导航到委托页面
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
         "next": [
             "委托-委托",
             "[JumpBack]主页面-委托",
@@ -556,6 +326,10 @@
         ]
     },
     "委托-向左三次": {
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
         "action": {
             "type": "Swipe",
             "param": {
