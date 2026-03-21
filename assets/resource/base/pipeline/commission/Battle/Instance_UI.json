@@ -69,17 +69,6 @@
             "倍率选择"
         ]
     },
-    "局内复位": {
-        "post_wait_freezes": 0,
-        //无法点击则重来
-        "next": [
-            "弹窗取消",
-            "[JumpBack]复位角色",
-            "[JumpBack]设置其他",
-            "[JumpBack]局内设置-复位",
-            "[JumpBack]离开副本"
-        ]
-    },
     "放弃委托": {
         //局内放弃委托
         "next": [
@@ -124,86 +113,6 @@
             }
         },
         "action": "Click"
-    },
-    "局内设置-复位": {
-        "recognition": {
-            "type": "Or",
-            "param": {
-                "any_of": [
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "设置"
-                                ],
-                                "roi": [
-                                    710,
-                                    540,
-                                    570,
-                                    180
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "TemplateMatch",
-                            "param": {
-                                "template": [
-                                    "页面切换/设置_图标.png"
-                                ],
-                                "roi": [
-                                    710,
-                                    540,
-                                    570,
-                                    180
-                                ]
-                            }
-                        }
-                    }
-                ]
-            }
-        },
-        "action": "Click"
-    },
-    "设置其他": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "页面切换/设置-其他_图标.png",
-                    "页面切换/设置-其他_图标已选中.png"
-                ],
-                "roi": [
-                    0,
-                    350,
-                    150,
-                    100
-                ]
-            }
-        },
-        "action": "Click"
-    },
-    "复位角色": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "复位角色"
-                ],
-                "roi": [
-                    930,
-                    150,
-                    320,
-                    165
-                ]
-            }
-        },
-        "action": "Click",
-        "next": [
-            "弹窗确定"
-        ]
     },
     "局内放弃-退出": {
         "recognition": {
