@@ -40,10 +40,7 @@
                 ]
             }
         },
-        "action": "Click",
-        "next": [
-            "倍率选择"
-        ]
+        "action": "Click"
     },
     "下一波次": {
         "recognition": {
@@ -67,186 +64,21 @@
     },
     "局内复位": {
         "post_wait_freezes": 0,
-        //识别战斗中、局内退出、弹窗确定
-        "recognition": {
-            "type": "Or",
-            "param": {
-                "any_of": [
-                    {
-                        "recognition": {
-                            "type": "TemplateMatch",
-                            "param": {
-                                "template": [
-                                    "页面切换/放弃挑战_云地图图标.png",
-                                    "页面切换/放弃挑战_安卓地图图标.png"
-                                ],
-                                "roi": [
-                                    0,
-                                    0,
-                                    100,
-                                    75
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "Or",
-                            "param": {
-                                "any_of": [
-                                    {
-                                        "recognition": {
-                                            "type": "TemplateMatch",
-                                            "param": {
-                                                "template": [
-                                                    "页面切换/放弃挑战_设置图标.png"
-                                                ],
-                                                "roi": [
-                                                    710,
-                                                    540,
-                                                    570,
-                                                    180
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "recognition": {
-                                            "type": "OCR",
-                                            "param": {
-                                                "expected": [
-                                                    "放弃挑战"
-                                                ],
-                                                "roi": [
-                                                    710,
-                                                    540,
-                                                    570,
-                                                    180
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "开始挑战",
-                                    "确定"
-                                ],
-                                "roi": [
-                                    165,
-                                    110,
-                                    950,
-                                    480
-                                ]
-                            }
-                        }
-                    }
-                ]
-            }
-        },
+        //无法点击则重来
         "next": [
-            "弹窗确定",
+            "弹窗取消",
             "[JumpBack]复位角色",
             "[JumpBack]设置其他",
             "[JumpBack]局内设置-复位",
-            "[JumpBack]局内放弃"
+            "[JumpBack]离开副本"
         ]
     },
     "放弃委托": {
         //局内放弃委托
-        //识别战斗中、局内退出、弹窗确定
-        "recognition": {
-            "type": "Or",
-            "param": {
-                "any_of": [
-                    {
-                        "recognition": {
-                            "type": "TemplateMatch",
-                            "param": {
-                                "template": [
-                                    "页面切换/放弃挑战_云地图图标.png",
-                                    "页面切换/放弃挑战_安卓地图图标.png"
-                                ],
-                                "roi": [
-                                    0,
-                                    0,
-                                    100,
-                                    75
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "Or",
-                            "param": {
-                                "any_of": [
-                                    {
-                                        "recognition": {
-                                            "type": "TemplateMatch",
-                                            "param": {
-                                                "template": [
-                                                    "页面切换/放弃挑战_设置图标.png"
-                                                ],
-                                                "roi": [
-                                                    710,
-                                                    540,
-                                                    570,
-                                                    180
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "recognition": {
-                                            "type": "OCR",
-                                            "param": {
-                                                "expected": [
-                                                    "放弃挑战"
-                                                ],
-                                                "roi": [
-                                                    710,
-                                                    540,
-                                                    570,
-                                                    180
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "开始挑战",
-                                    "确定"
-                                ],
-                                "roi": [
-                                    165,
-                                    110,
-                                    950,
-                                    480
-                                ]
-                            }
-                        }
-                    }
-                ]
-            }
-        },
         "next": [
             "局内放弃-退出",
-            "弹窗确定",
-            "[JumpBack]局内放弃"
+            "[JumpBack]离开副本",
+            "[JumpBack]返回上一级"
         ]
     },
     "放弃挑战": {
@@ -269,13 +101,12 @@
         },
         "action": "Click"
     },
-    "局内放弃": {
+    "离开副本": {
         "recognition": {
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "页面切换/放弃挑战_云地图图标.png",
-                    "页面切换/放弃挑战_安卓地图图标.png"
+                    "副本/副本退出/离开副本/"
                 ],
                 "roi": [
                     0,
@@ -362,7 +193,10 @@
                 ]
             }
         },
-        "action": "Click"
+        "action": "Click",
+        "next": [
+            "弹窗确定"
+        ]
     },
     "局内放弃-退出": {
         "recognition": {

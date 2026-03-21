@@ -5,6 +5,21 @@
         "pre_wait_freezes": 0,
         "post_delay": 0,
         "post_wait_freezes": 0,
+        //识别到"驱离"证明在副本中
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "驱离"
+                ],
+                "roi": [
+                    0,
+                    150,
+                    350,
+                    300
+                ]
+            }
+        },
         "next": [
             "[JumpBack]重复次数",
             "[JumpBack]驱离副本"
@@ -15,44 +30,21 @@
     },
     "驱离副本": {
         //复位大法，不分地图
-        //驱离and已驱逐敌人：0/，保证只进行一次
+        //已驱逐敌人：0/，保证只进行一次
         "recognition": {
-            "type": "And",
+            "type": "OCR",
             "param": {
-                "all_of": [
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "驱离"
-                                ],
-                                "roi": [
-                                    0,
-                                    0,
-                                    0,
-                                    0
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "expected": [
-                                    "已驱逐敌人：0/",
-                                    "敌人：0/"
-                                ],
-                                "roi": [
-                                    0,
-                                    0,
-                                    0,
-                                    0
-                                ]
-                            }
-                        }
-                    }
+                "expected": [
+                    "已驱逐敌人：0/",
+                    "敌人：0/",
+                    "人：0",
+                    "：0"
+                ],
+                "roi": [
+                    0,
+                    150,
+                    350,
+                    300
                 ]
             }
         },
@@ -83,13 +75,8 @@
         "post_delay": 0,
         "post_wait_freezes": 0,
         "next": [
-            //"历练-委托识别到说明已经退出，结束循环"
-            "历练-委托",
             "[JumpBack]重复次数",
             "[JumpBack]复位一次"
-        ],
-        "on_error": [
-            "放弃委托"
         ]
     },
     "复位一次": {
@@ -97,7 +84,7 @@
             "type": "Or",
             "param": {
                 "any_of": [
-                    "局内放弃"
+                    "离开副本"
                 ]
             }
         },

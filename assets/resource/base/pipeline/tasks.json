@@ -22,19 +22,9 @@
     "魔之楔本": {
         //任务entry启动层
         //驱离
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "else_node": [
-                        "魔之楔本任务"
-                    ]
-                }
-            }
-        },
         "next": [
-            "驱离"
+            "驱离",
+            "[JumpBack]魔之楔本副本"
         ]
     },
     "深红凝珠": {
