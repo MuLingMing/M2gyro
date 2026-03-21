@@ -99,16 +99,17 @@
         ]
     },
     "局内设置-复位": {
+        //识别局内退出后设置图标
         "recognition": {
             "type": "Or",
             "param": {
                 "any_of": [
                     {
                         "recognition": {
-                            "type": "OCR",
+                            "type": "TemplateMatch",
                             "param": {
-                                "expected": [
-                                    "设置"
+                                "template": [
+                                    "副本/副本退出/复位/设置/"
                                 ],
                                 "roi": [
                                     710,
@@ -121,10 +122,10 @@
                     },
                     {
                         "recognition": {
-                            "type": "TemplateMatch",
+                            "type": "OCR",
                             "param": {
-                                "template": [
-                                    "页面切换/设置_图标.png"
+                                "expected": [
+                                    "设置"
                                 ],
                                 "roi": [
                                     710,
@@ -145,8 +146,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "页面切换/设置-其他_图标.png",
-                    "页面切换/设置-其他_图标已选中.png"
+                    "副本/副本退出/复位/设置-其他/"
                 ],
                 "roi": [
                     0,

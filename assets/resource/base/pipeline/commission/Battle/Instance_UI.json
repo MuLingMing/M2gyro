@@ -25,6 +25,26 @@
             }
         }
     },
+    "放弃挑战": {
+        //委托完成后放弃挑战
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "放弃挑战",
+                    "放弃委托",
+                    "放弃"
+                ],
+                "roi": [
+                    830,
+                    590,
+                    450,
+                    130
+                ]
+            }
+        },
+        "action": "Click"
+    },
     "确认选择": {
         "recognition": {
             "type": "OCR",
@@ -64,40 +84,10 @@
                 ]
             }
         },
-        "action": "Click",
-        "next": [
-            "倍率选择"
-        ]
+        "action": "Click"
     },
     "放弃委托": {
         //局内放弃委托
-        "next": [
-            "局内放弃-退出",
-            "[JumpBack]离开副本",
-            "[JumpBack]返回上一级"
-        ]
-    },
-    "放弃挑战": {
-        //委托完成后放弃挑战
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "放弃挑战",
-                    "放弃委托",
-                    "放弃"
-                ],
-                "roi": [
-                    830,
-                    590,
-                    450,
-                    130
-                ]
-            }
-        },
-        "action": "Click"
-    },
-    "离开副本": {
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -112,7 +102,11 @@
                 ]
             }
         },
-        "action": "Click"
+        "action": "Click",
+        "next": [
+            "局内放弃-退出",
+            "[JumpBack]返回上一级"
+        ]
     },
     "局内放弃-退出": {
         "recognition": {
@@ -121,10 +115,10 @@
                 "any_of": [
                     {
                         "recognition": {
-                            "type": "TemplateMatch",
+                            "type": "OCR",
                             "param": {
-                                "template": [
-                                    "页面切换/放弃挑战_设置图标.png"
+                                "expected": [
+                                    "放弃挑战"
                                 ],
                                 "roi": [
                                     710,
@@ -137,10 +131,10 @@
                     },
                     {
                         "recognition": {
-                            "type": "OCR",
+                            "type": "TemplateMatch",
                             "param": {
-                                "expected": [
-                                    "放弃挑战"
+                                "template": [
+                                    "副本/副本退出/局内放弃/"
                                 ],
                                 "roi": [
                                     710,
