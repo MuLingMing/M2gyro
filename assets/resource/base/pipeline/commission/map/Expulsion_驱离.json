@@ -64,46 +64,5 @@
             "副本完成",
             "[JumpBack]技能次数"
         ]
-    },
-    "复位副本": {
-        "pre_delay": 0,
-        "pre_wait_freezes": 0,
-        "post_delay": 0,
-        "post_wait_freezes": 0,
-        "next": [
-            "[JumpBack]副本次数",
-            "[JumpBack]复位一次"
-        ]
-    },
-    "复位一次": {
-        "recognition": {
-            "type": "Or",
-            "param": {
-                "any_of": [
-                    "离开副本匹配识别"
-                ]
-            }
-        },
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "logger": true,
-                    "else_node": [
-                        "局内复位"
-                    ],
-                    "reset_node": [
-                        "技能次数"
-                    ]
-                }
-            }
-        },
-        "post_wait_freezes": 0,
-        "on_error": [],
-        "next": [
-            "副本完成",
-            "[JumpBack]技能次数"
-        ]
     }
 }
