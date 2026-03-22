@@ -452,6 +452,7 @@ tools/ImageCropper/**/*.png
 
 config
 debug
+.venv
 
 # 素材
 开发日志

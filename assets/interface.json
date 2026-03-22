@@ -39,10 +39,10 @@
         }
     ],
     "agent": {
-        "child_exec": "${command:python.interpreterPath}",
+        "child_exec": "python",
         "child_args": [
             "-u",
-            "./../agent/main2.py"
+            "./../agent/main.py"
         ]
     },
     "task": [
