@@ -11,8 +11,11 @@ from maa.agent.agent_server import AgentServer
 
 # 读取 custom.json 文件
 def load_custom_agents():
-    # 使用相对路径打开custom.json
-    with open("../agent/custom.json", "r", encoding="utf-8") as f:
+    # 使用相对于当前文件的路径打开custom.json
+    import os
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    custom_json_path = os.path.join(current_dir, "custom.json")
+    with open(custom_json_path, "r", encoding="utf-8") as f:
         custom_config = json.load(f)
     
     for agent_name, agent_info in custom_config.items():
