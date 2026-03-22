@@ -29,13 +29,6 @@
             "path": [
                 "./resource/base"
             ]
-        },
-        {
-            "name": "PC",
-            "path": [
-                "./resource/base",
-                "./resource/win32"
-            ]
         }
     ],
     "agent": {
