@@ -70,6 +70,7 @@
             "param": {
                 "custom_action": "Count",
                 "custom_action_param": {
+                    "logger": true,
                     "count": 0,
                     "target_count": 0,
                     "else_node": [

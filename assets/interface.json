@@ -314,6 +314,7 @@
                     "pipeline_override": {
                         "副本次数": {
                             "custom_action_param": {
+                                "logger": true,
                                 "count": 0,
                                 "target_count": 1,
                                 "else_node": [
@@ -334,6 +335,7 @@
                     "pipeline_override": {
                         "副本次数": {
                             "custom_action_param": {
+                                "logger": true,
                                 "count": 0,
                                 "target_count": 15,
                                 "else_node": [
@@ -354,6 +356,7 @@
                     "pipeline_override": {
                         "副本次数": {
                             "custom_action_param": {
+                                "logger": true,
                                 "count": 0,
                                 "target_count": 60,
                                 "else_node": [
@@ -374,6 +377,7 @@
                     "pipeline_override": {
                         "副本次数": {
                             "custom_action_param": {
+                                "logger": true,
                                 "count": 0,
                                 "target_count": 120,
                                 "else_node": [
