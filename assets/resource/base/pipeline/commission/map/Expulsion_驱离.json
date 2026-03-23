@@ -58,8 +58,6 @@
                 }
             }
         },
-        "post_wait_freezes": 0,
-        "on_error": [],
         "next": [
             "副本完成",
             "[JumpBack]技能次数"

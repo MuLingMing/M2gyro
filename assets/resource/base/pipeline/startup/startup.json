@@ -6,7 +6,6 @@
                 "package": "com.hero.dna.gf"
             }
         },
-        "post_wait_freezes": 0,
         "next": [
             "点击进入游戏",
             "[JumpBack]返回上一级"

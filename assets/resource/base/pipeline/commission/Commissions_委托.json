@@ -279,7 +279,8 @@
         "next": [
             "委托-委托",
             "[JumpBack]主页面-委托",
-            "[JumpBack]放弃挑战"
+            "[JumpBack]放弃挑战",
+            "[JumpBack]放弃委托"
         ]
     },
     "委托-委托": {
@@ -305,7 +306,7 @@
         ]
     },
     "铜币识别-无": {
-        //判断不在委托最左端
+        //判断不在委托最左端，则左滑三次
         "inverse": true,
         "recognition": {
             "type": "OCR",
@@ -321,15 +322,6 @@
                 ]
             }
         },
-        "next": [
-            "委托-向左三次"
-        ]
-    },
-    "委托-向左三次": {
-        "pre_delay": 0,
-        "pre_wait_freezes": 0,
-        "post_delay": 0,
-        "post_wait_freezes": 0,
         "action": {
             "type": "Swipe",
             "param": {
@@ -343,6 +335,7 @@
                 ]
             }
         },
-        "repeat": 3
+        "repeat": 3,
+        "repeat_wait_freezes": 500
     }
 }

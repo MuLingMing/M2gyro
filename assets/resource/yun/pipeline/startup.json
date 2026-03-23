@@ -33,7 +33,8 @@
         "post_wait_freezes": 0,
         "next": [
             "点击进入游戏",
-            "[JumpBack]弹窗确定"
+            "[JumpBack]弹窗确定",
+            "[JumpBack]返回上一级"
         ]
     },
     "退出游戏": {

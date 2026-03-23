@@ -1,10 +1,6 @@
 {
     "副本完成": {
         //仅识别为完成，不做动作
-        "pre_delay": 0,
-        "pre_wait_freezes": 0,
-        "post_delay": 0,
-        "post_wait_freezes": 0,
         "recognition": {
             "type": "OCR",
             "param": {
@@ -46,8 +42,6 @@
         "action": "Click"
     },
     "确认选择": {
-        //增加页面加载的容错时间
-        "post_delay": 1000,
         "recognition": {
             "type": "OCR",
             "param": {
@@ -69,10 +63,7 @@
                 ]
             }
         },
-        "action": "Click",
-        "next": [
-            "空"
-        ]
+        "action": "Click"
     },
     "下一波次": {
         "recognition": {
@@ -120,10 +111,10 @@
                 "any_of": [
                     {
                         "recognition": {
-                            "type": "OCR",
+                            "type": "TemplateMatch",
                             "param": {
-                                "expected": [
-                                    "放弃挑战"
+                                "template": [
+                                    "副本/副本退出/局内放弃/"
                                 ],
                                 "roi": [
                                     710,
@@ -136,10 +127,10 @@
                     },
                     {
                         "recognition": {
-                            "type": "TemplateMatch",
+                            "type": "OCR",
                             "param": {
-                                "template": [
-                                    "副本/副本退出/局内放弃/"
+                                "expected": [
+                                    "放弃挑战"
                                 ],
                                 "roi": [
                                     710,

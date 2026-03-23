@@ -450,9 +450,11 @@ install
 # Tools
 tools/ImageCropper/**/*.png
 
+# 调试
 config
 debug
 .venv
+.trae
 
 # 素材
 开发日志

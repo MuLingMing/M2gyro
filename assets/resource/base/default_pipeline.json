@@ -2,15 +2,17 @@
     "Default": {
         "rate_limit": 500, // 识别间隔（毫秒）
         "timeout": 20000, // 任务超时（毫秒）
-        "pre_delay": 200, // 识别后到动作前的延迟
-        "post_delay": 300, // 动作后到下一次识别的延迟
-        "post_wait_freezes": 0, // 动作后等待画面静止的时间
+        "pre_delay": 0, // 识别到 到 执行动作前 的延迟
+        "post_delay": 0, // 执行动作后 到 识别 next 的延迟
+        "pre_wait_freezes": 0, //识别到 到 执行动作前，等待画面不动了的时间
+        "post_wait_freezes": 0, // 行动动作后 到 识别 next，等待画面不动了的时间
         "on_error": []
     },
     "TemplateMatch": {
         "recognition": {
             "type": "TemplateMatch",
             "param": {
+                "threshold": 0.8,
                 "order_by": "Score"
             }
         }

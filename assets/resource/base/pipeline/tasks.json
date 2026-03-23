@@ -165,10 +165,6 @@
                 }
             }
         },
-        "pre_delay": 0,
-        "pre_wait_freezes": 0,
-        "post_delay": 0,
-        "post_wait_freezes": 0,
         //空保证仅识别一次
         "next": [
             "释放技能E",
