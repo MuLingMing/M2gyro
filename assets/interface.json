@@ -403,25 +403,26 @@
         },
         "超时时间": {
             "type": "select",
+            "default_cases": "90秒",
             "cases": [
                 {
                     "name": "60秒",
-                    "description": "设置局内超时时间为60s"
-                },
-                {
-                    "name": "90秒",
-                    "description": "设置局内超时时间为90s",
+                    "description": "设置局内超时时间为60s",
                     "pipeline_override": {
                         "技能次数": {
                             "custom_action_param": {
                                 "count": 0,
-                                "target_count": 30,
+                                "target_count": 20,
                                 "next_node": [
                                     "放弃委托"
                                 ]
                             }
                         }
                     }
+                },
+                {
+                    "name": "90秒",
+                    "description": "设置局内超时时间为90s"
                 },
                 {
                     "name": "120秒",
@@ -475,7 +476,7 @@
                         "技能次数": {
                             "custom_action_param": {
                                 "count": 0,
-                                "target_count": 100,
+                                "target_count": 300,
                                 "next_node": [
                                     "放弃委托"
                                 ]

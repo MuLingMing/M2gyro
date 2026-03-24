@@ -20,10 +20,8 @@
         //调停
     },
     "魔之楔本": {
-        //任务entry启动层
         //驱离
         //未识别到"驱离"证明不在副本页面，导航到副本
-        "anthor": "任务开始层",
         "next": [
             "驱离",
             "[JumpBack]魔之楔本页面"
@@ -158,7 +156,7 @@
                 "custom_action": "Count",
                 "custom_action_param": {
                     "count": 0,
-                    "target_count": 20,
+                    "target_count": 30,
                     "next_node": [
                         "放弃委托"
                     ]
