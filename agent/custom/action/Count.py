@@ -16,10 +16,17 @@ from utils.logger import logger
 
 class Count(CustomAction):
     """
-    动作主入口。
-    读取 argv.custom_action_param（JSON）
-    根据 count 与 target_count 决定走哪一组后续节点（next_node 或 else_node）
-    并把更新后的状态写回流水线。
+    用于在流水线中记录计数并根据计数结果分支执行不同节点。
+
+    参数格式：
+    {
+        "count": 当前次数,
+        "target_count": 目标次数,
+        "next_node": ["达到次数执行节点"],
+        "else_node": ["未达到次数执行节点"],
+        "reset_node": ["重置节点当前次数为0"],
+        "logger":False
+    }
     """
 
     def run(
@@ -109,8 +116,10 @@ class Count(CustomAction):
             nodes = [nodes]
         for node in nodes:
             # 获取node信息
-            node_data = context.get_node_data(node)
             # get_node_data返回值为node_data:{"action":{"param":{"custom_action_param"}}}
+            node_data = context.get_node_data(node)
+            if not node_data:
+                return
             node_action_param = node_data.get("action", {}).get("param", {})
             if (
                 not node_action_param.get("custom_action", "")

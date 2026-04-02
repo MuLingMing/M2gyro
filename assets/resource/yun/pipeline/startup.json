@@ -24,15 +24,27 @@
         //暂无素材
     },
     "启动游戏": {
+        "inverse": true,
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    "主页面匹配识别",
+                    "角色面板匹配识别",
+                    "返回上一级",
+                    "离开副本匹配识别"
+                ]
+            }
+        },
         "action": {
             "type": "StartApp",
             "param": {
                 "package": "com.hero.dna.gf.yun.game"
             }
         },
-        "post_wait_freezes": 0,
         "next": [
-            "点击进入游戏",
+            "云游戏开始",
+            "[JumpBack]点击进入游戏",
             "[JumpBack]弹窗确定",
             "[JumpBack]返回上一级"
         ]
@@ -54,14 +66,15 @@
             "type": "OCR",
             "param": {
                 "expected": [
-                    "点击任意位置登录"
+                    "点击任意位置登录",
+                    "点击",
+                    "任意",
+                    "位置",
+                    "登录"
                 ]
             }
         },
-        "action": "Click",
-        "next": [
-            "云游戏开始"
-        ]
+        "action": "Click"
     },
     "云游戏开始": {
         "recognition": {

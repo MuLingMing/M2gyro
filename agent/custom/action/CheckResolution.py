@@ -1,7 +1,7 @@
 
 from maa.context import Context
 from maa.custom_action import CustomAction
-from utils import logger
+from utils.logger import logger
 
 
 class CheckResolution(CustomAction):
