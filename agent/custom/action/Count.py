@@ -1,12 +1,10 @@
 # coding=utf-8
-"""
-提供一个自定义动作类 Count（继承自 CustomAction）
+'''
 用于在流水线中记录计数并根据计数结果分支执行不同节点
 （达标走 next_node，未达标走 else_node）。
 重置目标节点的count
 播报当前运行次数
-"""
-
+'''
 
 from maa.context import Context
 from maa.custom_action import CustomAction
@@ -16,40 +14,33 @@ from utils.logger import logger
 
 class Count(CustomAction):
     """
-    用于在流水线中记录计数并根据计数结果分支执行不同节点。
+    用于在流水线中记录计数并根据计数结果分支执行不同节点
+    （达标走 next_node，未达标走 else_node）。
+    重置目标节点的count
+    播报当前运行次数
 
     参数格式：
     {
-        "count": 当前次数,
-        "target_count": 目标次数,
-        "next_node": ["达到次数执行节点"],
-        "else_node": ["未达到次数执行节点"],
-        "reset_node": ["重置节点当前次数为0"],
+        "count": 0,
+        "target_count": 10,
+        "next_node": ["node1", "node2"],
+        "else_node": ["node3"],
+        "reset_node": ["node4"],
         "logger":False
     }
-    """
 
+    字段说明：
+    - count: 当前次数
+    - target_count: 目标次数
+    - next_node: 达到目标次数后执行的节点. 支持多个节点，按顺序执行，可以出现重复节点，可以为空
+    - else_node: 未达到目标次数时执行的节点. 支持多个节点，按顺序执行，可以出现重复节点，可以为空
+    - reset_node: 将指定节点的count重置为0，支持多个节点，可以为空
+    - logger：是否输出运行次数，默认False
+    """
     def run(
         self, context: Context, argv: CustomAction.RunArg
     ) -> CustomAction.RunResult:
-        """
-        自定义动作：
-        custom_action_param:
-            {
-                "count": 0,
-                "target_count": 10,
-                "next_node": ["node1", "node2"],
-                "else_node": ["node3"],
-                "reset_node": ["node4"],
-                "logger":False
-            }
-        count: 当前次数
-        target_count: 目标次数
-        next_node: 达到目标次数后执行的节点. 支持多个节点，按顺序执行，可以出现重复节点，可以为空
-        else_node: 未达到目标次数时执行的节点. 支持多个节点，按顺序执行，可以出现重复节点，可以为空
-        reset_node: 将指定节点的count重置为0，支持多个节点，可以为空
-        logger：是否输出运行次数
-        """
+
 
         argv_dict: dict = json.loads(argv.custom_action_param)
         # print(argv.node_name,argv_dict)
@@ -61,7 +52,7 @@ class Count(CustomAction):
         next_node = argv_dict.get("next_node", [])
         else_node = argv_dict.get("else_node", [])
         reset_node = argv_dict.get("reset_node", [])
-        logger_flag = argv_dict.get("logger", False)
+        logger_enable = argv_dict.get("logger", False)
 
         # 重设reset_node的count为0
         if reset_node:
@@ -76,7 +67,7 @@ class Count(CustomAction):
             )
 
             # 运行播报
-            if logger_flag:
+            if logger_enable:
                 if self._magnitude(current_count):
                     if target_count == 0:
                         logger.info(f"当前运行次数为{current_count}, 无限循环中...")
@@ -91,7 +82,7 @@ class Count(CustomAction):
             self._reset_nodes(context=context, nodes=argv.node_name, reset_count=0)
 
             # 运行播报
-            if logger_flag:
+            if logger_enable:
                 logger.info(
                     f"{argv.node_name}已达到目标次数{target_count}，执行后续节点{next_node}"
                 )
@@ -106,7 +97,10 @@ class Count(CustomAction):
         if isinstance(nodes, str):
             nodes = [nodes]
         for node in nodes:
-            context.run_task(node)
+            try:
+                context.run_task(node)
+            except Exception as e:
+                logger.error(f"CountAction：执行节点{node}时出错: {e}")
 
     def _reset_nodes(self, context: Context, nodes: str | list, reset_count: int):
         """重设节点的count为reset_count"""
