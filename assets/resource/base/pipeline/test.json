@@ -1,0 +1,37 @@
+{
+    "test": {
+        "next": [
+            "[JumpBack]副本次数",
+            "[JumpBack]倒计时"
+        ]
+    },
+    "倒计时": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "Countdown",
+                "custom_recognition_param": {
+                    "total_time": 60,
+                    "Interrupt": [
+                        "副本完成"
+                    ],
+                    "Continue": [
+                        {
+                            "node": "释放技能E",
+                            "interval": 5
+                        },
+                        {
+                            "node": "释放状态Q",
+                            "interval": 3
+                        }
+                    ],
+                    "Over": [
+                        "放弃委托"
+                    ],
+                    "logger": true
+                }
+            }
+        },
+        "action": "DoNothing"
+    }
+}
