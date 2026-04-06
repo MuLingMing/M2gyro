@@ -363,12 +363,8 @@
                     "description": "设置局内超时时间为60s",
                     "pipeline_override": {
                         "技能次数": {
-                            "custom_action_param": {
-                                "count": 0,
-                                "target_count": 20,
-                                "next_node": [
-                                    "放弃委托"
-                                ]
+                            "attach": {
+                                "target_count": 20
                             }
                         }
                     }

@@ -24,11 +24,6 @@
         "class": "CheckResolution",
         "file_path": "custom/action/CheckResolution.py"
     },
-    "CountdownAction": {
-        "type": "action",
-        "class": "CountdownAction",
-        "file_path": "custom/action/CountdownAction.py"
-    },
     "Countdown": {
         "type": "recognition",
         "class": "Countdown",
