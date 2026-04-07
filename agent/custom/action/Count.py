@@ -84,7 +84,18 @@ class Count(CustomAction):
         5. 更新当前节点的 count 值
         """
 
-        custom_action_param: dict = json.loads(argv.custom_action_param)
+        # 未命中任何节点，直接返回成功
+        if reco_datail :=argv.reco_detail:
+            if hit:=reco_datail.hit:
+                if not hit:
+                    return CustomAction.RunResult(success=True)
+        
+        # 解析参数
+        try:
+            custom_action_param: dict = json.loads(argv.custom_action_param)
+        except json.JSONDecodeError as e:
+            logger.error(f"Count: 参数解析失败: {e}")
+            return CustomAction.RunResult(success=True)
         if node_data := context.get_node_data(argv.node_name):
             attach_params = node_data.get("attach", {})
         else:
