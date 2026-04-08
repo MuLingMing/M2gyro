@@ -1,0 +1,94 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "./custom_act/Count.schema.json",
+    "type": "object",
+    "unevaluatedProperties": false,
+    "properties": {
+        "custom_action": {
+            "type": "string",
+            "enum": [
+                "Count"
+            ],
+            "description": "动作名，必须为 Count"
+        },
+        "custom_action_param": {
+            "$ref": "#/definitions/CountParam"
+        }
+    },
+    "definitions": {
+        "CountParam": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0,
+                    "description": "当前次数，默认 0。每次执行后会自动更新当前节点的 count 值"
+                },
+                "target_count": {
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0,
+                    "description": "目标次数，默认 0。target_count=0 时，始终执行 else_node"
+                },
+                "next_node": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "节点名称"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "description": "节点名称"
+                            },
+                            "description": "节点名称列表"
+                        }
+                    ],
+                    "description": "达到目标次数后执行的节点。支持多个节点，按顺序执行；可以出现重复节点；可以为空"
+                },
+                "else_node": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "节点名称"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "description": "节点名称"
+                            },
+                            "description": "节点名称列表"
+                        }
+                    ],
+                    "description": "未达到目标次数时执行的节点。支持多个节点，按顺序执行；可以出现重复节点；可以为空"
+                },
+                "reset_node": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "节点名称"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "description": "节点名称"
+                            },
+                            "description": "节点名称列表"
+                        }
+                    ],
+                    "description": "将指定节点的 count 重置为 0。支持多个节点；可以为空"
+                },
+                "logger": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "是否输出运行次数，默认 false"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

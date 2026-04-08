@@ -31,7 +31,7 @@
         //仅识别一次
         "next": [
             "技能Q状态",
-            "3s延时"
+            "空"
         ]
     },
     "技能Q状态": {
@@ -57,20 +57,7 @@
             "param": {
                 "target": "释放状态Q"
             }
-        },
-        //3s延时
-        "post_delay": 3000,
-        "next": [
-            "空"
-        ]
-    },
-    "3s延时": {
-        //3s延时
-        "pre_delay": 1000,
-        "post_delay": 0,
-        "pre_wait_freezes": 0,
-        "post_wait_freezes": 0,
-        "rate_limit": 0
+        }
     },
     "局内复位": {
         "recognition": {

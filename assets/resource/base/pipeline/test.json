@@ -1,11 +1,5 @@
 {
-    "test": {
-        "next": [
-            "[JumpBack]副本次数",
-            "[JumpBack]倒计时"
-        ]
-    },
-    "倒计时": {
+    "test_countdown": {
         "recognition": {
             "type": "Custom",
             "param": {
@@ -13,25 +7,39 @@
                 "custom_recognition_param": {
                     "total_time": 60,
                     "Interrupt": [
-                        "副本完成"
+                        "A"
                     ],
                     "Continue": [
-                        {
-                            "node": "释放技能E",
-                            "interval": 5
-                        },
-                        {
-                            "node": "释放状态Q",
-                            "interval": 3
-                        }
+                        "B"
                     ],
                     "Over": [
-                        "放弃委托"
+                        "C"
                     ],
-                    "logger": true
+                    "logger": false
                 }
             }
-        },
-        "action": "DoNothing"
+        }
+    },
+    "test_count": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "Count",
+                "custom_action_param": {
+                    "count": 0,
+                    "target_count": 10,
+                    "next_node": [
+                        "node1"
+                    ],
+                    "else_node": [
+                        "node2"
+                    ],
+                    "reset_node": [
+                        "node3"
+                    ],
+                    "logger": false
+                }
+            }
+        }
     }
 }

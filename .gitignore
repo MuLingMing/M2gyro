@@ -456,5 +456,9 @@ debug
 .venv
 .trae
 
+# custom_schema
+!deps/tools/custom_reco/
+!deps/tools/custom_act/
+
 # 素材
 开发日志

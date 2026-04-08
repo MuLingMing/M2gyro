@@ -62,5 +62,33 @@
             "副本完成",
             "[JumpBack]技能次数"
         ]
+    },
+    "驱离副本": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "Countdown",
+                "custom_recognition_param": {
+                    "total_time": 90,
+                    "Interrupt": [
+                        "副本完成"
+                    ],
+                    "Continue": [
+                        {
+                            "name": "释放技能E",
+                            "interval": 5
+                        },
+                        {
+                            "name": "释放状态Q",
+                            "interval": 3
+                        }
+                    ],
+                    "Over": [
+                        "放弃委托"
+                    ],
+                    "logger": true
+                }
+            }
+        }
     }
 }

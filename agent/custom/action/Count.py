@@ -12,7 +12,7 @@ from maa.context import Context
 from maa.custom_action import CustomAction
 import json
 from utils.logger import logger
-from general import merge_params
+from general import ParamMerger
 
 
 class Count(CustomAction):
@@ -107,7 +107,17 @@ class Count(CustomAction):
             if not attach_params:
                 params = custom_action_param
             else:
-                params = merge_params(custom_action_param, attach_params)
+                schema = {
+                    "count": int,
+                    "target_count": int,
+                    "next_node": (str, list),
+                    "else_node": (str, list),
+                    "reset_node": (str, list),
+                    "logger": bool,
+                }
+                
+                merger = ParamMerger(identifier_fields=["name"], schema=schema)
+                params = merger.merge_params("action", custom_action_param, attach_params)
         if not params:
             return CustomAction.RunResult(success=True)
         

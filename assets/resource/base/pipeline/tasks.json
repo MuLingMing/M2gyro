@@ -37,26 +37,37 @@
     "铸造任务": {},
     "钓鱼任务": {},
     "副本次数": {
-        //"副本次数"option重写"custom_action_param"
+        //"副本次数"option重写"atach"
         "recognition": {
-            "type": "OCR",
+            "type": "Custom",
             "param": {
-                "expected": [
-                    "开始挑战",
-                    "再次进行",
-                    "确认选择",
-                    "选择密函",
-                    "开始",
-                    "再次",
-                    "确认",
-                    "密函"
-                ],
-                "roi": [
-                    830,
-                    590,
-                    450,
-                    130
-                ]
+                "custom_recognition": "Countdown",
+                "custom_recognition_param": {
+                    "total_time": 90,
+                    "Interrupt": [
+                        {
+                            "name": "确认选择",
+                            "run": false,
+                            "interval": 2
+                        }
+                    ],
+                    "Continue": [
+                        {
+                            "name": "释放技能E",
+                            "interval": 5
+                        },
+                        {
+                            "name": "释放状态Q",
+                            "interval": 3
+                        }
+                    ],
+                    "Over": [
+                        {
+                            "name": "放弃委托"
+                        }
+                    ],
+                    "logger": false
+                }
             }
         },
         "action": {
@@ -77,7 +88,8 @@
                     ]
                 }
             }
-        }
+        },
+        "next": []
     },
     "波次选择": {},
     "委托等级识别": {
@@ -163,7 +175,7 @@
         "next": [
             "释放技能E",
             "释放状态Q",
-            "3s延时"
+            "空"
         ]
     }
 }
