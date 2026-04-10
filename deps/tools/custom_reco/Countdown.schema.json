@@ -9,7 +9,7 @@
             "enum": [
                 "Countdown"
             ],
-            "description": "识别名，必须为 Countdown"
+            "description": "识别名，必须为 Countdown\n例如：\n\"Countdown\"\n\n对应的 custom_recognition_param 示例：\n{\n    \"total_time\": 60,\n    \"entry\": [\"node_name\"],\n    \"Interrupt\": [\"node_name\"],\n    \"Continue\": [\"node_name\"],\n    \"Over\": [\"node_name\"],\n    \"logger\": false\n}"
         },
         "custom_recognition_param": {
             "$ref": "#/definitions/CountdownParam"
@@ -25,181 +25,222 @@
                     "minimum": 0,
                     "description": "总倒计时时间（秒），默认60秒。total_time=0时，进入无限循环模式"
                 },
-                "Interrupt": {
+                "entry": {
                     "oneOf": [
                         {
-                            "type": "string",
-                            "description": "节点名称"
+                            "type": "string"
                         },
                         {
                             "type": "array",
                             "items": {
                                 "oneOf": [
                                     {
-                                        "type": "string",
-                                        "description": "节点名称"
+                                        "type": "string"
                                     },
                                     {
                                         "type": "object",
                                         "properties": {
                                             "name": {
-                                                "type": "string",
-                                                "description": "节点名称"
+                                                "type": "string"
                                             },
                                             "run": {
                                                 "oneOf": [
                                                     {
-                                                        "type": "string"
+                                                        "type": "boolean"
                                                     },
                                                     {
-                                                        "type": "boolean"
+                                                        "type": "integer",
+                                                        "minimum": 0
                                                     }
                                                 ],
                                                 "default": true,
-                                                "description": "是否执行节点，默认True"
+                                                "description": "是否执行节点（布尔值）或执行次数（整数），默认True。\n\n布尔值格式：true表示执行，false表示不执行\n例如：true\n\n整数格式：执行次数，每次执行后减1，减到0后不再执行\n例如：3"
                                             },
                                             "interval": {
                                                 "type": "number",
                                                 "default": 2.0,
                                                 "minimum": 0,
-                                                "description": "识别name的间隔时间（秒），默认2秒"
+                                                "description": "识别name的间隔时间（秒），默认2秒，float格式"
                                             },
                                             "hit": {
                                                 "type": "boolean",
                                                 "default": true,
-                                                "description": "识别detail返回值，默认True"
+                                                "description": "识别detail返回值，默认True，bool格式"
                                             }
                                         },
                                         "required": [
                                             "name"
                                         ]
                                     }
-                                ],
-                                "description": "中断节点或节点配置"
-                            },
-                            "description": "中断节点列表"
+                                ]
+                            }
                         }
                     ],
-                    "description": "中断节点列表，识别到该节点时，根据run配置执行对应节点并结束。节点内部逻辑为OR关系"
+                    "description": "入口节点列表，识别成功则进入倒计时循环，未识别到则返回失败结果。节点内部逻辑为OR关系\n\n支持格式：\n- 单个节点名称（字符串）：\n  \"node_name\"\n\n- 节点列表（数组）：\n  [\n    \"node_name\",\n    {\n        \"name\": \"node_name\",\n        \"run\": 1,\n        \"interval\": 5\n    }\n]"
+                },
+                "Interrupt": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "run": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "integer",
+                                                        "minimum": 0
+                                                    }
+                                                ],
+                                                "default": true,
+                                                "description": "是否执行节点（布尔值）或执行次数（整数），默认True。\n\n布尔值格式：true表示执行，false表示不执行\n例如：true\n\n整数格式：执行次数，每次执行后减1，减到0后不再执行\n例如：3"
+                                            },
+                                            "interval": {
+                                                "type": "number",
+                                                "default": 2.0,
+                                                "minimum": 0,
+                                                "description": "识别name的间隔时间（秒），默认2秒，float格式"
+                                            },
+                                            "hit": {
+                                                "type": "boolean",
+                                                "default": true,
+                                                "description": "识别detail返回值，默认True，bool格式"
+                                            }
+                                        },
+                                        "required": [
+                                            "name"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "description": "中断节点列表，识别到该节点时，根据run配置执行对应节点并结束。节点内部逻辑为OR关系\n\n支持格式：\n- 单个节点名称（字符串）：\n  \"node_name\"\n\n- 节点列表（数组）：\n  [\n    \"node_name\",\n    {\n        \"name\": \"node_name\",\n        \"run\": false,\n        \"interval\": 2\n    }\n]"
                 },
                 "Continue": {
                     "oneOf": [
                         {
-                            "type": "string",
-                            "description": "节点名称"
+                            "type": "string"
                         },
                         {
                             "type": "array",
                             "items": {
                                 "oneOf": [
                                     {
-                                        "type": "string",
-                                        "description": "节点名称"
+                                        "type": "string"
                                     },
                                     {
                                         "type": "object",
                                         "properties": {
                                             "name": {
-                                                "type": "string",
-                                                "description": "节点名称"
+                                                "type": "string"
                                             },
                                             "run": {
                                                 "oneOf": [
                                                     {
-                                                        "type": "string"
+                                                        "type": "boolean"
                                                     },
                                                     {
-                                                        "type": "boolean"
+                                                        "type": "integer",
+                                                        "minimum": 0
                                                     }
                                                 ],
                                                 "default": true,
-                                                "description": "是否执行节点，默认True"
+                                                "description": "是否执行节点（布尔值）或执行次数（整数），默认True。\n\n布尔值格式：true表示执行，false表示不执行\n例如：true\n\n整数格式：执行次数，每次执行后减1，减到0后不再执行\n例如：3"
                                             },
                                             "interval": {
                                                 "type": "number",
                                                 "default": 2.0,
                                                 "minimum": 0,
-                                                "description": "识别name的间隔时间（秒），默认2秒"
+                                                "description": "识别name的间隔时间（秒），默认2秒，float格式"
                                             },
                                             "hit": {
                                                 "type": "boolean",
                                                 "default": true,
-                                                "description": "识别detail返回值，默认True"
+                                                "description": "识别detail返回值，默认True，bool格式"
                                             }
                                         },
                                         "required": [
                                             "name"
                                         ]
                                     }
-                                ],
-                                "description": "继续节点或节点配置"
-                            },
-                            "description": "继续节点列表"
+                                ]
+                            }
                         }
                     ],
-                    "description": "继续节点列表，识别到该节点时，根据run配置执行对应节点并继续识别。节点内部逻辑为OR关系"
+                    "description": "继续节点列表，识别到该节点时，根据run配置执行对应节点并继续识别。节点内部逻辑为OR关系\n\n支持格式：\n- 单个节点名称（字符串）：\n  \"node_name\"\n\n- 节点列表（数组）：\n  [\n    \"node_name\",\n    {\n        \"name\": \"node_name\",\n        \"run\": 1,\n        \"interval\": 5\n    }\n]"
                 },
                 "Over": {
                     "oneOf": [
                         {
-                            "type": "string",
-                            "description": "节点名称"
+                            "type": "string"
                         },
                         {
                             "type": "array",
                             "items": {
                                 "oneOf": [
                                     {
-                                        "type": "string",
-                                        "description": "节点名称"
+                                        "type": "string"
                                     },
                                     {
                                         "type": "object",
                                         "properties": {
                                             "name": {
-                                                "type": "string",
-                                                "description": "节点名称"
+                                                "type": "string"
                                             },
                                             "run": {
                                                 "oneOf": [
                                                     {
-                                                        "type": "string"
+                                                        "type": "boolean"
                                                     },
                                                     {
-                                                        "type": "boolean"
+                                                        "type": "integer",
+                                                        "minimum": 0
                                                     }
                                                 ],
                                                 "default": true,
-                                                "description": "是否执行节点，默认True"
+                                                "description": "是否执行节点（布尔值）或执行次数（整数），默认True。\n\n布尔值格式：true表示执行，false表示不执行\n例如：true\n\n整数格式：执行次数，每次执行后减1，减到0后不再执行\n例如：3"
                                             },
                                             "interval": {
                                                 "type": "number",
                                                 "default": 2.0,
                                                 "minimum": 0,
-                                                "description": "识别name的间隔时间（秒），默认2秒"
+                                                "description": "识别name的间隔时间（秒），默认2秒，float格式"
                                             },
                                             "hit": {
                                                 "type": "boolean",
                                                 "default": true,
-                                                "description": "识别detail返回值，默认True"
+                                                "description": "识别detail返回值，默认True，bool格式"
                                             }
                                         },
                                         "required": [
                                             "name"
                                         ]
                                     }
-                                ],
-                                "description": "超时节点或节点配置"
-                            },
-                            "description": "超时节点列表"
+                                ]
+                            }
                         }
                     ],
-                    "description": "超时节点列表，超时时，根据run配置执行对应节点并结束。节点内部逻辑为OR关系"
+                    "description": "超时节点列表，超时时，根据run配置执行对应节点并结束。节点内部逻辑为OR关系\n\n支持格式：\n- 单个节点名称（字符串）：\n  \"node_name\"\n\n- 节点列表（数组）：\n  [\n    \"node_name\",\n    {\n        \"name\": \"node_name\",\n        \"run\": true,\n        \"interval\": 2\n    }\n]"
                 },
                 "logger": {
                     "type": "boolean",
                     "default": false,
-                    "description": "是否开启日志，默认False"
+                    "description": "是否开启日志，默认False，bool格式"
                 }
             },
             "additionalProperties": false

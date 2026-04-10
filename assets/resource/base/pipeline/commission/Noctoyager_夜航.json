@@ -4,8 +4,8 @@
         "next": [
             "委托-夜航手册",
             "[JumpBack]主页面-委托",
-            "[JumpBack]放弃挑战",
-            "[JumpBack]放弃委托"
+            "[JumpBack]退出委托",
+            "[JumpBack]局内放弃委托"
         ]
     }
 }

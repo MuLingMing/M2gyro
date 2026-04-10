@@ -134,7 +134,7 @@ class Count(CustomAction):
 
         # target_count=0时，action运行else_node
         # 使得option修改target_count逻辑相同
-        if current_count < target_count or target_count == 0:
+        if current_count < target_count-1 or target_count == 0:
             current_count = current_count + 1
             self._reset_nodes(
                 context=context, nodes=argv.node_name, reset_count=current_count
@@ -158,7 +158,7 @@ class Count(CustomAction):
             # 运行播报
             if logger_enable:
                 logger.info(
-                    f"{argv.node_name}已达到目标次数{target_count}，执行后续节点{next_node}"
+                    f"{argv.node_name}已达到目标次数{target_count}"
                 )
             self._run_nodes(context, params["next_node"])
 

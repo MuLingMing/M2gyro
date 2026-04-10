@@ -37,35 +37,61 @@
     "铸造任务": {},
     "钓鱼任务": {},
     "副本次数": {
-        //"副本次数"option重写"atach"
+        // "副本次数"option重写"attach",
+        // "attach": {
+        //     "reco": {
+        //         "total_time": 90,
+        //         "Continue": [
+        //             {
+        //                 "name": "驱离复位",
+        //                 "run": 1
+        //             }
+        //         ],
+        //         "logger": false
+        //     },
+        //     "act": {
+        //         "target_count": 0,
+        //     }
+        // }
         "recognition": {
             "type": "Custom",
             "param": {
                 "custom_recognition": "Countdown",
                 "custom_recognition_param": {
                     "total_time": 90,
+                    "entry": [
+                        {
+                            "name": "局内复位",
+                            "run": false
+                        }
+                    ],
                     "Interrupt": [
                         {
                             "name": "确认选择",
+                            "run": false,
+                            "interval": 2
+                        },
+                        {
+                            "name": "倍率选择",
                             "run": false,
                             "interval": 2
                         }
                     ],
                     "Continue": [
                         {
+                            "name": "局内复位",
+                            "run": 1
+                        },
+                        {
                             "name": "释放技能E",
-                            "interval": 5
+                            "interval": 3
                         },
                         {
                             "name": "释放状态Q",
                             "interval": 3
                         }
                     ],
-                    "Over": [
-                        {
-                            "name": "放弃委托"
-                        }
-                    ],
+                    "Over": "放弃委托",
                     "logger": false
                 }
             }
@@ -83,7 +109,7 @@
                         "倍率选择"
                     ],
                     "next_node": [
-                        "放弃挑战",
+                        "退出委托",
                         "结束当前任务"
                     ]
                 }
@@ -139,43 +165,6 @@
         },
         "next": [
             "弹窗确定"
-        ]
-    },
-    "技能次数": {
-        //option重写custom_action_parm
-        //识别到在副本内
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "副本/副本退出/离开副本/"
-                ],
-                "roi": [
-                    0,
-                    0,
-                    100,
-                    75
-                ]
-            }
-        },
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "count": 0,
-                    "target_count": 30,
-                    "next_node": [
-                        "放弃委托"
-                    ]
-                }
-            }
-        },
-        //空保证仅识别一次
-        "next": [
-            "释放技能E",
-            "释放状态Q",
-            "空"
         ]
     }
 }

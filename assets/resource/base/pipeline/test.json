@@ -1,4 +1,11 @@
 {
+    "test": {
+        "next": [
+            "[JumpBack]确认选择",
+            "[JumpBack]倍率选择",
+            "[JumpBack]副本次数"
+        ]
+    },
     "test_countdown": {
         "recognition": {
             "type": "Custom",
@@ -6,6 +13,12 @@
                 "custom_recognition": "Countdown",
                 "custom_recognition_param": {
                     "total_time": 60,
+                    "entry": [
+                        {
+                            "name": "放弃委托",
+                            "run": false
+                        }
+                    ],
                     "Interrupt": [
                         "A"
                     ],

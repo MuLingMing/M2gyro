@@ -110,13 +110,35 @@ class ParamMerger:
 
         # 确定要遍历的 attach 参数
         if merge_type in ("reco", "recognition"):
+            # 先创建一个合并后的 attach 参数
+            merged_attach = {}
+            # 先添加直接在 attach 下的参数
+            for key, value in attach_params.items():
+                if key not in ("reco", "recognition", "act", "action"):
+                    merged_attach[key] = value
+            # 再添加 reco/recognition 下的参数
             attach_reco = attach_params.get("reco") or attach_params.get("recognition")
             if attach_reco:
-                attach_params = attach_reco
+                for key, value in attach_reco.items():
+                    merged_attach[key] = value
+            # 使用合并后的参数
+            if merged_attach:
+                attach_params = merged_attach
         elif merge_type in ("act", "action"):
+            # 先创建一个合并后的 attach 参数
+            merged_attach = {}
+            # 先添加直接在 attach 下的参数
+            for key, value in attach_params.items():
+                if key not in ("act", "action", "reco", "recognition"):
+                    merged_attach[key] = value
+            # 再添加 act/action 下的参数
             attach_act = attach_params.get("act") or attach_params.get("action")
             if attach_act:
-                attach_params = attach_act
+                for key, value in attach_act.items():
+                    merged_attach[key] = value
+            # 使用合并后的参数
+            if merged_attach:
+                attach_params = merged_attach
 
         # 递归合并
         for key, value in attach_params.items():
@@ -164,7 +186,7 @@ class ParamMerger:
         返回:
         - dict: {"type": expected_type, "items": item_schema, "dict_schema": dict_schema, ...}
         """
-        result = {"type": None, "items": None, "dict_schema": None}  # type: ignore
+        result = {"type": None, "items": None, "dict_schema": None}  
 
         if field_schema is None:
             return result
@@ -186,13 +208,13 @@ class ParamMerger:
 
         # 复杂类型：字典格式
         if isinstance(field_schema, dict):
-            result["type"] = field_schema.get("type")  # type: ignore
-            result["items"] = field_schema.get("items")  # type: ignore
-            result["dict_schema"] = field_schema.get("dict_schema")  # type: ignore
+            result["type"] = field_schema.get("type")  
+            result["items"] = field_schema.get("items")  
+            result["dict_schema"] = field_schema.get("dict_schema")  
             # 其他字段留作扩展
             for k, v in field_schema.items():
                 if k not in ("type", "items", "dict_schema"):
-                    result[k] = v  # type: ignore
+                    result[k] = v  
             return result
 
         return result
@@ -506,12 +528,17 @@ class ParamMerger:
             elif isinstance(item, str):
                 attach_names.add(item)
 
-        # 先添加 original 独有的字符串项
+        # 先添加 original 独有的项（包括字符串和对象）
         result = []
         for item in original:
             if isinstance(item, str) and item not in attach_names:
                 # original 独有的字符串，保留
                 result.append(item)
+            elif isinstance(item, dict):
+                # original 独有的对象，保留
+                identifier = self._get_identifier(item)
+                if identifier and identifier not in attach_names:
+                    result.append(item)
 
         # 按 attach 顺序处理
         for attach_item in attach:

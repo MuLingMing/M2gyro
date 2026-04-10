@@ -12,83 +12,17 @@
                     0,
                     0,
                     350,
-                    450
+                    650
                 ]
             }
         },
         "next": [
-            "[JumpBack]副本次数",
-            "[JumpBack]驱离复位"
+            "[JumpBack]确认选择",
+            "[JumpBack]倍率选择",
+            "[JumpBack]副本次数"
         ],
         "on_error": [
-            "放弃委托"
+            "退出委托"
         ]
-    },
-    "驱离复位": {
-        //复位大法，不分地图
-        //已驱逐敌人：0/，保证只进行一次
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "已驱逐敌人：0/",
-                    "敌人：0/",
-                    "人：0",
-                    "：0"
-                ],
-                "roi": [
-                    0,
-                    0,
-                    350,
-                    450
-                ]
-            }
-        },
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "else_node": [
-                        "局内复位"
-                    ],
-                    "reset_node": [
-                        "技能次数"
-                    ]
-                }
-            }
-        },
-        "next": [
-            "副本完成",
-            "[JumpBack]技能次数"
-        ]
-    },
-    "驱离副本": {
-        "recognition": {
-            "type": "Custom",
-            "param": {
-                "custom_recognition": "Countdown",
-                "custom_recognition_param": {
-                    "total_time": 90,
-                    "Interrupt": [
-                        "副本完成"
-                    ],
-                    "Continue": [
-                        {
-                            "name": "释放技能E",
-                            "interval": 5
-                        },
-                        {
-                            "name": "释放状态Q",
-                            "interval": 3
-                        }
-                    ],
-                    "Over": [
-                        "放弃委托"
-                    ],
-                    "logger": true
-                }
-            }
-        }
     }
 }

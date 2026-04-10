@@ -9,7 +9,7 @@
             "enum": [
                 "Count"
             ],
-            "description": "动作名，必须为 Count"
+            "description": "动作名，必须为 Count\n例如：\n\"Count\"\n\n对应的 custom_action_param 示例：\n{\n    \"count\": 0,\n    \"target_count\": 3,\n    \"next_node\": [\"node_name\"],\n    \"else_node\": [\"node_name\"],\n    \"reset_node\": [\"node_name\"],\n    \"logger\": false\n}"
         },
         "custom_action_param": {
             "$ref": "#/definitions/CountParam"
@@ -34,58 +34,49 @@
                 "next_node": {
                     "oneOf": [
                         {
-                            "type": "string",
-                            "description": "节点名称"
+                            "type": "string"
                         },
                         {
                             "type": "array",
                             "items": {
-                                "type": "string",
-                                "description": "节点名称"
-                            },
-                            "description": "节点名称列表"
+                                "type": "string"
+                            }
                         }
                     ],
-                    "description": "达到目标次数后执行的节点。支持多个节点，按顺序执行；可以出现重复节点；可以为空"
+                    "description": "达到目标次数后执行的节点。支持多个节点，按顺序执行；可以出现重复节点；可以为空\n\n支持格式：\n- 单个节点名称（字符串）：\n  \"node_name\"\n\n- 节点列表（数组）：\n  [\n    \"node_name1\",\n    \"node_name2\"\n  ]"
                 },
                 "else_node": {
                     "oneOf": [
                         {
-                            "type": "string",
-                            "description": "节点名称"
+                            "type": "string"
                         },
                         {
                             "type": "array",
                             "items": {
-                                "type": "string",
-                                "description": "节点名称"
-                            },
-                            "description": "节点名称列表"
+                                "type": "string"
+                            }
                         }
                     ],
-                    "description": "未达到目标次数时执行的节点。支持多个节点，按顺序执行；可以出现重复节点；可以为空"
+                    "description": "未达到目标次数时执行的节点。支持多个节点，按顺序执行；可以出现重复节点；可以为空\n\n支持格式：\n- 单个节点名称（字符串）：\n  \"node_name\"\n\n- 节点列表（数组）：\n  [\n    \"node_name1\",\n    \"node_name2\"\n  ]"
                 },
                 "reset_node": {
                     "oneOf": [
                         {
-                            "type": "string",
-                            "description": "节点名称"
+                            "type": "string"
                         },
                         {
                             "type": "array",
                             "items": {
-                                "type": "string",
-                                "description": "节点名称"
-                            },
-                            "description": "节点名称列表"
+                                "type": "string"
+                            }
                         }
                     ],
-                    "description": "将指定节点的 count 重置为 0。支持多个节点；可以为空"
+                    "description": "将指定节点的 count 重置为 0。支持多个节点；可以为空\n\n支持格式：\n- 单个节点名称（字符串）：\n  \"node_name\"\n\n- 节点列表（数组）：\n  [\n    \"node_name1\",\n    \"node_name2\"\n  ]"
                 },
                 "logger": {
                     "type": "boolean",
                     "default": false,
-                    "description": "是否输出运行次数，默认 false"
+                    "description": "是否输出运行次数，默认 false，bool格式"
                 }
             },
             "additionalProperties": false
