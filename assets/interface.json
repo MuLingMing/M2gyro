@@ -47,10 +47,28 @@
             "label": "test",
             "task": [
                 {
-                    "name": "驱离测试"
+                    "name": "驱离测试",
+                    "option": {
+                        "单次倍率": "无加成",
+                        "超时时间": {
+                            "total_time": "120"
+                        },
+                        "倍率书副本次数": {
+                            "target_count": "0"
+                        }
+                    }
                 },
                 {
-                    "name": "测试"
+                    "name": "测试",
+                    "option": {
+                        "单次倍率": "无加成",
+                        "超时时间": {
+                            "total_time": "120"
+                        },
+                        "倍率书副本次数": {
+                            "target_count": "0"
+                        }
+                    }
                 }
             ]
         }
@@ -288,8 +306,6 @@
         },
         "倍率书副本次数": {
             "type": "input",
-            "label": "副本次数",
-            "description": "设置副本刷取次数，默认无限循环。",
             "inputs": [
                 {
                     "name": "target_count",
@@ -311,13 +327,12 @@
         },
         "超时时间": {
             "type": "input",
-            "label": "超时时间",
-            "description": "设置局内超时时间，默认90s",
             "inputs": [
                 {
                     "name": "total_time",
                     "label": "超时时间",
-                    "default": "90",
+                    "description": "设置局内超时时间，默认120s",
+                    "default": "120",
                     "pipeline_type": "int"
                 }
             ],

@@ -24,7 +24,7 @@ from maa.custom_recognition import CustomRecognition
 from utils.logger import logger
 import json
 import time
-from general import ParamMerger
+from param_merger import ParamMerger
 
 # 常量定义
 DEFAULT_INTERVAL = 2.0

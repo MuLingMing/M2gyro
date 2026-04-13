@@ -1,15 +1,4 @@
 {
-    "角色经验页面": {
-        "pre_delay": 0,
-        "pre_wait_freezes": 0,
-        "post_delay": 0,
-        "post_wait_freezes": 0,
-        "next": [
-            "角色经验识别",
-            "[JumpBack]委托-向右",
-            "[JumpBack]委托页面"
-        ]
-    },
     "角色经验识别": {
         //角色经验or避险
         "recognition": {
@@ -31,17 +20,6 @@
         "action": "Click",
         "next": [
             "委托等级识别"
-        ]
-    },
-    "武器经验页面": {
-        "pre_delay": 0,
-        "pre_wait_freezes": 0,
-        "post_delay": 0,
-        "post_wait_freezes": 0,
-        "next": [
-            "武器经验识别",
-            "[JumpBack]委托-向右",
-            "[JumpBack]委托页面"
         ]
     },
     "武器经验识别": {
@@ -67,17 +45,6 @@
             "委托等级识别"
         ]
     },
-    "武器突破页面": {
-        "pre_delay": 0,
-        "pre_wait_freezes": 0,
-        "post_delay": 0,
-        "post_wait_freezes": 0,
-        "next": [
-            "武器突破识别",
-            "[JumpBack]委托-向右",
-            "[JumpBack]委托页面"
-        ]
-    },
     "武器突破识别": {
         //武器突破or调停
         "recognition": {
@@ -99,17 +66,6 @@
         "action": "Click",
         "next": [
             "委托等级识别"
-        ]
-    },
-    "深红凝珠页面": {
-        "pre_delay": 0,
-        "pre_wait_freezes": 0,
-        "post_delay": 0,
-        "post_wait_freezes": 0,
-        "next": [
-            "深红凝珠识别",
-            "[JumpBack]委托-向右",
-            "[JumpBack]委托页面"
         ]
     },
     "深红凝珠识别": {
@@ -136,17 +92,6 @@
             "委托等级识别"
         ]
     },
-    "魔之楔本页面": {
-        "pre_delay": 0,
-        "pre_wait_freezes": 0,
-        "post_delay": 0,
-        "post_wait_freezes": 0,
-        "next": [
-            "魔之楔本识别",
-            "[JumpBack]委托-向右",
-            "[JumpBack]委托页面"
-        ]
-    },
     "魔之楔本识别": {
         //魔之楔or驱离
         "recognition": {
@@ -171,17 +116,6 @@
             "委托等级识别"
         ]
     },
-    "角色突破页面": {
-        "pre_delay": 0,
-        "pre_wait_freezes": 0,
-        "post_delay": 0,
-        "post_wait_freezes": 0,
-        "next": [
-            "角色突破识别",
-            "[JumpBack]委托-向右",
-            "[JumpBack]委托页面"
-        ]
-    },
     "角色突破识别": {
         //角色突破or探险
         "recognition": {
@@ -203,17 +137,6 @@
         "action": "Click",
         "next": [
             "委托等级识别"
-        ]
-    },
-    "皎皎信物页面": {
-        "pre_delay": 0,
-        "pre_wait_freezes": 0,
-        "post_delay": 0,
-        "post_wait_freezes": 0,
-        "next": [
-            "皎皎信物识别",
-            "[JumpBack]委托-向右",
-            "[JumpBack]委托页面"
         ]
     },
     "皎皎信物识别": {
@@ -269,19 +192,6 @@
                 ]
             }
         }
-    },
-    "委托页面": {
-        //导航到委托页面
-        "pre_delay": 0,
-        "pre_wait_freezes": 0,
-        "post_delay": 0,
-        "post_wait_freezes": 0,
-        "next": [
-            "委托-委托",
-            "[JumpBack]主页面-委托",
-            "[JumpBack]退出委托",
-            "[JumpBack]局内放弃委托"
-        ]
     },
     "委托-委托": {
         "recognition": {

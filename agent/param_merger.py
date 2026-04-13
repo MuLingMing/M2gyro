@@ -193,16 +193,16 @@ class ParamMerger:
 
         # 简单类型：直接是类型对象
         if isinstance(field_schema, (type, tuple)):
-            result["type"] = field_schema  # type: ignore
+            result["type"] = field_schema
             
             # 特殊处理：(str, node_schema, list) 这种格式
             if isinstance(field_schema, tuple):
                 # 提取 dict schema（如果有）
                 dict_schemas = [t for t in field_schema if isinstance(t, dict)]
                 if dict_schemas:
-                    result["dict_schema"] = dict_schemas[0]  # type: ignore
+                    result["dict_schema"] = dict_schemas[0]
                     # 列表项的 schema 是 (str, dict_schema)
-                    result["items"] = (str, dict_schemas[0])  # type: ignore
+                    result["items"] = (str, dict_schemas[0])
             
             return result
 

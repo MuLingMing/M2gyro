@@ -219,25 +219,6 @@
         },
         "action": "Click"
     },
-    "委托-夜航手册": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "夜航手册",
-                    "夜航",
-                    "手册"
-                ],
-                "roi": [
-                    550,
-                    70,
-                    690,
-                    60
-                ]
-            }
-        },
-        "action": "Click"
-    },
     "委托-委托密函": {
         "recognition": {
             "type": "OCR",

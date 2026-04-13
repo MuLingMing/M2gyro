@@ -12,7 +12,7 @@ from maa.context import Context
 from maa.custom_action import CustomAction
 import json
 from utils.logger import logger
-from general import ParamMerger
+from param_merger import ParamMerger
 
 
 class Count(CustomAction):
