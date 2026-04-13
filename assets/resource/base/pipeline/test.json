@@ -1,58 +1,58 @@
 {
-    "test": {
-        "next": [
-            "[JumpBack]确认选择",
-            "[JumpBack]倍率选择",
-            "[JumpBack]副本次数"
-        ]
-    },
-    "test_countdown": {
-        "recognition": {
-            "type": "Custom",
-            "param": {
-                "custom_recognition": "Countdown",
-                "custom_recognition_param": {
-                    "total_time": 60,
-                    "entry": [
-                        {
-                            "name": "放弃委托",
-                            "run": false
-                        }
-                    ],
-                    "Interrupt": [
-                        "A"
-                    ],
-                    "Continue": [
-                        "B"
-                    ],
-                    "Over": [
-                        "C"
-                    ],
-                    "logger": false
-                }
+  "test": {
+    "next": [
+      "[JumpBack]确认选择",
+      "[JumpBack]倍率选择",
+      "[JumpBack]副本次数"
+    ]
+  },
+  "test_countdown": {
+    "recognition": {
+      "type": "Custom",
+      "param": {
+        "custom_recognition": "Countdown",
+        "custom_recognition_param": {
+          "total_time": 60,
+          "entry": [
+            {
+              "name": "放弃委托",
+              "run": false
             }
+          ],
+          "Interrupt": [
+            "A"
+          ],
+          "Continue": [
+            "B"
+          ],
+          "Over": [
+            "C"
+          ],
+          "logger": false
         }
-    },
-    "test_count": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "count": 0,
-                    "target_count": 10,
-                    "next_node": [
-                        "node1"
-                    ],
-                    "else_node": [
-                        "node2"
-                    ],
-                    "reset_node": [
-                        "node3"
-                    ],
-                    "logger": false
-                }
-            }
-        }
+      }
     }
+  },
+  "test_count": {
+    "action": {
+      "type": "Custom",
+      "param": {
+        "custom_action": "Count",
+        "custom_action_param": {
+          "count": 0,
+          "target_count": 10,
+          "next_node": [
+            "node1"
+          ],
+          "else_node": [
+            "node2"
+          ],
+          "reset_node": [
+            "node3"
+          ],
+          "logger": false
+        }
+      }
+    }
+  }
 }

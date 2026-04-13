@@ -9,12 +9,7 @@
                 ]
             }
         },
-        "action": "Click",
-        //3s延时
-        "post_delay": 3000,
-        "next": [
-            "空"
-        ]
+        "action": "Click"
     },
     "释放状态Q": {
         //仅识别菲娜、赛琪、黎瑟Q

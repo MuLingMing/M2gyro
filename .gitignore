@@ -455,6 +455,7 @@ config
 debug
 .venv
 .trae
+assets/resource/config.json
 
 # custom_schema
 !deps/tools/custom_reco/

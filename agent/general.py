@@ -164,6 +164,18 @@ class ParamMerger:
         - field_schema: 当前字段的类型定义
         - merge_type: custom类型（reco/action）
         """
+        # 检查 attach_value 是否为空，如果为空则清空原参数对应键值
+        if self._is_empty_value(attach_value):
+            # 根据 custom_value 的类型返回对应空值
+            if isinstance(custom_value, list):
+                return []
+            elif isinstance(custom_value, dict):
+                return {}
+            elif isinstance(custom_value, str):
+                return ""
+            else:
+                return None
+
         # 如果 custom_value 不存在，直接用 attach_value
         if custom_value is None:
             return self._apply_type_conversion(key, attach_value, field_schema)
@@ -178,6 +190,26 @@ class ParamMerger:
 
         # 没有 schema 定义，按实际类型处理
         return self._merge_by_actual_type(key, custom_value, attach_value, merge_type)
+
+    def _is_empty_value(self, value) -> bool:
+        """
+        检查值是否为空
+
+        参数:
+        - value: 要检查的值
+
+        返回值:
+        - bool: 如果值为空则返回 True，否则返回 False
+        """
+        if value is None:
+            return True
+        elif isinstance(value, str) and value.strip() == "":
+            return True
+        elif isinstance(value, list) and len(value) == 0:
+            return True
+        elif isinstance(value, dict) and len(value) == 0:
+            return True
+        return False
 
     def _parse_schema(self, field_schema) -> dict:
         """

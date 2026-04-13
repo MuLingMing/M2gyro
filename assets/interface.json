@@ -38,7 +38,9 @@
             "./../agent/main.py"
         ]
     },
-    "import": [],
+    "import": [
+        "./resource/attach/夜航手册.interface.json"
+    ],
     "task": [
         {
             "name": "启动游戏",
@@ -57,12 +59,21 @@
             ]
         },
         {
+            "name": "测试",
+            "entry": "test",
+            "description": "测试用",
+            "option": [
+                "单次倍率",
+                "超时时间",
+                "倍率书副本次数"
+            ]
+        },
+        {
             "name": "夜航手册",
             "entry": "夜航手册",
             "description": "夜航手册",
             "option": [
-                "夜航手册等级",
-                "夜航手册序号",
+                "夜航手册等级选择",
                 "单次倍率",
                 "超时时间",
                 "倍率书副本次数"

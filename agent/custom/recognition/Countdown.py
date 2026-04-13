@@ -255,16 +255,16 @@ class Countdown(CustomRecognition):
                 next_checks.append(continue_timestamps[i] + interval)
 
             if next_checks:
-                # 计算下次检查时间，确保轮询间隔为 2 秒
+                # 计算下次检查时间，确保轮询间隔尽可能低于 MIN_SLEEP_TIME 秒
                 sleep_duration = max(next_checks) - time.monotonic()
                 # 确保 sleep_time 为非负数
-                sleep_time = max(MIN_SLEEP_TIME, sleep_duration)
+                sleep_time = min(MIN_SLEEP_TIME, sleep_duration)
                 if sleep_time < 0:
-                    sleep_time = MIN_SLEEP_TIME
+                    sleep_time = 0
                 # 等待下次检查时间
                 time.sleep(sleep_time)
             else:
-                # 没有检查时间，等待 2 秒
+                # 没有检查时间，等待 MIN_SLEEP_TIME 秒
                 time.sleep(MIN_SLEEP_TIME)
 
             if logger_enable:
