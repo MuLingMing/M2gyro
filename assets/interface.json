@@ -41,6 +41,20 @@
     "import": [
         "./resource/attach/夜航手册.interface.json"
     ],
+    "preset": [
+        {
+            "name": "1",
+            "label": "test",
+            "task": [
+                {
+                    "name": "驱离测试"
+                },
+                {
+                    "name": "测试"
+                }
+            ]
+        }
+    ],
     "task": [
         {
             "name": "启动游戏",
