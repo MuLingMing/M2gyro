@@ -200,12 +200,15 @@
                         },
                         {
                             "name": "释放技能E",
-                            "interval": 3
+                            "interval": 3,
+                            "delay": 2
                         },
                         {
                             "name": "释放状态Q",
-                            "interval": 3
-                        }
+                            "interval": 3,
+                            "delay": 2
+                        },
+                        "局内继续游戏"
                     ],
                     "Over": "放弃委托",
                     "logger": false

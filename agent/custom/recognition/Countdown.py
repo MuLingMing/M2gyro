@@ -42,7 +42,7 @@ class Countdown(CustomRecognition):
        - 间隔interval秒识别一次节点列表
 
     2. 节点分类与处理
-        2.1 Interrupt: ["A1", {"name": "A2", "run": "True", "interval": 2, "hit": True"}]
+        2.1 Interrupt: ["A1", {"name": "A2", "run": "True", "interval": 2, "hit": True, "delay": 1}]
             - 间隔interval秒执行一次
             - 识别到A1/A2时，执行对应节点并结束
         2.2 Continue: "B"
@@ -64,7 +64,7 @@ class Countdown(CustomRecognition):
     {
         "total_time": 总倒计时时间（秒），默认60秒,
         "entry": 入口节点名称，默认无入口节点,
-        "Interrupt": ["A1", {"name": "A2", "run": "True", "interval": 2, "hit": True},
+        "Interrupt": ["A1", {"name": "A2", "run": "True", "interval": 2, "hit": True, "delay": 1}],
         "Continue": "B",
         "Over": ["C"],
         "logger": 是否开启日志，默认false
@@ -129,6 +129,7 @@ class Countdown(CustomRecognition):
                         "run": (bool, int),  # run 可以是布尔值或整数
                         "interval": (int, float),  # interval 可以是整数或浮点数
                         "hit": bool,
+                        "delay": (int, float),  # delay 可以是整数或浮点数
                     }
                     # 节点列表类型（字符串、对象或数组）
                     node_list_type = (str, node_schema, list)
@@ -137,12 +138,14 @@ class Countdown(CustomRecognition):
                         "total_time": int,  # 总倒计时时间（秒）
                         "entry": node_list_type,
                         "Interrupt": node_list_type,  # 可以是字符串、对象或数组
-                        "Continue": node_list_type,   # 可以是字符串、对象或数组
-                        "Over": node_list_type,       # 可以是字符串、对象或数组
+                        "Continue": node_list_type,  # 可以是字符串、对象或数组
+                        "Over": node_list_type,  # 可以是字符串、对象或数组
                         "logger": bool,
                     }
                     merger = ParamMerger(identifier_fields=["name"], schema=schema)
-                    params = merger.merge_params("reco", custom_recognition_param, attach_params)
+                    params = merger.merge_params(
+                        "reco", custom_recognition_param, attach_params
+                    )
         except json.JSONDecodeError as e:
             logger.error(f"Countdown: 参数解析失败: {e}")
             return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
@@ -172,30 +175,30 @@ class Countdown(CustomRecognition):
             # 入口节点识别成功则进入倒计时循环，未识别到则返回失败结果
             parsed_entry = [self._parse_node(node) for node in entry]
             for parsed in parsed_entry:
-                name = parsed.get("name", "")
-                run = parsed.get("run", True)
-                result, updated_run = self._run_recognition(context, name, run)
+                result = self._run_recognition(context, parsed)
                 if result:
                     if logger_enable:
-                        logger.info(f"Countdown: {argv.node_name} 识别到入口节点 {name}")
+                        logger.debug(
+                            f"Countdown: {argv.node_name} 识别到入口节点 {parsed.get('name')}"
+                        )
                     break
             else:
                 # 未识别到入口节点，返回失败结果
                 if logger_enable:
-                    logger.error(f"Countdown: {argv.node_name} 未识别到入口节点 {entry}")
+                    logger.debug(
+                        f"Countdown: {argv.node_name} 未识别到入口节点 {[item.get('name') for item in parsed_entry]}"
+                    )
                 return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
 
-
-
         # 倒计时开始
-        if logger_enable:
-            logger.info(f"Countdown: {argv.node_name} 开始倒计时 {total_time} 秒")
+        logger.debug(f"Countdown: {argv.node_name} 开始倒计时 {total_time} 秒")
 
         start_time = time.monotonic()
 
         # 预处理节点参数
         parsed_interrupts = [self._parse_node(node) for node in Interrupt]
         parsed_continues = [self._parse_node(node) for node in Continue]
+        parsed_overovers = [self._parse_node(node) for node in Over]
 
         # 使用字典管理时间戳，避免索引问题
         interrupt_timestamps = {i: start_time for i in range(len(parsed_interrupts))}
@@ -203,47 +206,40 @@ class Countdown(CustomRecognition):
 
         while time.monotonic() - start_time <= total_time or total_time <= 0:
             if context.tasker.stopping:
-                if logger_enable:
-                    logger.info(f"Countdown: {argv.node_name} 任务被停止")
+                logger.debug(f"Countdown: {argv.node_name} 任务被停止")
                 return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
             # 间隔interval秒运行一次节点识别
             for i, parsed in enumerate(parsed_interrupts):
-                name = parsed.get("name", "")
-                run = parsed.get("run", True)
                 interval = parsed.get("interval", DEFAULT_INTERVAL)
                 hit = parsed.get("hit", True)
+
                 if time.monotonic() - interrupt_timestamps[i] >= interval:
                     interrupt_timestamps[i] = time.monotonic()
                     # 节点检查，识别到Interrupt，返回识别结果并终止循环
-                    result, updated_run = self._run_recognition(context, name, run)
-                    # 更新原始 run 值
-                    parsed["run"] = updated_run
-                    if result:
-                        if logger_enable:
-                            logger.info(f"Countdown: {argv.node_name} 识别到中断节点 {name}")
+                    result = self._run_recognition(context, parsed)
+                    if result and result.hit:
+                        logger.debug(
+                            f"Countdown: {argv.node_name} 识别到中断节点 {parsed.get('name')}"
+                        )
                         return CustomRecognition.AnalyzeResult(
                             box=result.box, detail={"hit": hit}
                         )
             # 检查是否需要执行Continue节点
             for i, parsed in enumerate(parsed_continues):
-                name = parsed.get("name", "")
-                run = parsed.get("run", True)
                 interval = parsed.get("interval", DEFAULT_INTERVAL)
-                hit = parsed.get("hit", True)
-                if isinstance(run, int) and run == 0:
-                    if logger_enable:
-                        logger.info(f"Countdown: {argv.node_name} 继续节点 {name} 已执行完")
-                    continue
+
                 if logger_enable:
-                    logger.info(f"Countdown: {argv.node_name} 检查继续节点 {name}")
+                    logger.debug(
+                        f"Countdown: {argv.node_name} 检查继续节点 {parsed.get('name')}"
+                    )
                 if time.monotonic() - continue_timestamps[i] >= interval:
                     continue_timestamps[i] = time.monotonic()
-                    # 执行识别并更新 run 值
-                    result, updated_run = self._run_recognition(context, name, run)
+                    result = self._run_recognition(context, parsed)
                     # 更新原始 run 值
-                    parsed["run"] = updated_run
-                    if result and logger_enable:
-                        logger.info(f"Countdown: {argv.node_name} 识别到继续节点 {name}")
+                    if result and result.hit:
+                        logger.debug(
+                            f"Countdown: {argv.node_name} 识别到继续节点 {parsed.get('name')}"
+                        )
 
             # 计算下次检查时间
             next_checks = []
@@ -274,20 +270,15 @@ class Countdown(CustomRecognition):
 
         # 任务超时
         # 倒计时结束，执行Over节点
-        if Over:
-            for i, node in enumerate(Over):
-                parsed_node = self._parse_node(node)
-                name = parsed_node.get("name", "")
-                run = parsed_node.get("run", True)
-                hit = parsed_node.get("hit", True)
+        if parsed_overovers:
+            for i, parsed in enumerate(parsed_overovers):
+                hit = parsed.get("hit", True)
                 # 执行识别并更新 run 值
-                result, updated_run = self._run_recognition(context, name, run)
-                # 更新原始 run 值
-                if isinstance(Over[i], dict):
-                    Over[i]["run"] = updated_run
-                if result:
-                    if logger_enable:
-                        logger.info(f"Countdown: {argv.node_name} 任务超时！")
+                result = self._run_recognition(context, parsed)
+                if result and result.hit:
+                    logger.debug(
+                        f"Countdown: {argv.node_name} 任务超时！执行超时节点 {parsed.get('name')}"
+                    )
                     return CustomRecognition.AnalyzeResult(
                         box=result.box, detail={"hit": hit}
                     )
@@ -295,41 +286,45 @@ class Countdown(CustomRecognition):
         return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
 
     def _run_recognition(
-        self, context: Context, node_name: str, run: bool | int = True
-    ) -> tuple[RecognitionDetail | None, bool | int]:
+        self, context: Context, parsed: dict | None
+    ) -> RecognitionDetail | None:
         """
         执行识别判定
         参数:
         - context: 上下文对象，用于执行节点识别和任务
-        - node_name: 节点名称，为"A1"
-        - run: 是否执行节点，默认True
+        - parsed: 节点参数字典，包含name, run, delay
         返回值:
-        - tuple[RecognitionDetail|None, bool|int]: (识别结果, 更新后的run值)
+        - RecognitionDetail|None: 识别结果
         """
-        if not node_name:
-            return None, run
+        if not parsed:
+            return None
+        name = parsed.get("name", "")
+        run = parsed.get("run", True)
+        delay = parsed.get("delay", 0.0)
+        if not name:
+            return None
         try:
             # 执行节点的识别任务
             # 获取截图
             result = context.run_recognition(
-                node_name, image=context.tasker.controller.post_screencap().wait().get()
+                name, image=context.tasker.controller.post_screencap().wait().get()
             )
-            if result and result.hit:
+            if result and result.hit and delay > 0:
                 # 增加二次识别，确保识别结果稳定
-                time.sleep(0.7)
+                time.sleep(delay)
                 result = context.run_recognition(
-                node_name, image=context.tasker.controller.post_screencap().wait().get()
-            )
+                    name, image=context.tasker.controller.post_screencap().wait().get()
+                )
             if result and result.hit:
                 if isinstance(run, bool) and run:
-                    self._run_node(context, node_name)
+                    self._run_node(context, name)
                 elif isinstance(run, int) and run > 0:
-                    run = run - 1
-                    self._run_node(context, node_name)
-                return result, run
+                    parsed["run"] = run - 1
+                    self._run_node(context, name)
+                return result
         except Exception as e:
-            logger.error(f"Countdown: 执行节点 {node_name} 失败: {e}")
-        return None, run
+            logger.error(f"Countdown: 执行节点 {name} 失败: {e}")
+        return None
 
     def _run_node(self, context: Context, node_name: str):
         """
@@ -348,11 +343,11 @@ class Countdown(CustomRecognition):
     def _parse_node(self, param: str | dict) -> dict:
         """
         解析节点参数
-        param格式为{"name": "A1", "run": "True", "interval": 2, "hit": True}
+        param格式为{"name": "A1", "run": "True", "interval": 2, "hit": True, "delay": 1}
         默认run为True，对齐_run_recognition逻辑
         """
         if not param:
-            return {}
+            return {"name": ""}
         if isinstance(param, str):
             return {"name": param}
         if isinstance(param, dict):
@@ -360,6 +355,7 @@ class Countdown(CustomRecognition):
             run = param.get("run", True)
             interval = param.get("interval", DEFAULT_INTERVAL)
             hit = param.get("hit", True)
+            delay = param.get("delay", 0.0)
             # 处理字符串形式的 run 参数
             if isinstance(run, str):
                 run = run.lower() == "true"
@@ -371,6 +367,20 @@ class Countdown(CustomRecognition):
                     interval = DEFAULT_INTERVAL
                 if interval < 0:
                     interval = DEFAULT_INTERVAL
-            parsed = {"name": name, "run": run, "interval": interval, "hit": hit}
+            # 确保 delay 是数字
+            if not isinstance(delay, (int, float)):
+                try:
+                    delay = float(delay)
+                except:
+                    delay = 0.0
+                if delay < 0:
+                    delay = 0.0
+            parsed = {
+                "name": name,
+                "run": run,
+                "interval": interval,
+                "hit": hit,
+                "delay": delay,
+            }
             return parsed
         return {}

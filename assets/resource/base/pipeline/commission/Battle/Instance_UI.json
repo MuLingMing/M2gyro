@@ -125,5 +125,47 @@
         "next": [
             "弹窗确定"
         ]
+    },
+    "局内继续游戏": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "副本/副本退出/继续游戏/"
+                                ],
+                                "roi": [
+                                    710,
+                                    540,
+                                    570,
+                                    180
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "继续挑战"
+                                ],
+                                "roi": [
+                                    710,
+                                    540,
+                                    570,
+                                    180
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "Click"
     }
 }
