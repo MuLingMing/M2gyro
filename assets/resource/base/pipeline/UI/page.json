@@ -5,45 +5,37 @@
     "迷津": {
         "next": [
             "歧路足音-迷津",
-            "[JumpBack]主页面-歧路足音"
+            "[JumpBack]主页面->歧路足音"
         ]
     },
     "戏剧": {
         "next": [
             "歧路足音-戏剧",
-            "[JumpBack]主页面-歧路足音"
+            "[JumpBack]主页面->歧路足音"
         ]
     },
     "铸造": {
         "next": [
-            "[JumpBack]主页面-角色面板",
             "角色面板-铸造",
+            "[JumpBack]主页面-角色面板",
             "[JumpBack]返回上一级"
         ]
     },
     "地图": {
         "next": [
-            "[JumpBack]主页面-角色面板",
             "角色面板-地图",
+            "[JumpBack]主页面-角色面板",
             "[JumpBack]返回上一级"
         ]
     },
-    "主页面-委托": {
-        //历练-委托页面
+    "主页面->歧路足音": {
         "next": [
-            "[JumpBack]主页面-历练",
-            "[JumpBack]主页面-角色面板",
-            "[JumpBack]角色面板-历练",
-            "历练-委托",
-            "[JumpBack]返回上一级"
-        ]
-    },
-    "主页面-歧路足音": {
-        "next": [
-            "[JumpBack]主页面-角色面板",
-            "[JumpBack]角色面板-历练",
             "历练-歧路足音",
-            "[JumpBack]返回上一级"
+            "[JumpBack]角色面板-历练",
+            "[JumpBack]主页面-角色面板",
+            "[JumpBack]返回上一级",
+            "[JumpBack]退出委托",
+            "[JumpBack]局内放弃委托"
         ]
     },
     "主页面-角色面板": {
@@ -91,20 +83,6 @@
                     "type": "TemplateMatch",
                     "param": {
                         "template": "主页面/角色面板/历练/图标/",
-                        "roi": [
-                            20,
-                            285,
-                            480,
-                            410
-                        ]
-                    }
-                }
-            },
-            {
-                "recognition": {
-                    "type": "OCR",
-                    "param": {
-                        "expected": "历练",
                         "roi": [
                             20,
                             285,

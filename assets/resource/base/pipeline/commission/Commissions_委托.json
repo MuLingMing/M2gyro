@@ -1,4 +1,120 @@
 {
+    "角色经验": {
+        //避险
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "[JumpBack]角色经验识别",
+            "[JumpBack]委托-迁移-向左三次",
+            "[JumpBack]委托-向右",
+            "[JumpBack]委托-委托",
+            "[JumpBack]主页面->历练-委托"
+        ]
+    },
+    "角色突破": {
+        //探险/无尽
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "[JumpBack]角色突破识别",
+            "[JumpBack]委托-迁移-向左三次",
+            "[JumpBack]委托-向右",
+            "[JumpBack]委托-委托",
+            "[JumpBack]主页面->历练-委托"
+        ]
+    },
+    "武器经验": {
+        //驱逐
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "[JumpBack]武器经验识别",
+            "[JumpBack]委托-迁移-向左三次",
+            "[JumpBack]委托-向右",
+            "[JumpBack]委托-委托",
+            "[JumpBack]主页面->历练-委托"
+        ]
+    },
+    "武器突破": {
+        //调停
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "[JumpBack]武器突破识别",
+            "[JumpBack]委托-迁移-向左三次",
+            "[JumpBack]委托-向右",
+            "[JumpBack]委托-委托",
+            "[JumpBack]主页面->历练-委托"
+        ]
+    },
+    "魔之楔本": {
+        //驱离
+        //未识别到"驱离"证明不在副本页面，导航到副本
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "驱离",
+            "[JumpBack]魔之楔本识别",
+            "[JumpBack]委托-迁移-向左三次",
+            "[JumpBack]委托-向右",
+            "[JumpBack]委托-委托",
+            "[JumpBack]主页面->历练-委托"
+        ]
+    },
+    "深红凝珠": {
+        //护送
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "[JumpBack]深红凝珠识别",
+            "[JumpBack]委托-迁移-向左三次",
+            "[JumpBack]委托-向右",
+            "[JumpBack]委托-委托",
+            "[JumpBack]主页面->历练-委托"
+        ]
+    },
+    "皎皎信物": {
+        //扼守/无尽
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "[JumpBack]皎皎信物识别",
+            "[JumpBack]委托-迁移-向左三次",
+            "[JumpBack]委托-向右",
+            "[JumpBack]委托-委托",
+            "[JumpBack]主页面->历练-委托"
+        ]
+    },
+    "主页面->历练-委托": {
+        //主页面导航到历练-委托页面
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "历练-委托",
+            "[JumpBack]主页面-历练",
+            "[JumpBack]角色面板-历练",
+            "[JumpBack]主页面-角色面板",
+            "[JumpBack]返回上一级",
+            "[JumpBack]退出委托",
+            "[JumpBack]局内放弃委托"
+        ]
+    },
     "角色经验识别": {
         //角色经验or避险
         "recognition": {
@@ -164,7 +280,7 @@
         "pre_delay": 0,
         "pre_wait_freezes": 0,
         "post_delay": 0,
-        "post_wait_freezes": 0,
+        "post_wait_freezes": 200,
         "recognition": {
             "type": "Or",
             "param": {
@@ -208,21 +324,15 @@
                 ]
             }
         },
-        "action": "Click",
-        //保证在委托最左端
-        "next": [
-            "[JumpBack]铜币识别-无",
-            "空"
-        ]
+        "action": "Click"
     },
-    "铜币识别-无": {
-        //判断不在委托最左端，则左滑三次
-        "inverse": true,
+    "委托-迁移-向左三次": {
+        //判断在委托最右端，则左滑三次
         "recognition": {
             "type": "OCR",
             "param": {
                 "expected": [
-                    "铜币"
+                    "迁移"
                 ],
                 "roi": [
                     425,
@@ -246,6 +356,6 @@
             }
         },
         "repeat": 3,
-        "repeat_wait_freezes": 500
+        "repeat_wait_freezes": 300
     }
 }

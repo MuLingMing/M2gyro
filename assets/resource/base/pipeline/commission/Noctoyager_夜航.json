@@ -1,0 +1,177 @@
+{
+    "夜航手册": {
+        //驱离、扼守（2）、避险、驱逐
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "击杀可能获得",
+            "[JumpBack]夜航手册页面"
+        ]
+    },
+    "击杀可能获得": {
+        //证明已经到达夜航手册页面
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "击杀可能获得"
+                ],
+                "roi": [
+                    380,
+                    0,
+                    900,
+                    720
+                ]
+            }
+        },
+        "next": [
+            "夜航手册目标等级",
+            "[JumpBack]夜航手册等级向下滑动",
+            "[JumpBack]夜航手册等级向上滑动"
+        ]
+    },
+    "夜航手册页面": {
+        //导航到夜航手册页面且等级滑动到最顶层20
+        "pre_delay": 0,
+        "pre_wait_freezes": 0,
+        "post_delay": 0,
+        "post_wait_freezes": 0,
+        "next": [
+            "委托-夜航手册",
+            "[JumpBack]主页面->历练-委托"
+        ]
+    },
+    "委托-夜航手册": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "夜航手册",
+                    "夜航",
+                    "手册"
+                ],
+                "roi": [
+                    550,
+                    70,
+                    690,
+                    60
+                ]
+            }
+        },
+        "action": "Click"
+    },
+    "夜航手册等级向下滑动": {
+        //识别到80则向下滑动
+        "post_wait_freezes": 200,
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "夜航手册/等级/80"
+                ],
+                "method": 10001,
+                "threshold": 0.95
+            }
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [
+                    460,
+                    300
+                ],
+                "end": [
+                    460,
+                    500
+                ]
+            }
+        },
+        "repeat": 2
+    },
+    "夜航手册等级向上滑动": {
+        //识别到20则向上滑动
+        "post_wait_freezes": 200,
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "夜航手册/等级/20"
+                ],
+                "method": 10001,
+                "threshold": 0.95
+            }
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [
+                    460,
+                    500
+                ],
+                "end": [
+                    460,
+                    300
+                ]
+            }
+        }
+    },
+    "夜航手册目标等级": {
+        //夜航手册目标等级，override：template: ["夜航手册/等级/20"]
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "夜航手册/等级/20"
+                ],
+                "method": 10001,
+                "threshold": 0.95
+            }
+        },
+        "action": "Click",
+        "next": [
+            "夜航手册目标副本"
+        ]
+    },
+    "夜航手册目标副本": {
+        //夜航手册目标副本，override：expected: ["爆破.*?疾冲"]
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "爆破.*?疾冲"
+                ]
+            }
+        },
+        "next": [
+            "夜航手册目标副本前往"
+        ]
+    },
+    "夜航手册目标副本前往": {
+        //夜航手册目标副本前往，override：next:[副本类型]
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "前往"
+                ],
+                "roi": "夜航手册目标副本",
+                "roi_offset": [
+                    520,
+                    0,
+                    0,
+                    30
+                ]
+            }
+        },
+        "action": "Click",
+        "next": [
+            "驱离"
+        ]
+    }
+}

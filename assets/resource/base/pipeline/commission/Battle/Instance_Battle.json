@@ -72,13 +72,14 @@
             }
         },
         "action": "Click",
+        "post_delay": 500,
         //无法点击则重来
         "next": [
             "离开副本匹配识别",
-            "[JumpBack]弹窗取消",
             "[JumpBack]复位角色",
             "[JumpBack]设置其他",
-            "[JumpBack]局内设置-复位"
+            "[JumpBack]局内设置-复位",
+            "[JumpBack]弹窗取消"
         ]
     },
     "局内设置-复位": {
@@ -131,7 +132,6 @@
                 "template": [
                     "副本/副本退出/复位/设置-其他/"
                 ],
-                "threshold": 0.9,
                 "roi": [
                     0,
                     350,

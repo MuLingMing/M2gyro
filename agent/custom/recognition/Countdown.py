@@ -191,7 +191,8 @@ class Countdown(CustomRecognition):
                 return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
 
         # 倒计时开始
-        logger.debug(f"Countdown: {argv.node_name} 开始倒计时 {total_time} 秒")
+        if logger_enable:
+            logger.debug(f"Countdown: {argv.node_name} 开始倒计时 {total_time} 秒")
 
         start_time = time.monotonic()
 
@@ -206,7 +207,8 @@ class Countdown(CustomRecognition):
 
         while time.monotonic() - start_time <= total_time or total_time <= 0:
             if context.tasker.stopping:
-                logger.debug(f"Countdown: {argv.node_name} 任务被停止")
+                if logger_enable:
+                    logger.debug(f"Countdown: {argv.node_name} 任务被停止")
                 return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
             # 间隔interval秒运行一次节点识别
             for i, parsed in enumerate(parsed_interrupts):
@@ -218,9 +220,10 @@ class Countdown(CustomRecognition):
                     # 节点检查，识别到Interrupt，返回识别结果并终止循环
                     result = self._run_recognition(context, parsed)
                     if result and result.hit:
-                        logger.debug(
-                            f"Countdown: {argv.node_name} 识别到中断节点 {parsed.get('name')}"
-                        )
+                        if logger_enable:
+                            logger.debug(
+                                f"Countdown: {argv.node_name} 识别到中断节点 {parsed.get('name')}"
+                            )
                         return CustomRecognition.AnalyzeResult(
                             box=result.box, detail={"hit": hit}
                         )
@@ -237,9 +240,10 @@ class Countdown(CustomRecognition):
                     result = self._run_recognition(context, parsed)
                     # 更新原始 run 值
                     if result and result.hit:
-                        logger.debug(
-                            f"Countdown: {argv.node_name} 识别到继续节点 {parsed.get('name')}"
-                        )
+                        if logger_enable:
+                            logger.debug(
+                                f"Countdown: {argv.node_name} 识别到继续节点 {parsed.get('name')}"
+                            )
 
             # 计算下次检查时间
             next_checks = []
