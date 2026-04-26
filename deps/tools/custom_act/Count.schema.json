@@ -6,14 +6,31 @@
     "properties": {
         "custom_action": {
             "type": "string",
-            "enum": [
-                "Count"
-            ],
-            "description": "动作名，必须为 Count\n例如：\n\"Count\"\n\n对应的 custom_action_param 示例：\n{\n    \"count\": 0,\n    \"target_count\": 3,\n    \"next_node\": [\"node_name\"],\n    \"else_node\": [\"node_name\"],\n    \"reset_node\": [\"node_name\"],\n    \"logger\": false\n}"
+            "description": "动作名\n例如：\n\"Count\"\n\n当值为 Count 时，对应的 custom_action_param 示例：\n{\n    \"count\": 0,\n    \"target_count\": 3,\n    \"next_node\": [\"node_name\"],\n    \"else_node\": [\"node_name\"],\n    \"reset_node\": [\"node_name\"],\n    \"logger\": false\n}"
         },
         "custom_action_param": {
-            "$ref": "#/definitions/CountParam"
+            "type": "object"
         }
+    },
+    "if": {
+        "properties": {
+            "custom_action": {
+                "const": "Count"
+            }
+        },
+        "required": [
+            "custom_action"
+        ]
+    },
+    "then": {
+        "properties": {
+            "custom_action_param": {
+                "$ref": "#/definitions/CountParam"
+            }
+        },
+        "required": [
+            "custom_action_param"
+        ]
     },
     "definitions": {
         "CountParam": {

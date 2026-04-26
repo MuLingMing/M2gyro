@@ -1,6 +1,9 @@
 # coding=utf-8
 # 通用函数
 
+from typing import Dict, Any, Optional, List, Tuple, Union, Type
+from utils.logger import logger as logging
+
 
 class ParamMerger:
     """
@@ -11,8 +14,11 @@ class ParamMerger:
     # 可配置的标识字段列表，用于匹配对象和字符串
     # 可以在此添加其他字段如 "node", "node_name" 等
     IDENTIFIER_FIELDS = ["name", "node", "node_name"]
+    _default_instance = None  # 类属性，用于存储默认实例化后的对象
 
-    def __init__(self, identifier_fields: list[str] | None = None, schema: dict | None = None):
+    def __init__(
+        self, identifier_fields: list[str] | None = None, schema: dict | None = None
+    ):
         """
         初始化合并器
 
@@ -23,8 +29,39 @@ class ParamMerger:
         if identifier_fields is not None:
             self.IDENTIFIER_FIELDS = identifier_fields
         self.schema = schema or {}
+        # 实例变量：缓存合并结果
+        self._cache = {
+            "merge_type": "",
+            "custom_params": {},
+            "attach_params": {},
+            "schema": {},
+            "merged_params": None,
+        }
 
-    def merge_params(self, merge_type: str, custom_params: dict, attach_params: dict, schema: dict | None = None) -> dict:
+    @classmethod
+    def merge(
+        cls,
+        merge_type: str,
+        custom_params: dict,
+        attach_params: dict,
+        schema: dict | None = None,
+    ) -> dict:
+        """
+        类方法：使用默认配置合并参数
+        """
+        if cls._default_instance is None:
+            cls._default_instance = cls()
+        return cls._default_instance.merge_params(
+            merge_type, custom_params, attach_params, schema
+        )
+
+    def merge_params(
+        self,
+        merge_type: str,
+        custom_params: dict,
+        attach_params: dict,
+        schema: dict | None = None,
+    ) -> dict:
         """
         通用参数合并方法，将 attach 中的参数与 custom_params 合并
         attach 中的参数会覆盖 custom_params 中的对应值
@@ -92,6 +129,17 @@ class ParamMerger:
             "logger": true
         }
         """
+
+        # 检查缓存是否命中
+        if (
+            self._cache["merge_type"] == merge_type
+            and self._cache["custom_params"] == custom_params
+            and self._cache["attach_params"] == attach_params
+            and self._cache["schema"] == schema
+            and self._cache["merged_params"] is not None
+        ):
+            return self._cache["merged_params"]
+
         current_schema = schema if schema is not None else self.schema
 
         # 确保 custom_params 是字典
@@ -142,18 +190,37 @@ class ParamMerger:
 
         # 递归合并
         for key, value in attach_params.items():
-            field_schema = current_schema.get(key) if isinstance(current_schema, dict) else None
-            merged_params[key] = self._merge_value(
-                key,
-                merged_params.get(key),
-                value,
-                field_schema,
-                merge_type
+            field_schema = (
+                current_schema.get(key) if isinstance(current_schema, dict) else None
             )
+            merged_params[key] = self._merge_value(
+                key, merged_params.get(key), value, field_schema, merge_type
+            )
+
+        # 缓存合并结果
+        self._cache["merge_type"] = merge_type
+        self._cache["custom_params"] = custom_params
+        self._cache["attach_params"] = attach_params
+        self._cache["schema"] = schema
+        self._cache["merged_params"] = merged_params
 
         return merged_params
 
-    def _merge_value(self, key: str, custom_value, attach_value, field_schema, merge_type: str):
+    def clear_cache(self):
+        """
+        清除合并结果缓存
+        """
+        self._cache = {
+            "merge_type": "",
+            "custom_params": {},
+            "attach_params": {},
+            "schema": {},
+            "merged_params": None,
+        }
+
+    def _merge_value(
+        self, key: str, custom_value, attach_value, field_schema, merge_type: str
+    ):
         """
         合并单个值，根据 schema 进行类型检查和转换
 
@@ -174,19 +241,37 @@ class ParamMerger:
 
         # 如果有 schema 定义的预期类型
         if expected_type is not None:
-            return self._merge_with_type_check(key, custom_value, attach_value, schema_info, merge_type)
+            return self._merge_with_type_check(
+                key, custom_value, attach_value, schema_info, merge_type
+            )
 
         # 没有 schema 定义，按实际类型处理
         return self._merge_by_actual_type(key, custom_value, attach_value, merge_type)
 
-    def _parse_schema(self, field_schema) -> dict:
+    def _parse_schema(
+        self, field_schema: Optional[Union[type, tuple, dict]] = None
+    ) -> dict[str, Any]:
         """
         解析 schema，支持简单类型和复杂类型
 
+        示例：
+
+        node_list_type = (str, node_schema, list)## 节点列表类型（字符串、对象或数组）
+
+        完整 schema：
+
+        schema = {
+            "total_time": int,  # 总倒计时时间（秒）
+            "entry": node_list_type,
+            "Interrupt": node_list_type,  # 可以是字符串、对象或数组
+            "Continue": node_list_type,  # 可以是字符串、对象或数组
+            "Over": node_list_type,  # 可以是字符串、对象或数组
+            "logger": bool,
+        }
         返回:
         - dict: {"type": expected_type, "items": item_schema, "dict_schema": dict_schema, ...}
         """
-        result = {"type": None, "items": None, "dict_schema": None}  
+        result: dict[str, Any] = {"type": None, "items": None, "dict_schema": None}
 
         if field_schema is None:
             return result
@@ -194,7 +279,7 @@ class ParamMerger:
         # 简单类型：直接是类型对象
         if isinstance(field_schema, (type, tuple)):
             result["type"] = field_schema
-            
+
             # 特殊处理：(str, node_schema, list) 这种格式
             if isinstance(field_schema, tuple):
                 # 提取 dict schema（如果有）
@@ -203,23 +288,33 @@ class ParamMerger:
                     result["dict_schema"] = dict_schemas[0]
                     # 列表项的 schema 是 (str, dict_schema)
                     result["items"] = (str, dict_schemas[0])
-            
+
             return result
 
         # 复杂类型：字典格式
         if isinstance(field_schema, dict):
-            result["type"] = field_schema.get("type")  
-            result["items"] = field_schema.get("items")  
-            result["dict_schema"] = field_schema.get("dict_schema")  
-            # 其他字段留作扩展
-            for k, v in field_schema.items():
-                if k not in ("type", "items", "dict_schema"):
-                    result[k] = v  
+            result.update(
+                {
+                    "type": field_schema.get("type"),
+                    "items": field_schema.get("items"),
+                    "dict_schema": field_schema.get("dict_schema"),
+                    **{
+                        k: v
+                        for k, v in field_schema.items()
+                        if k not in ("type", "items", "dict_schema")
+                    },
+                }
+            )
             return result
 
         return result
 
-    def _apply_type_conversion(self, key: str, value, field_schema):
+    def _apply_type_conversion(
+        self,
+        key: str,
+        value: Any,
+        field_schema: Optional[Union[type, tuple, dict]] = None,
+    ) -> Any:
         """
         根据 schema 进行类型转换
 
@@ -243,13 +338,13 @@ class ParamMerger:
             if isinstance(expected_type, tuple):
                 dict_schema = schema_info.get("dict_schema")
                 list_item_schema = schema_info.get("items")
-                
+
                 for t in expected_type:
                     # 检查 t 是否是类型，或者是 dict schema
                     type_to_check = t
                     if isinstance(t, dict):
                         type_to_check = dict
-                    
+
                     if isinstance(value, type_to_check):
                         # 类型匹配，检查是否需要进一步验证
                         if type_to_check == dict and dict_schema:
@@ -266,26 +361,31 @@ class ParamMerger:
             # 单个类型
             if expected_type == str:
                 if not isinstance(value, str):
-                    import logging
-                    logging.warning(f"参数 '{key}' 类型不匹配，期望 str，实际为 {type(value).__name__}，已自动转换")
+                    logging.warning(
+                        f"参数 '{key}' 类型不匹配，期望 str，实际为 {type(value).__name__}，已自动转换"
+                    )
                     return str(value)
                 return value
             elif expected_type == int:
                 if not isinstance(value, int):
-                    import logging
-                    logging.warning(f"参数 '{key}' 类型不匹配，期望 int，实际为 {type(value).__name__}，已自动转换")
+                    logging.warning(
+                        f"参数 '{key}' 类型不匹配，期望 int，实际为 {type(value).__name__}，已自动转换"
+                    )
                     return int(value)
                 return value
             elif expected_type == float:
                 if not isinstance(value, float):
-                    import logging
-                    logging.warning(f"参数 '{key}' 类型不匹配，期望 float，实际为 {type(value).__name__}，已自动转换")
+                    logging.warning(
+                        f"参数 '{key}' 类型不匹配，期望 float，实际为 {type(value).__name__}，已自动转换"
+                    )
                     return float(value)
                 return value
             elif expected_type == bool:
                 if not isinstance(value, bool):
-                    import logging
-                    logging.warning(f"参数 '{key}' 类型不匹配，期望 bool，实际为 {type(value).__name__}，已自动转换")
+
+                    logging.warning(
+                        f"参数 '{key}' 类型不匹配，期望 bool，实际为 {type(value).__name__}，已自动转换"
+                    )
                     return bool(value)
                 return value
             elif expected_type == list:
@@ -296,8 +396,10 @@ class ParamMerger:
                 return value
             elif expected_type == dict:
                 if not isinstance(value, dict):
-                    import logging
-                    logging.warning(f"参数 '{key}' 类型不匹配，期望 dict，实际为 {type(value).__name__}")
+
+                    logging.warning(
+                        f"参数 '{key}' 类型不匹配，期望 dict，实际为 {type(value).__name__}"
+                    )
                     return {}
                 if item_schema:
                     return self._validate_dict(value, item_schema, key)
@@ -305,30 +407,40 @@ class ParamMerger:
             else:
                 return value
         except Exception as e:
-            import logging
+
             logging.warning(f"参数 '{key}' 类型转换失败: {e}，使用原值")
             return value
 
     def _convert_to_type(self, value, target_type, key: str):
         """尝试将值转换为目标类型"""
-        import logging
+
         try:
             if target_type == str:
-                logging.warning(f"参数 '{key}' 类型不匹配，期望 str，实际为 {type(value).__name__}，已自动转换")
+                logging.warning(
+                    f"参数 '{key}' 类型不匹配，期望 str，实际为 {type(value).__name__}，已自动转换"
+                )
                 return str(value)
             elif target_type == int:
-                logging.warning(f"参数 '{key}' 类型不匹配，期望 int，实际为 {type(value).__name__}，已自动转换")
+                logging.warning(
+                    f"参数 '{key}' 类型不匹配，期望 int，实际为 {type(value).__name__}，已自动转换"
+                )
                 return int(value)
             elif target_type == float:
-                logging.warning(f"参数 '{key}' 类型不匹配，期望 float，实际为 {type(value).__name__}，已自动转换")
+                logging.warning(
+                    f"参数 '{key}' 类型不匹配，期望 float，实际为 {type(value).__name__}，已自动转换"
+                )
                 return float(value)
             elif target_type == bool:
-                logging.warning(f"参数 '{key}' 类型不匹配，期望 bool，实际为 {type(value).__name__}，已自动转换")
+                logging.warning(
+                    f"参数 '{key}' 类型不匹配，期望 bool，实际为 {type(value).__name__}，已自动转换"
+                )
                 return bool(value)
             elif target_type == list:
                 return [value]
             elif target_type == dict:
-                logging.warning(f"参数 '{key}' 类型不匹配，期望 dict，实际为 {type(value).__name__}")
+                logging.warning(
+                    f"参数 '{key}' 类型不匹配，期望 dict，实际为 {type(value).__name__}"
+                )
                 return {}
             else:
                 return value
@@ -344,7 +456,9 @@ class ParamMerger:
         result = value.copy()
         for field_key, field_type in item_schema.items():
             if field_key in result:
-                result[field_key] = self._apply_type_conversion(f"{key}.{field_key}", result[field_key], field_type)
+                result[field_key] = self._apply_type_conversion(
+                    f"{key}.{field_key}", result[field_key], field_type
+                )
         return result
 
     def _validate_list(self, value: list, item_schema, key: str):
@@ -352,9 +466,14 @@ class ParamMerger:
         if not isinstance(value, list):
             return value
 
-        return [self._apply_type_conversion(f"{key}[{i}]", item, item_schema) for i, item in enumerate(value)]
+        return [
+            self._apply_type_conversion(f"{key}[{i}]", item, item_schema)
+            for i, item in enumerate(value)
+        ]
 
-    def _merge_with_type_check(self, key: str, custom_value, attach_value, schema_info: dict, merge_type: str):
+    def _merge_with_type_check(
+        self, key: str, custom_value, attach_value, schema_info: dict, merge_type: str
+    ):
         """
         有 schema 类型定义时的合并逻辑
 
@@ -365,8 +484,7 @@ class ParamMerger:
         - schema_info: 完整的 schema 信息字典
         - merge_type: custom类型
         """
-        import logging
-        
+
         expected_type = schema_info.get("type")
         item_schema = schema_info.get("items")
         dict_schema = schema_info.get("dict_schema")
@@ -382,28 +500,34 @@ class ParamMerger:
                 if isinstance(attach_value, type_to_check):
                     attach_matches = True
                     break
-            
+
             if not attach_matches:
                 # 尝试转换为第一个类型
                 first_type = expected_type[0]
                 if isinstance(first_type, dict):
                     first_type = dict
                 attach_value = self._convert_to_type(attach_value, first_type, key)
-            
+
             # 验证 attach_value
             if isinstance(attach_value, dict) and dict_schema:
                 attach_value = self._validate_dict(attach_value, dict_schema, key)
             elif isinstance(attach_value, list) and item_schema:
                 attach_value = self._validate_list(attach_value, item_schema, key)
-            
+
             # 按实际类型处理
-            return self._merge_by_actual_type(key, custom_value, attach_value, merge_type)
+            return self._merge_by_actual_type(
+                key, custom_value, attach_value, merge_type
+            )
 
         # 预期类型是 list
         if expected_type == list:
             # 将两者都转为列表
-            custom_list = [custom_value] if not isinstance(custom_value, list) else custom_value
-            attach_list = [attach_value] if not isinstance(attach_value, list) else attach_value
+            custom_list = (
+                [custom_value] if not isinstance(custom_value, list) else custom_value
+            )
+            attach_list = (
+                [attach_value] if not isinstance(attach_value, list) else attach_value
+            )
             # 验证项
             if item_schema:
                 custom_list = self._validate_list(custom_list, item_schema, key)
@@ -413,14 +537,20 @@ class ParamMerger:
         # 预期类型是 dict
         elif expected_type == dict:
             if isinstance(custom_value, dict) and isinstance(attach_value, dict):
-                nested_schema = self.schema.get(key) if isinstance(self.schema, dict) and isinstance(self.schema.get(key), dict) else None
-                return self.merge_params(merge_type, custom_value, attach_value, nested_schema)
+                nested_schema = dict_schema if isinstance(dict_schema, dict) else None
+                return self.merge_params(
+                    merge_type, custom_value, attach_value, nested_schema
+                )
             elif isinstance(attach_value, dict):
                 if dict_schema or item_schema:
-                    return self._validate_dict(attach_value, dict_schema or item_schema, key)
+                    return self._validate_dict(
+                        attach_value, dict_schema or item_schema, key
+                    )
                 return attach_value
             else:
-                logging.warning(f"参数 '{key}' 类型不匹配，期望 dict，attach值不是 dict")
+                logging.warning(
+                    f"参数 '{key}' 类型不匹配，期望 dict，attach值不是 dict"
+                )
                 return custom_value
 
         # 预期类型是 str
@@ -428,7 +558,9 @@ class ParamMerger:
             if isinstance(attach_value, str):
                 return attach_value
             else:
-                logging.warning(f"参数 '{key}' 类型不匹配，期望 str，实际为 {type(attach_value).__name__}，已自动转换")
+                logging.warning(
+                    f"参数 '{key}' 类型不匹配，期望 str，实际为 {type(attach_value).__name__}，已自动转换"
+                )
                 return str(attach_value)
 
         # 预期类型是 int/float/bool
@@ -436,13 +568,17 @@ class ParamMerger:
             try:
                 return expected_type(attach_value)
             except (ValueError, TypeError):
-                logging.warning(f"参数 '{key}' 类型转换失败，期望 {expected_type.__name__}，使用 custom 值")
+                logging.warning(
+                    f"参数 '{key}' 类型转换失败，期望 {expected_type.__name__}，使用 custom 值"
+                )
                 return custom_value
 
         # 其他类型，按实际类型处理
         return self._merge_by_actual_type(key, custom_value, attach_value, merge_type)
 
-    def _merge_by_actual_type(self, key: str, custom_value, attach_value, merge_type: str):
+    def _merge_by_actual_type(
+        self, key: str, custom_value, attach_value, merge_type: str
+    ):
         """
         没有 schema 时按实际类型合并
 
@@ -454,8 +590,15 @@ class ParamMerger:
         """
         # 都是字典
         if isinstance(custom_value, dict) and isinstance(attach_value, dict):
-            nested_schema = self.schema.get(key) if isinstance(self.schema, dict) and isinstance(self.schema.get(key), dict) else None
-            return self.merge_params(merge_type, custom_value, attach_value, nested_schema)
+            nested_schema = (
+                self.schema.get(key)
+                if isinstance(self.schema, dict)
+                and isinstance(self.schema.get(key), dict)
+                else None
+            )
+            return self.merge_params(
+                merge_type, custom_value, attach_value, nested_schema
+            )
 
         # 都是数组
         elif isinstance(custom_value, list) and isinstance(attach_value, list):
@@ -463,12 +606,18 @@ class ParamMerger:
 
         # 一方是数组
         elif isinstance(custom_value, list) or isinstance(attach_value, list):
-            custom_list = [custom_value] if not isinstance(custom_value, list) else custom_value
-            attach_list = [attach_value] if not isinstance(attach_value, list) else attach_value
+            custom_list = (
+                [custom_value] if not isinstance(custom_value, list) else custom_value
+            )
+            attach_list = (
+                [attach_value] if not isinstance(attach_value, list) else attach_value
+            )
             return self._merge_arrays(custom_list, attach_list)
 
         # 一方是字符串，一方是对象
-        elif (isinstance(custom_value, str) and isinstance(attach_value, dict)) or (isinstance(custom_value, dict) and isinstance(attach_value, str)):
+        elif (isinstance(custom_value, str) and isinstance(attach_value, dict)) or (
+            isinstance(custom_value, dict) and isinstance(attach_value, str)
+        ):
             return [custom_value, attach_value]
 
         # 其他情况，attach 覆盖
@@ -486,7 +635,9 @@ class ParamMerger:
         return None
 
     def _has_identifier(self, item: dict) -> bool:
-        """检查对象是否有标识字段"""
+        """
+        检查对象是否有标识字段
+        """
         return any(field in item for field in self.IDENTIFIER_FIELDS)
 
     def _merge_arrays(self, original: list, attach: list) -> list:
@@ -502,10 +653,11 @@ class ParamMerger:
             return original
 
         # 检查 attach 中是否有带标识字段的对象
-        attach_has_named_objects = any(isinstance(item, dict) and self._has_identifier(item) for item in attach)
+        attach_has_named_objects = any(
+            isinstance(item, dict) and self._has_identifier(item) for item in attach
+        )
 
         if not attach_has_named_objects:
-            # attach 覆盖 original
             return attach
 
         # 构建 original 的查找字典（按标识）

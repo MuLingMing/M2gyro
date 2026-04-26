@@ -1,0 +1,28 @@
+{
+    "description": "按键映射配置文件",
+    "version": "1.0",
+    "adb": {
+        "jump": {
+            "node_name": "jump",
+            "template": "fight/jump",
+            "description": "跳跃按键",
+            "threshold": 0.8
+        },
+        "dodge": {
+            "node_name": "dodge",
+            "template": "fight/dodge",
+            "description": "闪避按键",
+            "threshold": 0.8
+        }
+    },
+    "win32": {
+        "jump": {
+            "key": "Space",
+            "description": "跳跃按键（空格键）"
+        },
+        "dodge": {
+            "key": "Shift",
+            "description": "闪避按键（Shift键）"
+        }
+    }
+}

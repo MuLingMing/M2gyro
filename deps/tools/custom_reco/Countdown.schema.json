@@ -6,14 +6,31 @@
     "properties": {
         "custom_recognition": {
             "type": "string",
-            "enum": [
-                "Countdown"
-            ],
-            "description": "识别名，必须为 Countdown\n例如：\n\"Countdown\"\n\n对应的 custom_recognition_param 示例：\n{\n    \"total_time\": 60,\n    \"entry\": [\"node_name\"],\n    \"Interrupt\": [\"node_name\"],\n    \"Continue\": [\"node_name\"],\n    \"Over\": [\"node_name\"],\n    \"logger\": false\n}"
+            "description": "识别名\n例如：\n\"Countdown\"\n\n当值为 Countdown 时，对应的 custom_recognition_param 示例：\n{\n    \"total_time\": 60,\n    \"entry\": [\"node_name\"],\n    \"Interrupt\": [\"node_name\"],\n    \"Continue\": [\"node_name\"],\n    \"Over\": [\"node_name\"],\n    \"logger\": false\n}"
         },
         "custom_recognition_param": {
-            "$ref": "#/definitions/CountdownParam"
+            "type": "object"
         }
+    },
+    "if": {
+        "properties": {
+            "custom_recognition": {
+                "const": "Countdown"
+            }
+        },
+        "required": [
+            "custom_recognition"
+        ]
+    },
+    "then": {
+        "properties": {
+            "custom_recognition_param": {
+                "$ref": "#/definitions/CountdownParam"
+            }
+        },
+        "required": [
+            "custom_recognition_param"
+        ]
     },
     "definitions": {
         "CountdownParam": {

@@ -451,7 +451,8 @@ install
 tools/ImageCropper/**/*.png
 
 # 调试
-config
+/config
+assets/config
 debug
 .venv
 .trae
@@ -463,3 +464,9 @@ assets/resource/config.json
 
 # 素材
 开发日志
+
+# 开发中
+MapLocator
+MapTracker
+MapNavigator
+OperationRecording

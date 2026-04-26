@@ -1,8 +1,4 @@
 # -*- coding: utf-8 -*-
-
-from platform import node
-from maa.context import RecognitionDetail
-
 """
 倒计时执行recognition，具有以下功能：
 1. 总体倒计时total_time秒（默认值60秒）
@@ -20,6 +16,7 @@ from maa.context import RecognitionDetail
 """
 
 from maa.context import Context
+from maa.context import RecognitionDetail
 from maa.custom_recognition import CustomRecognition
 from utils.logger import logger
 import json
@@ -142,9 +139,8 @@ class Countdown(CustomRecognition):
                         "Over": node_list_type,  # 可以是字符串、对象或数组
                         "logger": bool,
                     }
-                    merger = ParamMerger(identifier_fields=["name"], schema=schema)
-                    params = merger.merge_params(
-                        "reco", custom_recognition_param, attach_params
+                    params = ParamMerger.merge(
+                        "reco", custom_recognition_param, attach_params, schema
                     )
         except json.JSONDecodeError as e:
             logger.error(f"Countdown: 参数解析失败: {e}")

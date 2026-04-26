@@ -116,8 +116,9 @@ class Count(CustomAction):
                     "logger": bool,
                 }
                 
-                merger = ParamMerger(identifier_fields=["name"], schema=schema)
-                params = merger.merge_params("action", custom_action_param, attach_params)
+                params = ParamMerger.merge(
+                    "action", custom_action_param, attach_params, schema
+                )
         if not params:
             return CustomAction.RunResult(success=True)
         

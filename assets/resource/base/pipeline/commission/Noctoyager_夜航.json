@@ -6,13 +6,23 @@
         "post_delay": 0,
         "post_wait_freezes": 0,
         "next": [
-            "击杀可能获得",
             "[JumpBack]收获日",
+            "击杀可能获得",
             "[JumpBack]夜航手册页面"
         ]
     },
     "收获日": {
-        //收获日适配
+        //收获日适配，默认常规委托
+        //识别到限时委托则点击，跳转到常规委托
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "限时委托"
+                ]
+            }
+        },
+        "action": "Click"
     },
     "击杀可能获得": {
         //证明已经到达夜航手册页面

@@ -1,0 +1,60 @@
+{
+  "任务开始": {
+    "recognition": "Always",
+    "action": "DoNothing",
+    "next": "检查位置"
+  },
+  "检查位置": {
+    "recognition": "Custom",
+    "custom_recognition": "MapLocateRecognition",
+    "custom_recognition_param": {
+      "expected_zone_id": "map01_lv001",
+      "force_global_search": true
+    },
+    "action": "DoNothing",
+    "next": "位置断言"
+  },
+  "位置断言": {
+    "recognition": "Custom",
+    "custom_recognition": "MapLocateAssertLocation",
+    "custom_recognition_param": {
+      "zone_id": "map01_lv001",
+      "target": [605, 878, 60, 20]
+    },
+    "action": "DoNothing",
+    "next": "开始导航"
+  },
+  "开始导航": {
+    "action": "Custom",
+    "custom_action": "MapNavigateAction",
+    "custom_action_param": {
+      "path": [
+        {"action": "ZONE", "zone_id": "map01_lv001"},
+        [688, 350],
+        [700, 350, "SPRINT"],
+        [720, 350],
+        [760, 352, "PORTAL"],
+        {"action": "ZONE", "zone_id": "map01_lv002"},
+        [45, 120, "PORTAL"],
+        {"action": "ZONE", "zone_id": "map01_lv003"},
+        [100, 100]
+      ],
+      "expected_zone_id": "map01_lv003"
+    },
+    "next": "到达验证"
+  },
+  "到达验证": {
+    "recognition": "Custom",
+    "custom_recognition": "MapLocateRecognition",
+    "custom_recognition_param": {
+      "expected_zone_id": "map01_lv003",
+      "force_global_search": false
+    },
+    "action": "DoNothing",
+    "next": "任务结束"
+  },
+  "任务结束": {
+    "recognition": "Always",
+    "action": "DoNothing"
+  }
+}

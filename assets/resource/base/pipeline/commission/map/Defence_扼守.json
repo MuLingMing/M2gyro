@@ -9,5 +9,25 @@
     },
     "扼守80": {
         //皎皎币
+    },
+    "夜航手册65扼守": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "MapNavigateAction",
+                "custom_action_param": {
+                    "path": [
+                        [
+                            2352,
+                            8280,
+                            "INTERACT"
+                        ]
+                    ]
+                }
+            }
+        }
     }
 }
