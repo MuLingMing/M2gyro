@@ -1,0 +1,58 @@
+{
+    "云_二重螺旋": {
+        "next": [
+            "云_二重螺旋_执行"
+        ]
+    },
+    "云_二重螺旋_执行": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left"
+                            },
+                            "duration": 2.0
+                        },
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 0.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward"
+                            },
+                            "duration": 4.0,
+                            "overlays": [
+                                {
+                                    "action": "dodge",
+                                    "params": {
+                                        "direction": "forward"
+                                    },
+                                    "at": 2.0
+                                }
+                            ]
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left"
+                            },
+                            "duration": 12.0
+                        }
+                    ],
+                    "loop_count": 1
+                }
+            }
+        },
+        "post_delay": 500,
+        "next": []
+    }
+}

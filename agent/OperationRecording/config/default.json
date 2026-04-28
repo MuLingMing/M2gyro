@@ -1,0 +1,217 @@
+{
+    "actions": {
+        "move": {
+            "description": "移动动作",
+            "parameters": {
+                "direction": {
+                    "type": "string",
+                    "required": true,
+                    "options": [
+                        "forward",
+                        "backward",
+                        "left",
+                        "right"
+                    ]
+                },
+                "duration": {
+                    "type": "number",
+                    "required": true,
+                    "min": 0
+                },
+                "acceleration": {
+                    "type": "boolean",
+                    "required": false,
+                    "default": true,
+                    "description": "是否启用加速度"
+                }
+            }
+        },
+        "jump": {
+            "description": "跳跃动作",
+            "parameters": {}
+        },
+        "dodge": {
+            "description": "闪避/冲刺动作",
+            "parameters": {
+                "direction": {
+                    "type": "string",
+                    "required": false,
+                    "options": [
+                        "forward",
+                        "backward",
+                        "left",
+                        "right"
+                    ]
+                }
+            }
+        },
+        "turn": {
+            "description": "转向动作",
+            "parameters": {
+                "angle": {
+                    "type": "number",
+                    "required": true
+                }
+            }
+        },
+        "interact": {
+            "description": "交互动作",
+            "parameters": {
+                "interaction_type": {
+                    "type": "string",
+                    "required": false,
+                    "default": "default"
+                }
+            }
+        },
+        "spiral_leap": {
+            "description": "螺旋飞跃动作",
+            "parameters": {}
+        },
+        "charge_attack": {
+            "description": "蓄力攻击动作",
+            "parameters": {
+                "x": {
+                    "type": "number",
+                    "required": false,
+                    "description": "蓄力坐标X（ADB平台）"
+                },
+                "y": {
+                    "type": "number",
+                    "required": false,
+                    "description": "蓄力坐标Y（ADB平台）"
+                },
+                "duration": {
+                    "type": "number",
+                    "required": true,
+                    "min": 0,
+                    "description": "蓄力持续时间（秒）"
+                }
+            }
+        },
+        "crouch": {
+            "description": "下蹲动作",
+            "parameters": {}
+        },
+        "wait": {
+            "description": "等待动作",
+            "parameters": {
+                "duration": {
+                    "type": "number",
+                    "required": true,
+                    "min": 0
+                }
+            }
+        }
+    },
+    "platforms": {
+        "win32": {
+            "description": "Windows平台，使用键盘模拟",
+            "key_mappings": {
+                "forward": "W",
+                "backward": "S",
+                "left": "A",
+                "right": "D",
+                "jump": "Space",
+                "interact": "F",
+                "dodge": "Shift",
+                "spiral_leap": [
+                    "Ctrl",
+                    "Space"
+                ],
+                "crouch": "Ctrl"
+            }
+        },
+        "adb": {
+            "description": "ADB平台，使用触摸控制",
+            "touch_positions": {
+                "joystick_center": {
+                    "description": "摇杆中心位置",
+                    "x": 225,
+                    "y": 536,
+                    "contact": 0,
+                    "joystick_run_offset": -60
+                },
+                "jump_button": {
+                    "description": "跳跃按钮位置",
+                    "x": 978,
+                    "y": 410,
+                    "contact": 1
+                },
+                "sprint_button": {
+                    "description": "冲刺按钮位置",
+                    "x": 1203,
+                    "y": 363,
+                    "contact": 1
+                },
+                "interact_button": {
+                    "description": "交互按钮位置",
+                    "x": 750,
+                    "y": 358,
+                    "contact": 2
+                },
+                "spiral_leap_button": {
+                    "description": "螺旋飞跃按钮位置",
+                    "x": 1086,
+                    "y": 364,
+                    "contact": 1
+                },
+                "view_control_center": {
+                    "description": "视图控制中心位置",
+                    "x": 1000,
+                    "y": 150,
+                    "contact": 3
+                },
+                "crouch_button": {
+                    "description": "下蹲按钮位置",
+                    "x": 74,
+                    "y": 644,
+                    "contact": 4
+                },
+                "charge_attack_button": {
+                    "description": "蓄力攻击按钮位置",
+                    "x": 1090,
+                    "y": 507,
+                    "contact": 1
+                }
+            },
+            "generic_contact": 8
+        }
+    },
+    "humanization": {
+        "enabled": true,
+        "reaction_time_ms": {
+            "min": 80,
+            "max": 200
+        },
+        "key_press_time_ms": {
+            "min": 50,
+            "max": 120
+        },
+        "key_release_time_ms": {
+            "min": 30,
+            "max": 80
+        },
+        "action_gap_ms": {
+            "min": 30,
+            "max": 150
+        },
+        "mouse_speed": 300,
+        "acceleration_factor": 0.15,
+        "deceleration_factor": 0.15,
+        "position_variance": 8,
+        "jitter_amount": 2
+    },
+    "timeline": {
+        "default_speed": 1.0,
+        "max_speed": 3.0,
+        "min_speed": 0.1,
+        "allow_overlapping": true,
+        "default_priority": "normal"
+    },
+    "defaults": {
+        "move_duration": 1.0,
+        "turn_angle": 90.0,
+        "action_delay": 0.1
+    }
+}

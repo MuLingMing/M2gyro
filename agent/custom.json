@@ -28,5 +28,10 @@
         "type": "recognition",
         "class": "Countdown",
         "file_path": "custom/recognition/Countdown.py"
+    },
+    "OperationRecordAction": {
+        "type": "action",
+        "class": "OperationRecordAction",
+        "file_path": "OperationRecording/actions/operation_record_action.py"
     }
 }
