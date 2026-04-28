@@ -31,9 +31,10 @@ class PlatformFactory:
             平台实例
         """
         # 动态导入平台类
-        if platform_type == "win32":
-            from .win32 import Win32Platform
-            cls.register_platform("win32", Win32Platform)
+        if platform_type == "desktop" or platform_type == "win32":
+            from .desktop import DesktopPlatform
+            cls.register_platform("desktop", DesktopPlatform)
+            cls.register_platform("win32", DesktopPlatform)
         elif platform_type == "adb":
             from .adb import AdbPlatform
             cls.register_platform("adb", AdbPlatform)
@@ -61,14 +62,28 @@ class PlatformFactory:
             uuid = str(getattr(controller, 'uuid', '')).lower()
             if 'adb' in uuid or 'android' in uuid or 'emulator' in uuid:
                 return 'adb'
-            if 'win32' in uuid or 'windows' in uuid:
-                return 'win32'
+            if 'win32' in uuid or 'windows' in uuid or 'desktop' in uuid:
+                return 'desktop'
 
         if hasattr(controller, 'info'):
             info = str(getattr(controller, 'info', '')).lower()
             if 'adb' in info or 'android' in info:
                 return 'adb'
-            if 'win32' in info or 'windows' in info:
-                return 'win32'
+            if 'win32' in info or 'windows' in info or 'desktop' in info:
+                return 'desktop'
+
+        if hasattr(controller, 'name'):
+            name = str(getattr(controller, 'name', '')).lower()
+            if 'adb' in name or 'android' in name:
+                return 'adb'
+            if 'win32' in name or 'windows' in name or 'desktop' in name:
+                return 'desktop'
+
+        if hasattr(controller, 'config'):
+            config = str(getattr(controller, 'config', '')).lower()
+            if 'adb' in config or 'android' in config:
+                return 'adb'
+            if 'win32' in config or 'windows' in config or 'desktop' in config:
+                return 'desktop'
 
         return 'adb'

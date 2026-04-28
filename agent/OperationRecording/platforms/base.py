@@ -160,6 +160,19 @@ class PlatformBase(ABC):
         """
         pass
 
+    def wait(self, duration: float) -> bool:
+        """等待
+
+        Args:
+            duration: 等待时间（秒）
+
+        Returns:
+            是否成功
+        """
+        import time
+        time.sleep(duration)
+        return True
+
     def release_all(self) -> bool:
         """释放所有按键
 

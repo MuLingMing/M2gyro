@@ -1,6 +1,11 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "allOf": [
-        { "$ref": "./custom_act/Count.schema.json" }
+        {
+            "$ref": "./custom_act/Count.schema.json"
+        },
+        {
+            "$ref": "./custom_act/OperationRecordAction.schema.json"
+        }
     ]
 }

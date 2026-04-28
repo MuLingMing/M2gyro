@@ -14,9 +14,9 @@
                         {
                             "action": "move",
                             "params": {
-                                "direction": "left"
-                            },
-                            "duration": 2.0
+                                "direction": "left",
+                                "duration": 2.0
+                            }
                         },
                         {
                             "action": "wait",
@@ -27,25 +27,25 @@
                         {
                             "action": "move",
                             "params": {
-                                "direction": "forward"
-                            },
-                            "duration": 4.0,
-                            "overlays": [
-                                {
-                                    "action": "dodge",
-                                    "params": {
-                                        "direction": "forward"
-                                    },
-                                    "at": 2.0
-                                }
-                            ]
+                                "direction": "forward",
+                                "duration": 4.0,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "params": {
+                                            "direction": "forward"
+                                        },
+                                        "at": 2.0
+                                    }
+                                ]
+                            }
                         },
                         {
                             "action": "move",
                             "params": {
-                                "direction": "left"
-                            },
-                            "duration": 12.0
+                                "direction": "left",
+                                "duration": 12.0
+                            }
                         }
                     ],
                     "loop_count": 1

@@ -38,9 +38,9 @@ class OperationParser:
     参数格式（时间线模式）：
     {
         "operations": [
-            {"action": "move", "params": {"direction": "left"}, "duration": 2.0},
-            {"action": "move", "params": {"direction": "forward"}, "duration": 8.0,
-             "overlays": [{"action": "dodge", "params": {"direction": "forward"}, "at": 3.0}]}
+            {"action": "move", "params": {"direction": "left", "duration": 2.0}},
+            {"action": "move", "params": {"direction": "forward", "duration": 8.0,
+             "overlays": [{"action": "dodge", "params": {"direction": "forward"}, "at": 3.0}]}}
         ],
         "loop_count": 1
     }
@@ -157,8 +157,8 @@ class OperationParser:
 
         执行流程：
         1. 获取动作名称
-        2. 获取持续时间和参数
-        3. 解析叠加动作
+        2. 从 params 中获取持续时间和参数
+        3. 从 params 中获取叠加动作
         4. 返回解析结果
         """
         try:
@@ -166,14 +166,17 @@ class OperationParser:
             if not action:
                 return None
 
+            params = item.get("params", {}) or {}
+            duration = float(params.get("duration", item.get("duration", 0.0)))
+            
             result = {
                 "action": action,
-                "duration": float(item.get("duration", 0.0)),
-                "params": item.get("params", {}) or {}
+                "duration": duration,
+                "params": params
             }
 
-            # 解析叠加动作
-            overlays = item.get("overlays", [])
+            # 解析叠加动作（从 params 中获取，或保留旧格式的兼容性）
+            overlays = params.get("overlays", item.get("overlays", []))
             if overlays and isinstance(overlays, list):
                 parsed_overlays = []
                 for overlay in overlays:
@@ -206,7 +209,7 @@ class OperationParser:
         执行流程：
         1. 检查是否为列表
         2. 遍历数据项
-        3. 检查是否有 duration 或 overlays 字段
+        3. 检查是否有 duration 或 overlays 字段（在顶层或 params 中）
         """
         if not isinstance(data, list):
             return False
@@ -215,8 +218,13 @@ class OperationParser:
             if not isinstance(item, dict):
                 continue
 
-            # 检查是否包含时间线特征字段
+            # 检查顶层是否有时间线特征字段
             if "duration" in item or "overlays" in item:
+                return True
+
+            # 检查 params 中是否有时间线特征字段
+            params = item.get("params", {})
+            if isinstance(params, dict) and ("duration" in params or "overlays" in params):
                 return True
 
         return False

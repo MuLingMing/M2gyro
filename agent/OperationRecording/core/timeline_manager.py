@@ -214,15 +214,24 @@ class ActionTimeline:
             if action_name is None:
                 continue
 
+            params: Dict[str, Any] = item.get("params", {}) or {}
+
             if action_name == "wait":
-                duration = item.get("duration", 1.0)
-                if isinstance(duration, (int, float)):
-                    current_time += duration
+                # 优先使用 until 参数（等待到目标时间点）
+                until = params.get("until")
+                if isinstance(until, (int, float)):
+                    # 计算需要等待的时间
+                    wait_time = max(0.0, until - current_time)
+                    current_time += wait_time
+                else:
+                    # 使用 duration 参数（等待指定时长）
+                    duration = params.get("duration", item.get("duration", 1.0))
+                    if isinstance(duration, (int, float)):
+                        current_time += duration
                 continue
 
-            duration: float = float(item.get("duration", 0.0))
-            params: Dict[str, Any] = item.get("params", {}) or {}
-            overlays: List[Dict[str, Any]] = item.get("overlays", []) or []
+            duration: float = float(params.get("duration", item.get("duration", 0.0)))
+            overlays: List[Dict[str, Any]] = params.get("overlays", item.get("overlays", [])) or []
 
             self.add_action(TimedAction(
                 action_name=action_name,
