@@ -6,7 +6,7 @@
     "properties": {
         "custom_recognition": {
             "type": "string",
-            "description": "识别名\n例如：\n\"Countdown\"\n\n当值为 Countdown 时，对应的 custom_recognition_param 示例：\n{\n    \"total_time\": 60,\n    \"entry\": [\"node_name\"],\n    \"Interrupt\": [\"node_name\"],\n    \"Continue\": [\"node_name\"],\n    \"Over\": [\"node_name\"],\n    \"logger\": false\n}"
+            "description": "识别名\n例如：\n\"Countdown\"\n\n当值为 Countdown 时，对应的 custom_recognition_param 示例：\n{\n    \"total_time\": 60,\n    \"entry\": [\"node_name\"],\n    \"Interrupt\": [\"node_name\", {\"name\": \"node_name\", \"start_after\": 10, \"max_recognitions\": 3}],\n    \"Continue\": [\"node_name\"],\n    \"Over\": [\"node_name\"],\n    \"logger\": false\n}"
         },
         "custom_recognition_param": {
             "type": "object"
@@ -89,6 +89,25 @@
                                                 "default": 0.0,
                                                 "minimum": 0,
                                                 "description": "识别成功后的延迟时间（秒），默认0秒，float格式。用于增加二次识别，确保识别结果稳定"
+                                            },
+                                            "start_after": {
+                                                "type": "number",
+                                                "default": 0.0,
+                                                "minimum": 0,
+                                                "description": "计时开始后多少秒再开始判定该节点，默认0秒（立即开始），float格式"
+                                            },
+                                            "max_recognitions": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "integer",
+                                                        "minimum": 0
+                                                    }
+                                                ],
+                                                "default": true,
+                                                "description": "是否识别（布尔值）或最大识别成功次数（整数），默认true。\n\n布尔值格式：true表示无限制识别，false表示不识别\n例如：true\n\n整数格式：最大识别成功次数，只有识别成功时才会递减，减到0后不再识别\n例如：3"
                                             }
                                         },
                                         "required": [
@@ -148,6 +167,25 @@
                                                 "default": 0.0,
                                                 "minimum": 0,
                                                 "description": "识别成功后的延迟时间（秒），默认0秒，float格式。用于增加二次识别，确保识别结果稳定"
+                                            },
+                                            "start_after": {
+                                                "type": "number",
+                                                "default": 0.0,
+                                                "minimum": 0,
+                                                "description": "计时开始后多少秒再开始判定该节点，默认0秒（立即开始），float格式"
+                                            },
+                                            "max_recognitions": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "integer",
+                                                        "minimum": 0
+                                                    }
+                                                ],
+                                                "default": true,
+                                                "description": "是否识别（布尔值）或最大识别成功次数（整数），默认true。\n\n布尔值格式：true表示无限制识别，false表示不识别\n例如：true\n\n整数格式：最大识别成功次数，只有识别成功时才会递减，减到0后不再识别\n例如：3"
                                             }
                                         },
                                         "required": [
@@ -207,6 +245,25 @@
                                                 "default": 0.0,
                                                 "minimum": 0,
                                                 "description": "识别成功后的延迟时间（秒），默认0秒，float格式。用于增加二次识别，确保识别结果稳定"
+                                            },
+                                            "start_after": {
+                                                "type": "number",
+                                                "default": 0.0,
+                                                "minimum": 0,
+                                                "description": "计时开始后多少秒再开始判定该节点，默认0秒（立即开始），float格式"
+                                            },
+                                            "max_recognitions": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "integer",
+                                                        "minimum": 0
+                                                    }
+                                                ],
+                                                "default": true,
+                                                "description": "是否识别（布尔值）或最大识别成功次数（整数），默认true。\n\n布尔值格式：true表示无限制识别，false表示不识别\n例如：true\n\n整数格式：最大识别成功次数，只有识别成功时才会递减，减到0后不再识别\n例如：3"
                                             }
                                         },
                                         "required": [
@@ -266,6 +323,25 @@
                                                 "default": 0.0,
                                                 "minimum": 0,
                                                 "description": "识别成功后的延迟时间（秒），默认0秒，float格式。用于增加二次识别，确保识别结果稳定"
+                                            },
+                                            "start_after": {
+                                                "type": "number",
+                                                "default": 0.0,
+                                                "minimum": 0,
+                                                "description": "计时开始后多少秒再开始判定该节点，默认0秒（立即开始），float格式"
+                                            },
+                                            "max_recognitions": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "integer",
+                                                        "minimum": 0
+                                                    }
+                                                ],
+                                                "default": true,
+                                                "description": "是否识别（布尔值）或最大识别成功次数（整数），默认true。\n\n布尔值格式：true表示无限制识别，false表示不识别\n例如：true\n\n整数格式：最大识别成功次数，只有识别成功时才会递减，减到0后不再识别\n例如：3"
                                             }
                                         },
                                         "required": [

@@ -50,6 +50,19 @@
                             "template": [
                                 "夜航手册/等级/30"
                             ]
+                        },
+                        "副本次数": {
+                            "attach": {
+                                "reco": {
+                                    "Interrupt": [
+                                        {
+                                            "name": "扼守未抵达目的地",
+                                            "run": true,
+                                            "start_after": 15
+                                        }
+                                    ]
+                                }
+                            }
                         }
                     }
                 },
@@ -78,6 +91,19 @@
                             "template": [
                                 "夜航手册/等级/50"
                             ]
+                        },
+                        "副本次数": {
+                            "attach": {
+                                "reco": {
+                                    "Interrupt": [
+                                        {
+                                            "name": "扼守未抵达目的地",
+                                            "run": true,
+                                            "start_after": 15
+                                        }
+                                    ]
+                                }
+                            }
                         }
                     }
                 },
@@ -120,6 +146,19 @@
                             "template": [
                                 "夜航手册/等级/65"
                             ]
+                        },
+                        "副本次数": {
+                            "attach": {
+                                "reco": {
+                                    "Interrupt": [
+                                        {
+                                            "name": "扼守未抵达目的地",
+                                            "run": true,
+                                            "start_after": 15
+                                        }
+                                    ]
+                                }
+                            }
                         }
                     }
                 },

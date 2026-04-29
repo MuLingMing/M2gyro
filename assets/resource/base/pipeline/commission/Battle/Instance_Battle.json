@@ -72,13 +72,13 @@
             }
         },
         "action": "Click",
-        "post_delay": 500,
+        "post_delay": 1500,
         //无法点击则重来
         "next": [
-            "离开副本匹配识别",
-            "[JumpBack]复位角色",
+            "复位角色",
             "[JumpBack]设置其他",
             "[JumpBack]局内设置-复位",
+            "局内复位",
             "[JumpBack]弹窗取消"
         ]
     },

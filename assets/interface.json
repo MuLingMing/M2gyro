@@ -312,9 +312,7 @@
             "pipeline_override": {
                 "副本次数": {
                     "attach": {
-                        "act": {
-                            "target_count": "{target_count}"
-                        }
+                        "target_count": "{target_count}"
                     }
                 }
             }
@@ -333,9 +331,7 @@
             "pipeline_override": {
                 "副本次数": {
                     "attach": {
-                        "reco": {
-                            "total_time": "{total_time}"
-                        }
+                        "total_time": "{total_time}"
                     }
                 }
             }
