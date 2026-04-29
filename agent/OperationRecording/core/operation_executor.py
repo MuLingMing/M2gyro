@@ -16,6 +16,7 @@ from ..config import ConfigManager
 from .timeline_manager import ActionTimeline
 from .humanizer import humanizer
 from .operation_parser import OperationParser
+from utils.logger import logger
 
 
 class OperationExecutor:
@@ -228,7 +229,7 @@ class OperationExecutor:
 
         try:
             for _ in range(loop_count):
-                self._timeline = ActionTimeline(self._platform)
+                self._timeline = ActionTimeline(self._platform, self._context)
 
                 if test_mode or not humanizer.enabled:
                     self._timeline.set_test_mode(True)
@@ -289,7 +290,7 @@ class OperationExecutor:
 
         执行流程：
         1. 检查平台是否初始化
-        2. 从注册表创建动作
+        2. 从注册表创建动作（传递 context）
         3. 添加类人化延迟
         4. 执行动作
         """
@@ -297,15 +298,19 @@ class OperationExecutor:
             return False
 
         try:
-            action = action_registry.create_action(operation.action, self._platform)
+            action = action_registry.create_action(operation.action, self._platform, self._context)
             if not action:
                 return False
 
             if humanizer.enabled:
                 humanizer.human_delay()
 
-            return action.execute(operation.params)
-        except Exception:
+            result = action.execute(operation.params)
+            return result
+        except Exception as e:
+            logger.error(f"[OperationExecutor] 执行异常: {type(e).__name__}: {e}")
+            import traceback
+            logger.error(f"[OperationExecutor] 堆栈信息:\n{traceback.format_exc()}")
             return False
 
     def get_platform(self):

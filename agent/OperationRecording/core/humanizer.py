@@ -457,9 +457,6 @@ class ActionSmoother:
 
         try:
             # 这里应该调用实际的平台动作执行方法
-            # 为了演示，我们只是记录动作
-            print(f"Executing {action_name} with params: {human_params}")
-
             # 模拟动作执行时间
             duration = human_params.get('duration', 0)
             if isinstance(duration, (int, float)) and duration > 0:

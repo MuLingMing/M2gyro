@@ -13,5 +13,6 @@ from .interact_action import InteractAction
 from .charge_attack_action import ChargeAttackAction
 from .crouch_action import CrouchAction
 from .wait_action import WaitAction
+from .run_node_action import RunNodeAction
 
-__all__ = ["MoveAction", "JumpAction", "DodgeAction", "TurnAction", "InteractAction", "ChargeAttackAction", "CrouchAction", "WaitAction"]
+__all__ = ["MoveAction", "JumpAction", "DodgeAction", "TurnAction", "InteractAction", "ChargeAttackAction", "CrouchAction", "WaitAction", "RunNodeAction"]

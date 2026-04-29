@@ -1,5 +1,4 @@
 {
-    //扼守
     "扼守": {},
     "扼守50": {
         //皎皎币
@@ -12,22 +11,113 @@
     },
     "夜航手册65扼守": {
         "recognition": {
-            "type": "DirectHit"
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "前往目标点"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    500
+                ]
+            }
         },
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "MapNavigateAction",
+                "custom_action": "OperationRecordAction",
                 "custom_action_param": {
-                    "path": [
-                        [
-                            2352,
-                            8280,
-                            "INTERACT"
-                        ]
-                    ]
+                    "operations": [
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 3.0,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    },
+                                    {
+                                        "action": "jump",
+                                        "at": 1.0
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 2
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 5.3,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 1.0
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 13.0
+                            }
+                        }
+                    ],
+                    "loop_count": 1
                 }
             }
-        }
+        },
+        "next": [
+            "副本次数",
+            "扼守未抵达目的地"
+        ]
+    },
+    "夜航手册75扼守-羽翼1": {
+        "action": "Click"
+    },
+    "夜航手册75扼守-羽翼2": {
+        "action": "Click"
+    },
+    "夜航手册80扼守-羽翼1": {
+        "action": "Click"
+    },
+    "夜航手册80扼守-羽翼2": {
+        "action": "Click"
+    },
+    "扼守未抵达目的地": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "前往目标点"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    500
+                ]
+            }
+        },
+        "next": [
+            "局内放弃委托"
+        ]
     }
 }

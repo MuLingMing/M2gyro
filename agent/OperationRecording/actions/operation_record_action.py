@@ -69,6 +69,10 @@ class OperationRecordAction(CustomAction):
        - until: 目标时间点（秒，相对于时间线开始，仅限时间线模式）
          - 如果提供了 until，则忽略 duration
          - 如果当前时间 >= until，则不等待
+    10. run_node - 执行节点动作
+       参数：
+       - node: 节点名称（必填）
+       - blocking: 是否阻塞等待节点执行完成（可选，默认 false）
     
     叠加动作列表格式（可选，时间线模式参数）：
     - overlays: 叠加动作列表，每个包含：

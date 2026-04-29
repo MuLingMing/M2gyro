@@ -69,9 +69,10 @@
                         "charge_attack",
                         "crouch",
                         "spiral_leap",
-                        "wait"
+                        "wait",
+                        "run_node"
                     ],
-                    "description": "动作名称，必填\n\n支持的动作：\n- move: 移动动作\n- jump: 跳跃动作\n- dodge: 闪避动作\n- turn: 转向动作\n- interact: 交互动作\n- charge_attack: 蓄力攻击动作\n- crouch: 下蹲动作\n- spiral_leap: 螺旋飞跃动作\n- wait: 等待动作"
+                    "description": "动作名称，必填\n\n支持的动作：\n- move: 移动动作\n- jump: 跳跃动作\n- dodge: 闪避动作\n- turn: 转向动作\n- interact: 交互动作\n- charge_attack: 蓄力攻击动作\n- crouch: 下蹲动作\n- spiral_leap: 螺旋飞跃动作\n- wait: 等待动作\n- run_node: 执行节点动作"
                 },
                 "params": {
                     "type": "object",
@@ -79,8 +80,7 @@
                 }
             },
             "required": [
-                "action",
-                "params"
+                "action"
             ],
             "additionalProperties": false,
             "description": "单个操作项\n\n根据动作类型不同，params 有不同的格式，详见各动作的说明",
@@ -97,6 +97,9 @@
                         ]
                     },
                     "then": {
+                        "required": [
+                            "params"
+                        ],
                         "properties": {
                             "params": {
                                 "$ref": "#/definitions/MoveParams"
@@ -154,6 +157,9 @@
                         ]
                     },
                     "then": {
+                        "required": [
+                            "params"
+                        ],
                         "properties": {
                             "params": {
                                 "$ref": "#/definitions/TurnParams"
@@ -249,9 +255,34 @@
                         ]
                     },
                     "then": {
+                        "required": [
+                            "params"
+                        ],
                         "properties": {
                             "params": {
                                 "$ref": "#/definitions/WaitParams"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "action": {
+                                "const": "run_node"
+                            }
+                        },
+                        "required": [
+                            "action"
+                        ]
+                    },
+                    "then": {
+                        "required": [
+                            "params"
+                        ],
+                        "properties": {
+                            "params": {
+                                "$ref": "#/definitions/RunNodeParams"
                             }
                         }
                     }
@@ -271,7 +302,8 @@
                         "interact",
                         "charge_attack",
                         "crouch",
-                        "spiral_leap"
+                        "spiral_leap",
+                        "run_node"
                     ],
                     "description": "叠加动作名称，必填"
                 },
@@ -287,7 +319,6 @@
             },
             "required": [
                 "action",
-                "params",
                 "at"
             ],
             "additionalProperties": false
@@ -486,22 +517,41 @@
             "description": "spiral_leap 动作参数\n\n无需参数，空对象即可：\n{}\n\n或者包含时间线模式参数：\n{\n    \"duration\": 0.5\n}"
         },
         "WaitParams": {
-      "type": "object",
-      "properties": {
-        "duration": {
-          "type": "number",
-          "default": 1.0,
-          "minimum": 0,
-          "description": "等待时间（秒，默认 1.0）"
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "number",
+                    "default": 1.0,
+                    "minimum": 0,
+                    "description": "等待时间（秒，默认 1.0）"
+                },
+                "until": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "目标时间点（秒，相对于时间线开始，仅限时间线模式）\n\n说明：\n- 如果提供了 until，则忽略 duration\n- 如果当前时间 >= until，则不等待\n- 仅限时间线模式使用"
+                }
+            },
+            "additionalProperties": false,
+            "description": "wait 动作参数\n\n参数格式 1（等待指定时长）：\n{\n    \"duration\": 1.0\n}\n\n参数格式 2（等待到目标时间点，仅限时间线模式）：\n{\n    \"until\": 5.0\n}"
         },
-        "until": {
-          "type": "number",
-          "minimum": 0,
-          "description": "目标时间点（秒，相对于时间线开始，仅限时间线模式）\n\n说明：\n- 如果提供了 until，则忽略 duration\n- 如果当前时间 >= until，则不等待\n- 仅限时间线模式使用"
+        "RunNodeParams": {
+            "type": "object",
+            "properties": {
+                "node": {
+                    "type": "string",
+                    "description": "节点名称\n\n指定要执行的 Pipeline 节点名称"
+                },
+                "blocking": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "是否阻塞等待节点执行完成\n\n可选值：\n- true: 等待节点执行完成后再继续\n- false: 立即返回，不等待\n\n默认：false"
+                }
+            },
+            "required": [
+                "node"
+            ],
+            "additionalProperties": false,
+            "description": "run_node 动作参数\n\n参数格式：\n{\n    \"node\": \"node_name\",\n    \"blocking\": true\n}"
         }
-      },
-      "additionalProperties": false,
-      "description": "wait 动作参数\n\n参数格式 1（等待指定时长）：\n{\n    \"duration\": 1.0\n}\n\n参数格式 2（等待到目标时间点，仅限时间线模式）：\n{\n    \"until\": 5.0\n}"
-    }
     }
 }

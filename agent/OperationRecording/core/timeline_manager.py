@@ -12,6 +12,8 @@ import time
 import random
 from typing import List, Dict, Any, Optional, Callable, Union
 from enum import Enum
+from utils.logger import logger
+from ..actions import action_registry
 
 
 class ActionPriority(Enum):
@@ -151,14 +153,16 @@ class ActionTimeline:
        - is_instant: 判断瞬时动作
     """
 
-    def __init__(self, platform):
+    def __init__(self, platform, context=None):
         """
         初始化时间线
 
         参数：
         - platform: 平台对象
+        - context: MAA Context 对象，可选
         """
         self._platform = platform
+        self._context = context
         self._actions: List[TimedAction] = []
         self._active_actions: Dict[str, TimedAction] = {}
         self._start_time = 0.0
@@ -441,58 +445,71 @@ class ActionTimeline:
 
         执行流程：
         1. 应用类人化效果
-        2. 获取平台方法
-        3. 根据动作类型执行（move/charge_attack/dodge/turn/interact/swipe/click/press_key）
+        2. 优先使用平台方法（move、charge_attack 等）
+        3. 如果没有平台方法（比如 run_node），使用 action_registry 执行
         """
         params = self._apply_human_effects(action)
 
-        method = getattr(self._platform, action.action_name, None)
-        if method is None:
-            return
-
         try:
-            duration_factor = 0 if self._test_mode else 1
+            method = getattr(self._platform, action.action_name, None)
+            
+            if method is not None:
+                # 有平台方法，使用原来的方式，保证流畅和时间准确
+                duration_factor = 0 if self._test_mode else 1
 
-            if action.action_name == "move":
-                direction = params.get("direction", "center")
-                duration = 0 if is_start else (action.duration if action.duration > 0 else 0.1) * duration_factor
-                method(direction, duration)
-            elif action.action_name == "charge_attack":
-                duration = 0 if is_start else (action.duration if action.duration > 0 else 0.5) * duration_factor
-                x = params.get("x")
-                y = params.get("y")
-                method(duration, x, y)
-            elif action.action_name == "dodge":
-                direction = params.get("direction")
-                if direction:
-                    method(direction)
+                if action.action_name == "move":
+                    direction = params.get("direction", "center")
+                    duration = 0 if is_start else (action.duration if action.duration > 0 else 0.1) * duration_factor
+                    method(direction, duration)
+                elif action.action_name == "charge_attack":
+                    duration = 0 if is_start else (action.duration if action.duration > 0 else 0.5) * duration_factor
+                    x = params.get("x")
+                    y = params.get("y")
+                    method(duration, x, y)
+                elif action.action_name == "dodge":
+                    direction = params.get("direction")
+                    if direction:
+                        method(direction)
+                    else:
+                        method()
+                elif action.action_name == "turn":
+                    angle = params.get("angle", 0.0)
+                    method(angle)
+                elif action.action_name == "interact":
+                    interaction_type = params.get("interaction_type", "default")
+                    method(interaction_type)
+                elif action.action_name == "swipe":
+                    start_x = params.get("start_x", 0)
+                    start_y = params.get("start_y", 0)
+                    end_x = params.get("end_x", 0)
+                    end_y = params.get("end_y", 0)
+                    duration = (action.duration if action.duration > 0 else 0.5) * duration_factor
+                    method(start_x, start_y, end_x, end_y, duration)
+                elif action.action_name == "click":
+                    x = params.get("x", 0)
+                    y = params.get("y", 0)
+                    method(x, y)
+                elif action.action_name == "press_key":
+                    key = params.get("key", "")
+                    duration = (action.duration if action.duration > 0 else 0.1) * duration_factor
+                    method(key, duration)
                 else:
                     method()
-            elif action.action_name == "turn":
-                angle = params.get("angle", 0.0)
-                method(angle)
-            elif action.action_name == "interact":
-                interaction_type = params.get("interaction_type", "default")
-                method(interaction_type)
-            elif action.action_name == "swipe":
-                start_x = params.get("start_x", 0)
-                start_y = params.get("start_y", 0)
-                end_x = params.get("end_x", 0)
-                end_y = params.get("end_y", 0)
-                duration = (action.duration if action.duration > 0 else 0.5) * duration_factor
-                method(start_x, start_y, end_x, end_y, duration)
-            elif action.action_name == "click":
-                x = params.get("x", 0)
-                y = params.get("y", 0)
-                method(x, y)
-            elif action.action_name == "press_key":
-                key = params.get("key", "")
-                duration = (action.duration if action.duration > 0 else 0.1) * duration_factor
-                method(key, duration)
             else:
-                method()
-        except Exception:
-            pass
+                # 没有平台方法，尝试用 action_registry 执行（比如 run_node）
+                # 对于瞬时动作，只在 is_start=True 时执行一次
+                if action.is_instant() and not is_start:
+                    return
+                
+                action_obj = action_registry.create_action(action.action_name, self._platform, self._context)
+                
+                if action_obj:
+                    result = action_obj.execute(params)
+
+        except Exception as e:
+            logger.error(f"[TimelineManager] _execute_action 异常: {type(e).__name__}: {e}")
+            import traceback
+            logger.error(f"[TimelineManager] 堆栈信息:\n{traceback.format_exc()}")
 
     def _apply_human_effects(self, action: TimedAction) -> Dict[str, Any]:
         """

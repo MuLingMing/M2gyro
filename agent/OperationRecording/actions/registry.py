@@ -90,25 +90,26 @@ class ActionRegistry:
         """
         return list(self._actions.keys())
 
-    def create_action(self, action_name: str, platform) -> Optional[ActionBase]:
+    def create_action(self, action_name: str, platform, context=None) -> Optional[ActionBase]:
         """
         创建动作实例
 
         参数：
         - action_name: 动作名称
         - platform: 平台实例
+        - context: MAA Context 实例，可选
 
         返回值：
         - ActionBase | None: 动作实例，不存在返回 None
 
         执行流程：
         1. 获取动作类
-        2. 如果存在，创建实例
+        2. 如果存在，创建实例（传递 context）
         3. 返回实例或 None
         """
         action_class = self.get_action(action_name)
         if action_class:
-            return action_class(platform)
+            return action_class(platform, context)
         return None
 
 

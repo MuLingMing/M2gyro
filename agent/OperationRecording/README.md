@@ -265,6 +265,50 @@ while self._timeline.get_status()['is_running']:
 | crouch | 下蹲 | 无 |
 | charge_attack | 蓄力攻击 | duration, x, y |
 | wait | 等待 | duration |
+| run_node | 执行 Pipeline 节点 | node (必填), blocking (可选) |
+
+## 动作执行架构
+
+### 两种执行模式
+
+框架支持两种完全兼容的执行模式，确保动作在任何情况下都能正确工作：
+
+#### 1. 普通模式（`OperationExecutor`）
+
+100% 使用 `action_registry` 中的动作类执行，适用于简单的顺序执行。
+所有动作都通过 `ActionBase` 子类实现，统一调用 `execute()` 方法。
+
+#### 2. 时间线模式（`ActionTimeline`）
+
+优先尝试平台方法（保证时间准确、流畅），没有平台方法时，回退到 `action_registry` 中的动作类执行。
+
+执行优先级：
+
+1. 先检查：`getattr(self._platform, action.action_name, None)`
+2. 有平台方法：使用平台方法执行（`move`/`charge_attack`/`dodge`/`turn`/`interact`/`swipe`/`click`/`press_key`）
+3. 没有平台方法：使用 `action_registry.create_action()` 执行（`run_node`）
+
+### 新增动作的完整指南
+
+#### 类型 A：新增一个依赖平台的动作（推荐）
+
+需要在两个平台（`desktop`/`adb`）中都实现：
+
+1. 在 `platforms/base.py` 中添加抽象方法
+2. 在 `platforms/desktop/desktop_platform.py` 中实现
+3. 在 `platforms/adb/adb_platform.py` 中实现
+4. 在 `actions/basic/` 中创建动作类，继承 `ActionBase`，用 `@register_action` 注册
+5. 在 `actions/basic/__init__.py` 中导入
+6. 更新 `deps/tools/custom_act/OperationRecordAction.schema.json`
+
+#### 类型 B：新增一个不依赖平台的动作（类似 `run_node`）
+
+不需要在平台中实现，直接创建动作类：
+
+1. 在 `actions/basic/` 中创建动作类，继承 `ActionBase`，用 `@register_action` 注册
+2. 在 `actions/basic/__init__.py` 中导入
+3. 更新 `deps/tools/custom_act/OperationRecordAction.schema.json`
+4. 完成！两种模式自动支持！
 
 ## 平台配置
 

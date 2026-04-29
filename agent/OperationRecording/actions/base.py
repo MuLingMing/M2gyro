@@ -4,10 +4,12 @@
 1. 定义动作接口规范
 2. 统一平台实例管理
 3. 提供参数验证钩子
+4. 支持 context 访问（用于需要执行节点的动作）
 """
 
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
+from maa.context import Context
 from ..platforms.base import PlatformBase
 
 
@@ -24,7 +26,11 @@ class ActionBase(ABC):
        - 存储平台实例
        - 提供统一的平台访问接口
 
-    3. 参数验证
+    3. Context 管理
+       - 存储 MAA Context 实例
+       - 用于需要执行节点的动作（如 run_node）
+
+    4. 参数验证
        - 提供 validate_params 钩子
        - 默认返回 True（不验证）
 
@@ -34,17 +40,20 @@ class ActionBase(ABC):
     - validate_params(params): 可选，验证参数
     """
 
-    def __init__(self, platform: PlatformBase):
+    def __init__(self, platform: PlatformBase, context: Optional[Context] = None):
         """
         初始化动作
 
         参数：
         - platform: 平台实例
+        - context: MAA Context 实例，可选
 
         执行流程：
         1. 存储平台实例
+        2. 存储 Context 实例（可选）
         """
         self._platform = platform
+        self._context = context
 
     @property
     @abstractmethod
