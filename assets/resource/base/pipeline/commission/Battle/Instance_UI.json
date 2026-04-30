@@ -76,10 +76,10 @@
             }
         },
         "action": "Click",
-        "post_delay": 1500,
         "next": [
-            "局内放弃-退出",
+            "退出委托弹窗确定",
             "退出委托仅识别",
+            "[JumpBack]局内放弃-退出",
             "[JumpBack]返回上一级",
             "局内放弃委托"
         ]
@@ -124,10 +124,7 @@
                 ]
             }
         },
-        "action": "Click",
-        "next": [
-            "弹窗确定"
-        ]
+        "action": "Click"
     },
     "局内继续游戏": {
         "recognition": {
@@ -204,5 +201,35 @@
                 ]
             }
         }
+    },
+    "退出委托弹窗确定": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "box_index": 0,
+                "all_of": [
+                    "弹窗确定",
+                    {
+                        "type": "OCR",
+                        "param": {
+                            "expected": [
+                                "结束当前任务",
+                                "结束当前"
+                            ],
+                            "roi": [
+                                165,
+                                110,
+                                950,
+                                480
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "Click",
+        "on_error": [
+            "弹窗取消"
+        ]
     }
 }

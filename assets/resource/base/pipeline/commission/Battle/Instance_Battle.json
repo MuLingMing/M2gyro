@@ -72,10 +72,10 @@
             }
         },
         "action": "Click",
-        "post_delay": 1500,
         //无法点击则重来
         "next": [
-            "复位角色",
+            "重置角色位置确定",
+            "[JumpBack]复位角色",
             "[JumpBack]设置其他",
             "[JumpBack]局内设置-复位",
             "局内复位",
@@ -151,9 +151,37 @@
                 ]
             }
         },
+        "action": "Click"
+    },
+    "重置角色位置确定": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "box_index": 0,
+                "all_of": [
+                    "弹窗确定",
+                    {
+                        "type": "OCR",
+                        "param": {
+                            "expected": [
+                                "重置角色位置",
+                                "重置角色",
+                                "角色位置"
+                            ],
+                            "roi": [
+                                165,
+                                110,
+                                950,
+                                480
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
         "action": "Click",
-        "next": [
-            "弹窗确定"
+        "on_error": [
+            "弹窗取消"
         ]
     }
 }
