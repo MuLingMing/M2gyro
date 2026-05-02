@@ -20,14 +20,14 @@
         {
             "name": "安卓云游戏",
             "path": [
-                "./resource/base",
-                "./resource/yun"
+                "./resource/base"
             ]
         },
         {
             "name": "安卓本地游戏",
             "path": [
-                "./resource/base"
+                "./resource/base",
+                "./resource/Android"
             ]
         }
     ],
@@ -39,39 +39,8 @@
         ]
     },
     "import": [
-        "./resource/attach/夜航手册.interface.json"
-    ],
-    "preset": [
-        {
-            "name": "1",
-            "label": "test",
-            "task": [
-                {
-                    "name": "驱离测试",
-                    "option": {
-                        "单次倍率": "无加成",
-                        "超时时间": {
-                            "total_time": "120"
-                        },
-                        "倍率书副本次数": {
-                            "target_count": "0"
-                        }
-                    }
-                },
-                {
-                    "name": "测试",
-                    "option": {
-                        "单次倍率": "无加成",
-                        "超时时间": {
-                            "total_time": "120"
-                        },
-                        "倍率书副本次数": {
-                            "target_count": "0"
-                        }
-                    }
-                }
-            ]
-        }
+        "./resource/attach/夜航手册.interface.json",
+        "./resource/attach/test.interface.json"
     ],
     "task": [
         {

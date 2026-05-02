@@ -1,0 +1,56 @@
+{
+    "name": "测试",
+    "label": "test",
+    "interface_version": 2,
+    "controller": [],
+    "resource": [],
+    "import": [
+        ".../interface.json"
+    ],
+    "preset": [
+        {
+            "name": "1",
+            "label": "test",
+            "task": [
+                {
+                    "name": "驱离测试",
+                    "option": {
+                        "单次倍率": "无加成",
+                        "超时时间": {
+                            "total_time": "120"
+                        },
+                        "倍率书副本次数": {
+                            "target_count": "0"
+                        }
+                    }
+                },
+                {
+                    "name": "测试",
+                    "option": {
+                        "单次倍率": "无加成",
+                        "超时时间": {
+                            "total_time": "120"
+                        },
+                        "倍率书副本次数": {
+                            "target_count": "0"
+                        }
+                    }
+                },
+                {
+                    "name": "夜航手册",
+                    "option": {
+                        "夜航手册等级选择": "65",
+                        "夜航手册65级": "9",
+                        "单次倍率": "无加成",
+                        "超时时间": {
+                            "total_time": "180"
+                        },
+                        "倍率书副本次数": {
+                            "target_count": "0"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

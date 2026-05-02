@@ -1,29 +1,39 @@
 {
-    "$defs": {
-        "RewardSelector_custom_recognition": {
-            "type": "object",
-            "properties": {
-                "RewardSelector": {
-                    "type": "object",
-                    "properties": {
-                        "debug": {
-                            "type": "boolean",
-                            "description": "是否开启调试日志，默认False"
-                        }
-                    },
-                    "additionalProperties": false
-                }
-            },
-            "additionalProperties": false
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "./custom_reco/RewardSelector.schema.json",
+    "type": "object",
+    "unevaluatedProperties": false,
+    "properties": {
+        "custom_recognition": {
+            "type": "string",
+            "description": "识别名\n例如：\n\"RewardSelector\"\n\n当值为 RewardSelector 时，对应的 custom_recognition_param 示例：\n{\n}\n"
+        },
+        "custom_recognition_param": {
+            "type": "object"
         }
     },
-    "allOf": [
-        {
-            "properties": {
-                "custom_recognition_param": {
-                    "$ref": "#/$defs/RewardSelector_custom_recognition"
-                }
+    "if": {
+        "properties": {
+            "custom_recognition": {
+                "const": "RewardSelector"
+            }
+        },
+        "required": [
+            "custom_recognition"
+        ]
+    },
+    "then": {
+        "properties": {
+            "custom_recognition_param": {
+                "$ref": "#/definitions/RewardSelectorParam"
             }
         }
-    ]
+    },
+    "definitions": {
+        "RewardSelectorParam": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+        }
+    }
 }

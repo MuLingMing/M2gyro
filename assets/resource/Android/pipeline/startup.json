@@ -1,0 +1,38 @@
+{
+    "启动游戏": {
+        "action": {
+            "type": "StartApp",
+            "param": {
+                "package": "com.hero.dna.gf"
+            }
+        },
+        "next": [
+            "点击进入游戏",
+            "[JumpBack]返回上一级"
+        ]
+    },
+    "退出游戏": {
+        "action": {
+            "type": "StopApp",
+            "param": {
+                "package": "com.hero.dna.gf"
+            }
+        },
+        "next": [
+            "启动游戏"
+        ]
+    },
+    "点击进入游戏": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "点击进入游戏",
+                    "点击",
+                    "游戏"
+                ]
+            }
+        },
+        "action": "Click"
+    }
+}
