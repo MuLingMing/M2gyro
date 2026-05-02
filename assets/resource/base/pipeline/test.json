@@ -1,62 +1,11 @@
 {
-  "test": {
-    "next": [
-      "[JumpBack]确认选择",
-      "[JumpBack]倍率选择",
-      "[JumpBack]副本次数"
-    ]
-  },
-  "test_countdown": {
-    "recognition": {
-      "type": "Custom",
-      "param": {
-        "custom_recognition": "Countdown",
-        "custom_recognition_param": {
-          "total_time": 90,
-          "entry": [
-            {
-              "name": "局内复位",
-              "run": false
+    "test": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "RewardSelector"
             }
-          ],
-          "Interrupt": [
-            {
-              "name": "确认选择",
-              "run": false,
-              "interval": 2
-            },
-            {
-              "name": "倍率选择",
-              "run": false,
-              "interval": 2
-            },
-            {
-              "name": "扼守未抵达目的地",
-              "run": true,
-              "start_after": 10
-            }
-          ],
-          "Continue": [
-            {
-              "name": "局内复位",
-              "run": 1
-            },
-            {
-              "name": "释放技能E",
-              "interval": 3,
-              "delay": 2
-            },
-            {
-              "name": "释放状态Q",
-              "interval": 3,
-              "delay": 2
-            },
-            "局内继续游戏"
-          ],
-          "Over": "放弃委托",
-          "logger": false
-        }
-      }
+        },
+        "action": "Click"
     }
-  }
 }

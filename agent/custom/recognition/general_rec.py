@@ -88,8 +88,7 @@ class MultiRecognition(CustomRecognition):
 
                 reco_detail = context.run_recognition(node_name, argv.image)
 
-                if reco_detail and reco_detail.hit:
-                    # 标准化ROI，将[0,0,0,0]转换为实际全屏坐标，其它不变
+                if reco_detail and reco_detail.hit and reco_detail.box is not None:
                     normalized_roi = self._normalize_roi(list(reco_detail.box))
                     node_results[index_key] = normalized_roi
                 else:
@@ -134,24 +133,22 @@ class MultiRecognition(CustomRecognition):
         if not uncached_nodes:
             return  # 所有节点都已缓存
 
-        task_id = self._argv.task_detail.task_id
-        task_detail = self._context.tasker.get_task_detail(task_id)
+        task_detail = self._argv.task_detail  # type: ignore[union-attr]
+        task_id = task_detail.task_id
+        task_detail_result = self._context.tasker.get_task_detail(task_id)  # type: ignore[union-attr]
 
-        if task_detail and task_detail.nodes:
-            for node_detail in reversed(task_detail.nodes):
+        if task_detail_result and task_detail_result.nodes:
+            for node_detail in reversed(task_detail_result.nodes):
                 if node_detail.name in uncached_nodes:
-                    # 缓存识别结果
                     recognition_success = (
                         node_detail.recognition is not None
                         and node_detail.recognition.box is not None
                     )
                     self._external_node_cache[node_detail.name] = recognition_success
 
-                    # 缓存ROI
-                    if recognition_success:
-                        # 标准化外部节点的ROI
+                    if recognition_success and node_detail.recognition is not None:
                         external_roi = self._normalize_roi(
-                            list(node_detail.recognition.box)
+                            list(node_detail.recognition.box)  # type: ignore[arg-type]
                         )
                         self._external_roi_cache[node_detail.name] = external_roi
                     else:
@@ -538,7 +535,8 @@ class MultiRecognition(CustomRecognition):
         图像缩放规则：较短边缩放到720，长边按比例缩放
         """
         if roi == [0, 0, 0, 0]:
-            original_height, original_width = self._argv.image.shape[:2]
+            image = self._argv.image  # type: ignore[union-attr]
+            original_height, original_width = image.shape[:2]
 
             if original_width <= original_height:
                 scaled_width = 720
@@ -548,9 +546,6 @@ class MultiRecognition(CustomRecognition):
                 scaled_width = int(original_width * (720 / original_height))
 
             normalized_roi = [0, 0, scaled_width, scaled_height]
-            # logger.debug(
-            #     f"全屏ROI标准化: 原始尺寸({original_width}x{original_height}) -> 缩放尺寸({scaled_width}x{scaled_height})"
-            # )
             return normalized_roi
 
         return roi
@@ -619,40 +614,32 @@ class Count(CustomRecognition):
 
             node_name = argv.node_name
 
-            # task_id 发生变化，重置计数器
-            if argv.task_detail.task_id != self._pre_task_id:
+            task_detail = argv.task_detail  # type: ignore[union-attr]
+            if task_detail.task_id != self._pre_task_id:
                 Count.reset_count()
-                self._pre_task_id = argv.task_detail.task_id
+                self._pre_task_id = task_detail.task_id
 
-            # 初始化节点数据
             if node_name not in Count.record:
                 Count.record[node_name] = {"count": 0, "target": target_count}
 
-            # 未达指定次数
             if Count.record[node_name]["count"] < target_count:
                 context.override_pipeline(
                     {self._identifier: {"recognition": recognition}}
                 )
-                reco_detail = context.run_recognition(self._identifier, argv.image)
+                reco_detail = context.run_recognition(self._identifier, argv.image)  # type: ignore[arg-type]
 
-                # 识别成功
                 if reco_detail and reco_detail.hit:
                     Count.record[node_name]["count"] += 1
-                    # logger.debug(
-                    #     f"Count识别成功: {node_name}, 当前计数: {Count.record[node_name]['count']}"
-                    # )
                     return CustomRecognition.AnalyzeResult(
-                        box=reco_detail.box,
+                        box=reco_detail.box,  # type: ignore[arg-type]
                         detail={
                             "node": node_name,
                             "count": Count.record[node_name]["count"],
                         },
                     )
                 else:
-                    # 识别失败
                     return None
             else:
-                # 已达指定次数
                 return None
 
         except Exception as e:
@@ -671,7 +658,7 @@ class CheckStopping(CustomRecognition):
         context: Context,
         argv: CustomRecognition.AnalyzeArg,
     ) -> Union[CustomRecognition.AnalyzeResult, Optional[RectType]]:
-        if context.tasker.stopping:
+        if context.tasker.stopping:  # type: ignore[union-attr]
             return CustomRecognition.AnalyzeResult(
                 box=[0, 0, 0, 0],
                 detail={"node": "CheckStopping", "stopping": True},
@@ -706,7 +693,6 @@ class ColorOCR(CustomRecognition):
         try:
             params = json.loads(argv.custom_recognition_param)
 
-            # 获取参数，默认过滤白色
             target_color = params.get("target_color", [255, 255, 255])
             tolerance = params.get("tolerance", 55)
             recognition_node = params.get("recognition")
@@ -719,32 +705,24 @@ class ColorOCR(CustomRecognition):
                 logger.error("未提供recognition参数")
                 return None
 
-            # 获取图像
-            img = argv.image
+            img = argv.image  # type: ignore[union-attr]
 
-            # 定义目标颜色和颜色容差
             target_color_array = np.array(target_color)
 
-            # 创建颜色过滤掩码
             lower_bound = np.maximum(target_color_array - tolerance, 0)
             upper_bound = np.minimum(target_color_array + tolerance, 255)
 
-            # 创建掩码：保留在目标颜色范围内的像素
             color_mask = np.all((img >= lower_bound) & (img <= upper_bound), axis=-1)
 
-            # 处理图像：目标颜色变成黑色，其他颜色变成白色
-            # 创建一个全白图像
             processed_img = np.full_like(img, 255, dtype=np.uint8)
-            # 将匹配目标颜色的像素设置为黑色
             processed_img[color_mask] = 0
 
-            # 在处理后的图像上运行OCR识别
             reco_detail = context.run_recognition(recognition_node, processed_img)
 
             if reco_detail and reco_detail.hit:
                 logger.debug(f"ColorOCR识别成功: {reco_detail.best_result.text}")
                 return CustomRecognition.AnalyzeResult(
-                    box=reco_detail.box, detail=reco_detail.raw_detail
+                    box=reco_detail.box, detail=reco_detail.raw_detail  # type: ignore[arg-type]
                 )
             else:
                 return None
@@ -785,7 +763,6 @@ class ColorOCRWithFallback(CustomRecognition):
         try:
             params = json.loads(argv.custom_recognition_param)
 
-            # 获取参数
             target_color = params.get("target_color", [255, 255, 255])
             tolerance = params.get("tolerance", 55)
             recognition_node = params.get("recognition")
@@ -798,35 +775,29 @@ class ColorOCRWithFallback(CustomRecognition):
                 logger.error("未提供recognition参数")
                 return None
 
-            # 获取图像
-            img = argv.image
+            img = argv.image  # type: ignore[union-attr]
 
-            # 第一步：尝试 ColorOCR（颜色过滤）
             target_color_array = np.array(target_color)
             lower_bound = np.maximum(target_color_array - tolerance, 0)
             upper_bound = np.minimum(target_color_array + tolerance, 255)
 
-            # 创建掩码：保留在目标颜色范围内的像素
             color_mask = np.all((img >= lower_bound) & (img <= upper_bound), axis=-1)
 
-            # 处理图像：目标颜色变成黑色，其他颜色变成白色
             processed_img = np.full_like(img, 255, dtype=np.uint8)
             processed_img[color_mask] = 0
 
-            # 在处理后的图像上运行OCR识别
             reco_detail = context.run_recognition(recognition_node, processed_img)
 
             if reco_detail and reco_detail.hit:
                 logger.debug(f"ColorOCRWithFallback: ColorOCR识别成功")
                 return CustomRecognition.AnalyzeResult(
-                    box=reco_detail.box,
+                    box=reco_detail.box,  # type: ignore[arg-type]
                     detail={
                         "method": "color_ocr",
                         "raw_detail": reco_detail.raw_detail,
                     },
                 )
 
-            # 第二步：ColorOCR失败，尝试纯OCR（不过滤颜色）
             reco_detail = context.run_recognition(
                 recognition_node,
                 img,
@@ -840,7 +811,7 @@ class ColorOCRWithFallback(CustomRecognition):
             if reco_detail and reco_detail.hit:
                 logger.debug(f"ColorOCRWithFallback: 纯OCR识别成功")
                 return CustomRecognition.AnalyzeResult(
-                    box=reco_detail.box,
+                    box=reco_detail.box,  # type: ignore[arg-type]
                     detail={
                         "method": "pure_ocr",
                         "raw_detail": reco_detail.raw_detail,

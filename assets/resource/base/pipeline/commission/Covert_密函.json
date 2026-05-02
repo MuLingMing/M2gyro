@@ -11,5 +11,14 @@
             "[JumpBack]退出委托",
             "[JumpBack]局内放弃委托"
         ]
+    },
+    "委托报酬选择": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "RewardSelector"
+            }
+        },
+        "action": "Click"
     }
 }

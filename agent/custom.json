@@ -29,6 +29,11 @@
         "class": "Countdown",
         "file_path": "custom/recognition/Countdown.py"
     },
+    "RewardSelector": {
+        "type": "recognition",
+        "class": "RewardSelector",
+        "file_path": "custom/recognition/RewardSelector.py"
+    },
     "OperationRecordAction": {
         "type": "action",
         "class": "OperationRecordAction",

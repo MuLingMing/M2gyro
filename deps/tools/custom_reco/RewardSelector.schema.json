@@ -1,0 +1,29 @@
+{
+    "$defs": {
+        "RewardSelector_custom_recognition": {
+            "type": "object",
+            "properties": {
+                "RewardSelector": {
+                    "type": "object",
+                    "properties": {
+                        "debug": {
+                            "type": "boolean",
+                            "description": "是否开启调试日志，默认False"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "allOf": [
+        {
+            "properties": {
+                "custom_recognition_param": {
+                    "$ref": "#/$defs/RewardSelector_custom_recognition"
+                }
+            }
+        }
+    ]
+}
