@@ -3,89 +3,54 @@
 密函报酬选择识别器
 
 功能说明：
-1. 识别三个奖励位置的档位标识（罗马数字Ⅰ/Ⅱ/Ⅲ）
-2. 识别三个位置的奖励图标类型
-3. 根据奖励分类和优先级逻辑返回选择结果和点击位置
+1. 识别三个位置的奖励图标类型（仅武器：图纸和零件）
+2. 识别武器零件的持有数
+3. 根据优先级逻辑返回选择结果和点击位置
 
-奖励分类：
-- 分类1（武器类）：Ⅰ档=武器图纸，Ⅱ/Ⅲ档=武器零件+其他
-  - 优先级1：武器图纸（选最左侧）
-  - 优先级2：只有1个零件时选该零件位置
-  - 优先级3：≥2个零件时选持有数少的那个零件
-  - 兜底：选最左侧
-- 分类2（角色碎片类）：Ⅰ档=10碎片，Ⅱ档=2碎片+其他，Ⅲ档=其他
-  - 默认选最左侧
-- 分类3（魔之楔类）：Ⅰ档=魔之楔图纸，Ⅱ/Ⅲ档=其他
-  - 默认选最左侧
+奖励分类与优先级：
+- 武器图纸 → 选最左侧
+- 武器零件（≥2个时选持有数少的，否则选该位置）
+- 角色碎片/魔之楔/无匹配 → 默认选最左侧
 
-根据奖励分类和优先级逻辑返回选择结果和点击位置。
-
-优先级逻辑说明：
-- 优先级1：第一档（Ⅰ）的奖励图标，武器图纸、魔之楔图纸、角色碎片
-- 优先级2：零件奖励图标，武器零件
-    - 优先级2.1：只有1个零件时选该零件位置
-    - 优先级2.2：≥2个零件时选持有数少的那个零件
-- 优先级3：选最左侧
-
-根据奖励分类和优先级逻辑返回选择结果和点击位置。
-
-返回值说明：
-
+返回值：
 - box: 点击区域 [x, y, w, h]
+- detail: {"index": 0/1/2, "category": str, "decision_path": str, "rewards": [...], "reward_details": [...]}
 """
 
 from maa.context import Context
 from maa.custom_recognition import CustomRecognition
-from maa.define import OCRResult
+from maa.define import OCRResult, BoxAndScoreResult
 from maa.pipeline import JRecognitionType, JOCR, JTemplateMatch
 from utils.logger import logger
-import json
 import re
-from typing import List, Dict, Any
+import time
+from typing import List, Dict, Any, Tuple
 import numpy
 
-# 奖励图标模板路径
-# 根目录image
-Weapon_blueprints = "委托密函/武器图纸"  # 武器图纸模板路径
-Weapon_accessories = "委托密函/武器零件"  # 武器零件模板路径
+TEMPLATE_WEAPON_BLUEPRINT = "委托密函/武器图纸"
+TEMPLATE_WEAPON_PART = "委托密函/武器零件"
 
-# 标题识别（进入主体的前提条件）
-TITLE_TEXT = "密函报酬选择"  # 标题文字
-TITLE_ROI = [560, 140, 160, 100]  # 标题ROI区域（基于720p）
+TITLE_TEXT = "密函报酬选择"
+TITLE_ROI = [560, 140, 160, 100]
 
-# 罗马数字识别
-ROMAN_RANKS = ["Ⅰ", "Ⅱ", "Ⅲ"]
-
-# 三个卡牌的ROI区域（基于720p）
-CARD_ROIS = [
-    [365, 185, 200, 400],  # 左
-    [540, 185, 200, 400],  # 中
-    [715, 185, 200, 400],  # 右
+CLICK_ABSOLUTE_ROIS = [
+    [415, 450, 100, 60],
+    [590, 450, 100, 60],
+    [765, 450, 100, 60],
 ]
 
-# 点击位置ROI（绝对坐标）
-CLICK_ROIS = [
-    [415, 450, 100, 60],  # 卡牌1 点击
-    [590, 450, 100, 60],  # 卡牌2 点击
-    [765, 450, 100, 60],  # 卡牌3 点击
-]
+MERGED_ICON_ROI = [420, 340, 440, 100]
 
-# 各子区域ROI偏移（相对于卡牌）
-RANK_ROI = [60, 60, -120, -320]  # 罗马数字区域
-ICON_ROI = [55, 155, -110, -300]  # 图标区域
-COUNT_ROI = [50, 265, -100, -340]  # 持有数区域
+CARD_X_THRESHOLDS = [553, 728]
+
+TEMPLATE_THRESHOLD = 0.85
 
 
 class RewardSelector(CustomRecognition):
     """
     密函报酬选择识别器
 
-
-    字段说明：
-    - 无
-
-    返回值：
-    - box: 点击区域 [x, y, w, h]
+    注册方式：通过 agent/custom.json 动态注册，不引入装饰器
     """
 
     def analyze(
@@ -96,54 +61,53 @@ class RewardSelector(CustomRecognition):
         """
         执行奖励识别逻辑
 
-        参数:
-        - context: 上下文对象
-        - argv: 分析参数，包含 node_name、custom_recognition_param、image 等
-
-        返回值:
-        - CustomRecognition.AnalyzeResult: 识别结果
-        - box: 点击区域 [x, y, w, h]
-
-
         执行流程:
-        1. 解析并验证参数
+        1. 验证输入图像
         2. 检查任务是否停止
         3. 检查标题文字"密函报酬选择"是否存在
-        4. 使用 argv.image 识别三个位置的奖励
+        4. 识别武器图标（图纸优先，零件多匹配）
         5. 根据优先级逻辑确定选择位置
         6. 返回选择位置的点击区域
         """
-
-        # 获取图像
         image = argv.image
 
-        # 检查标题文字"密函报酬选择"是否存在（进入主体的前提条件）
+        if image is None or not isinstance(image, numpy.ndarray) or image.size == 0:
+            logger.error("RewardSelector: 输入图像无效")
+            return CustomRecognition.AnalyzeResult(
+                box=None, detail={"hit": False, "reason": "invalid_image"}
+            )
+
+        if context.tasker.stopping:
+            return CustomRecognition.AnalyzeResult(
+                box=None, detail={"hit": False, "reason": "stopping"}
+            )
+
         if not self._check_title(context, image):
             return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
 
-        # 识别三个位置的奖励
-        rewards = self._recognize_rewards(context, image)
+        if context.tasker.stopping:
+            return CustomRecognition.AnalyzeResult(
+                box=None, detail={"hit": False, "reason": "stopping"}
+            )
 
-        # 计算选择位置
-        selection = self._determine_selection(rewards)
+        start_time = time.monotonic()
+        selection = self._recognize_and_select(context, image)
+        elapsed = time.monotonic() - start_time
+
+        logger.info(
+            f"RewardSelector: 选择={selection['index']} "
+            f"分类={selection['category']} "
+            f"决策路径={selection['decision_path']} "
+            f"耗时={elapsed:.3f}s"
+        )
 
         return CustomRecognition.AnalyzeResult(
-            box=CLICK_ROIS[selection["index"]],
+            box=CLICK_ABSOLUTE_ROIS[selection["index"]],
             detail=selection,
         )
 
     def _check_title(self, context: Context, image: numpy.ndarray) -> bool:
-        """
-        检查标题文字"密函报酬选择"是否存在（进入主体的前提条件）
-
-        参数:
-        - context: 上下文对象
-        - image: 图像数据（BGR 格式 numpy 数组）
-
-        返回值:
-        - True: 标题存在，继续识别
-        - False: 标题不存在，识别失败
-        """
+        """检查标题文字是否存在"""
         try:
             reco_param = JOCR(
                 expected=[TITLE_TEXT],
@@ -154,262 +118,272 @@ class RewardSelector(CustomRecognition):
                 reco_param,
                 image,
             )
-            if result and result.hit:
-                if result.best_result and isinstance(result.best_result, OCRResult):
-                    text = result.best_result.text
-                    if text and TITLE_TEXT in text:
-                        return True
+            if (
+                result
+                and result.hit
+                and result.best_result
+                and isinstance(result.best_result, OCRResult)
+            ):
+                text = result.best_result.text
+                if text and TITLE_TEXT in text:
+                    return True
         except Exception as e:
-            logger.error(f"RewardSelector: _check_title 异常 {e}")
+            logger.error(
+                f"RewardSelector: _check_title 异常 "
+                f"image_shape={image.shape if image is not None else None}, error={e}",
+                exc_info=True,
+            )
         return False
 
-    def _recognize_rewards(
+    def _recognize_and_select(
         self, context: Context, image: numpy.ndarray
-    ) -> List[Dict[str, Any]]:
+    ) -> Dict[str, Any]:
         """
-        识别三个位置的奖励信息
+        识别武器图标并确定选择位置
 
-        参数:
-        - context: 上下文对象
-        - image: 图像数据（BGR 格式 numpy 数组）
-
-        返回值:
-        - [{"rank": "Ⅰ"/"Ⅱ"/"Ⅲ", "icon": "模板名称", "count": 持有数, "position": 0/1/2}]
+        流程：
+        1. 先匹配图纸（单独匹配，命中则返回）
+        2. 再匹配零件（使用all_results筛选）
+        3. 按需识别持有数（仅≥2零件时）
+        4. 返回选择结果
         """
-        rewards = []
-
-        # 识别模板列表（仅武器组）
-        icon_templates = [
-            Weapon_blueprints,  # 武器图纸
-            Weapon_accessories,  # 武器零件
-        ]
-
-        for i, card_roi in enumerate(CARD_ROIS):
-            reward_info = {"rank": "", "icon": "", "count": 0, "position": i}
-
-            # 识别罗马数字档位
-            rank_roi_abs = [
-                card_roi[0] + RANK_ROI[0],
-                card_roi[1] + RANK_ROI[1],
-                card_roi[2] + RANK_ROI[2],
-                card_roi[3] + RANK_ROI[3],
-            ]
-            rank_result = self._ocr_recognition(
-                context, rank_roi_abs, ROMAN_RANKS, image
+        blueprint_card = self._match_blueprint(context, MERGED_ICON_ROI, image)
+        if blueprint_card == 0:
+            logger.debug("RewardSelector: 图纸在第一位，直接选择")
+            return self._build_result(
+                index=0,
+                category="weapon",
+                decision_path="blueprint_first",
+                blueprint_card=0,
             )
-            reward_info["rank"] = rank_result
 
-            # 识别图标
-            icon_roi_abs = [
-                card_roi[0] + ICON_ROI[0],
-                card_roi[1] + ICON_ROI[1],
-                card_roi[2] + ICON_ROI[2],
-                card_roi[3] + ICON_ROI[3],
-            ]
-            icon_result = self._template_recognition(
-                context, icon_roi_abs, icon_templates, image
+        if context.tasker.stopping:
+            return self._build_result(
+                index=0, category="unknown", decision_path="stopping"
             )
-            reward_info["icon"] = icon_result
 
-            # 识别持有数
-            count_roi_abs = [
-                card_roi[0] + COUNT_ROI[0],
-                card_roi[1] + COUNT_ROI[1],
-                card_roi[2] + COUNT_ROI[2],
-                card_roi[3] + COUNT_ROI[3],
-            ]
-            count_result = self._ocr_count(context, count_roi_abs, image)
-            reward_info["count"] = count_result
+        part_cards = self._match_all_parts(context, MERGED_ICON_ROI, image)
+        logger.debug(f"RewardSelector: 零件位置={part_cards}")
 
-            rewards.append(reward_info)
+        if len(part_cards) == 0:
+            logger.debug("RewardSelector: 无零件，兜底选最左")
+            return self._build_result(
+                index=0,
+                category="unknown",
+                decision_path="no_weapon_match",
+            )
 
-        return rewards
+        if len(part_cards) == 1:
+            logger.debug(f"RewardSelector: 单个零件位置={part_cards[0]}")
+            return self._build_result(
+                index=part_cards[0][0],
+                category="weapon_part",
+                decision_path="single_part",
+                part_cards=part_cards,
+            )
 
-    def _ocr_recognition(
-        self,
-        context: Context,
-        roi: List[int],
-        expected: List[str],
-        image: numpy.ndarray,
-    ) -> str:
-        """
-        OCR文字识别
+        if context.tasker.stopping:
+            return self._build_result(
+                index=0, category="unknown", decision_path="stopping"
+            )
 
-        参数:
-        - context: 上下文对象
-        - roi: 识别区域 [x, y, w, h]
-        - expected: 期望识别的文字列表
-        - image: 图像数据（BGR 格式 numpy 数组）
+        logger.debug("RewardSelector: 多个零件，识别持有数")
+        counts = self._recognize_counts_merged(context, image, part_cards)
+        logger.debug(f"RewardSelector: 持有数={counts}")
 
-        返回值:
-        - 识别到的文字，未识别到返回空字符串
+        min_count = min(counts.values())
+        for card_idx, count in counts.items():
+            if count == min_count:
+                logger.debug(
+                    f"RewardSelector: 持有数最少的位置={card_idx}, 持有数={min_count}"
+                )
+                return self._build_result(
+                    index=card_idx,
+                    category="weapon_part",
+                    decision_path="min_count",
+                    part_cards=part_cards,
+                    counts=counts,
+                )
 
-        执行流程:
-        1. 构造 JOCR 参数对象
-        2. 调用 run_recognition_direct 执行识别
-        3. 从返回的 RecognitionDetail.best_result.text 获取识别文本
-        """
+        return self._build_result(index=0, category="unknown", decision_path="fallback")
+
+    def _match_blueprint(
+        self, context: Context, roi: List[int], image: numpy.ndarray
+    ) -> int:
+        """匹配武器图纸，返回图纸所在卡牌索引（0/1/2），未命中返回 -1"""
+        if context.tasker.stopping:
+            return -1
+
         try:
-            reco_param = JOCR(
-                expected=expected,
+            reco_param = JTemplateMatch(
+                template=[TEMPLATE_WEAPON_BLUEPRINT],
                 roi=(roi[0], roi[1], roi[2], roi[3]),
+                threshold=[TEMPLATE_THRESHOLD],
             )
             result = context.run_recognition_direct(
-                JRecognitionType.OCR,
-                reco_param,
-                image,
-            )
-            if result and result.hit:
-                if result.best_result and isinstance(result.best_result, OCRResult):
-                    text = result.best_result.text
-                    if text:
-                        return text
-        except Exception as e:
-            logger.error(f"RewardSelector: _ocr_recognition 异常 {e}")
-        return ""
-
-    def _template_recognition(
-        self,
-        context: Context,
-        roi: List[int],
-        templates: List[str],
-        image: numpy.ndarray,
-    ) -> str:
-        """
-        模板匹配识别
-
-        参数:
-        - context: 上下文对象
-        - roi: 识别区域 [x, y, w, h]
-        - templates: 模板名称列表
-        - image: 图像数据（BGR 格式 numpy 数组）
-
-        返回值:
-        - 识别到的模板名称，未识别到返回空字符串
-
-        执行流程:
-        1. 逐个模板调用 run_recognition_direct 进行 TemplateMatch 识别
-        2. 构造 JTemplateMatch 参数对象
-        3. 第一个命中的模板名称即为结果
-        """
-        for template in templates:
-            try:
-                reco_param = JTemplateMatch(
-                    template=[template],
-                    roi=(roi[0], roi[1], roi[2], roi[3]),
-                    threshold=[0.7],
-                )
-                result = context.run_recognition_direct(
-                    JRecognitionType.TemplateMatch,
-                    reco_param,
-                    image,
-                )
-                if result and result.hit:
-                    return template
-            except Exception as e:
-                logger.error(f"RewardSelector: _template_recognition 异常 {e}")
-                continue
-        return ""
-
-    def _ocr_count(self, context: Context, roi: List[int], image: numpy.ndarray) -> int:
-        """
-        OCR识别持有数
-
-        参数:
-        - context: 上下文对象
-        - roi: 识别区域 [x, y, w, h]
-        - image: 图像数据（BGR 格式 numpy 数组）
-
-        返回值:
-        - 识别到的数字，未识别到返回0
-
-        执行流程:
-        1. 构造 JOCR 参数对象，使用 replace 字段去除"持有数"前缀
-        2. 调用 run_recognition_direct 执行识别
-        3. 从识别文本中提取首个数字作为持有数
-        """
-        try:
-            reco_param = JOCR(
-                roi=(roi[0], roi[1], roi[2], roi[3]),
-                replace=[
-                    ["持有数:", ""],
-                    ["持有数：", ""],
-                    ["持有数 ", ""],
-                    ["持有数", ""],
-                ],
-            )
-            result = context.run_recognition_direct(
-                JRecognitionType.OCR,
+                JRecognitionType.TemplateMatch,
                 reco_param,
                 image,
             )
             if (
                 result
+                and result.hit
                 and result.best_result
-                and isinstance(result.best_result, OCRResult)
+                and isinstance(result.best_result, BoxAndScoreResult)
             ):
-                text = result.best_result.text.strip()
-                numbers = re.findall(r"\d+", text)
-                if numbers:
-                    return int(numbers[0])
+                box_x = self._extract_box_x(result.best_result.box)
+                card_idx = self._infer_card_index(box_x)
+                logger.debug(f"RewardSelector: 图纸匹配成功 位置={card_idx} x={box_x}")
+                return card_idx
         except Exception as e:
-            logger.error(f"RewardSelector: _ocr_count 异常 {e}")
-        return 0
+            logger.error(
+                f"RewardSelector: _match_blueprint 异常 roi={roi}, error={e}",
+                exc_info=True,
+            )
+        logger.debug("RewardSelector: 图纸未匹配")
+        return -1
 
-    def _determine_selection(self, rewards: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        根据奖励信息确定选择位置
+    def _match_all_parts(
+        self, context: Context, roi: List[int], image: numpy.ndarray
+    ) -> List[Tuple[int, float]]:
+        """匹配所有武器零件（使用all_results筛选threshold以上的），返回 [(card_index, score), ...]"""
+        if context.tasker.stopping:
+            return []
 
-        参数:
-        - rewards: 三个位置的奖励信息列表
+        matches = []
+        try:
+            reco_param = JTemplateMatch(
+                template=[TEMPLATE_WEAPON_PART],
+                roi=(roi[0], roi[1], roi[2], roi[3]),
+                threshold=[TEMPLATE_THRESHOLD],
+            )
+            result = context.run_recognition_direct(
+                JRecognitionType.TemplateMatch,
+                reco_param,
+                image,
+            )
+            if result and result.hit and result.all_results:
+                for r in result.all_results:
+                    if (
+                        isinstance(r, BoxAndScoreResult)
+                        and r.score >= TEMPLATE_THRESHOLD
+                    ):
+                        box_x = self._extract_box_x(r.box)
+                        card_idx = self._infer_card_index(box_x)
+                        matches.append((card_idx, r.score))
+                        logger.debug(
+                            f"RewardSelector: 零件匹配 位置={card_idx} 分数={r.score:.2f}"
+                        )
+        except Exception as e:
+            logger.error(
+                f"RewardSelector: _match_all_parts 异常 roi={roi}, error={e}",
+                exc_info=True,
+            )
 
-        返回值:
-        - {"index": 0/1/2, "category": "weapon/weapon_part/unknown", "ranks": [...], "rewards": [...]}
-        """
-        icons = [r["icon"] for r in rewards]
-        counts = [r["count"] for r in rewards]
-        ranks = [r["rank"] for r in rewards]
+        return matches
 
-        # 检测武器图纸 → 选最左侧
-        if Weapon_blueprints in icons:
-            return {
-                "index": 0,
-                "category": "weapon",
-                "ranks": ranks,
-                "rewards": icons,
-            }
+    def _recognize_counts_merged(
+        self,
+        context: Context,
+        image: numpy.ndarray,
+        part_cards: List[Tuple[int, float]],
+    ) -> Dict[int, int]:
+        """合并OCR识别多个零件的持有数，返回 {card_index: count}"""
+        if context.tasker.stopping:
+            return {}
 
-        # 武器零件优先级逻辑
-        part_positions = [
-            i for i, icon in enumerate(icons) if icon == Weapon_accessories
+        merged_count_roi = [415, 450, 450, 60]
+        part_indices = {pc[0] for pc in part_cards}
+        counts = {}
+
+        try:
+            reco_param = JOCR(
+                roi=(
+                    merged_count_roi[0],
+                    merged_count_roi[1],
+                    merged_count_roi[2],
+                    merged_count_roi[3],
+                ),
+                replace=[["持有数", ""]],
+            )
+            result = context.run_recognition_direct(
+                JRecognitionType.OCR, reco_param, image
+            )
+            if result and result.hit and result.all_results:
+                for r in result.all_results:
+                    if isinstance(r, OCRResult) and r.text and r.box:
+                        numbers = re.findall(r"\d+", r.text.strip())
+                        if numbers:
+                            box_x = self._extract_box_x(r.box)
+                            card_idx = self._infer_card_index(box_x)
+                            if card_idx in part_indices:
+                                counts[card_idx] = int(numbers[0])
+                                logger.debug(
+                                    f"RewardSelector: 持有数 位置={card_idx} 数量={counts[card_idx]}"
+                                )
+        except Exception as e:
+            logger.error(
+                f"RewardSelector: _recognize_counts_merged 异常 error={e}",
+                exc_info=True,
+            )
+
+        for card_idx, _ in part_cards:
+            if card_idx not in counts:
+                counts[card_idx] = 0
+
+        return counts
+
+    def _extract_box_x(self, box) -> int:
+        """从 box 对象或列表中提取 x 坐标"""
+        if isinstance(box, (list, tuple)):
+            return box[0]
+        return box.x
+
+    def _infer_card_index(self, x: int) -> int:
+        """根据x坐标推断卡牌索引"""
+        if x < CARD_X_THRESHOLDS[0]:
+            return 0
+        elif x < CARD_X_THRESHOLDS[1]:
+            return 1
+        else:
+            return 2
+
+    def _build_result(
+        self,
+        index: int,
+        category: str,
+        decision_path: str,
+        blueprint_card: int = -1,
+        part_cards: List[Tuple[int, float]] = [],
+        counts: Dict[int, int] = {},
+    ) -> Dict[str, Any]:
+        """构建返回结果"""
+        if part_cards is None:
+            part_cards = []
+        if counts is None:
+            counts = {}
+
+        rewards = ["", "", ""]
+        reward_details = [
+            {"position": 0, "icon": "", "count": 0},
+            {"position": 1, "icon": "", "count": 0},
+            {"position": 2, "icon": "", "count": 0},
         ]
 
-        if part_positions:
-            if len(part_positions) == 1:
-                # 只有1个零件 → 选该位置
-                return {
-                    "index": part_positions[0],
-                    "category": "weapon_part",
-                    "ranks": ranks,
-                    "rewards": icons,
-                }
+        if blueprint_card >= 0:
+            rewards[blueprint_card] = TEMPLATE_WEAPON_BLUEPRINT
+            reward_details[blueprint_card]["icon"] = TEMPLATE_WEAPON_BLUEPRINT
 
-            if len(part_positions) >= 2:
-                # ≥2个零件 → 选持有数少的
-                min_count = min(counts[i] for i in part_positions)
-                for i in part_positions:
-                    if counts[i] == min_count:
-                        return {
-                            "index": i,
-                            "category": "weapon_part",
-                            "ranks": ranks,
-                            "rewards": icons,
-                        }
+        for card_idx, score in part_cards:
+            rewards[card_idx] = TEMPLATE_WEAPON_PART
+            reward_details[card_idx]["icon"] = TEMPLATE_WEAPON_PART
+            if card_idx in counts:
+                reward_details[card_idx]["count"] = counts[card_idx]
 
-        # 兜底 → 选最左侧
         return {
-            "index": 0,
-            "category": "unknown",
-            "ranks": ranks,
-            "rewards": icons,
+            "index": index,
+            "category": category,
+            "decision_path": decision_path,
+            "rewards": rewards,
+            "reward_details": reward_details,
         }
