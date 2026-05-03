@@ -40,6 +40,7 @@ CLICK_ABSOLUTE_ROIS = [
 ]
 
 MERGED_ICON_ROI = [420, 340, 440, 100]
+COUNT_MERGED_ROI = [415, 450, 450, 60]
 
 CARD_X_THRESHOLDS = [553, 728]
 
@@ -162,7 +163,7 @@ class RewardSelector(CustomRecognition):
 
         part_cards = self._match_all_parts(context, MERGED_ICON_ROI, image)
 
-        if len(part_cards) == 0:
+        if not part_cards:
             return self._build_result(
                 index=0,
                 category="unknown",
@@ -233,7 +234,7 @@ class RewardSelector(CustomRecognition):
 
     def _match_all_parts(
         self, context: Context, roi: List[int], image: numpy.ndarray
-    ) -> List[Tuple[int, float]]:
+    ) -> List[Tuple[int, float]] | None:
         """匹配所有武器零件（使用all_results筛选threshold以上的），返回 [(card_index, score), ...]"""
         if context.tasker.stopping:
             return []
@@ -277,17 +278,16 @@ class RewardSelector(CustomRecognition):
         if context.tasker.stopping:
             return {}
 
-        merged_count_roi = [415, 450, 450, 60]
         part_indices = {pc[0] for pc in part_cards}
         counts = {}
 
         try:
             reco_param = JOCR(
                 roi=(
-                    merged_count_roi[0],
-                    merged_count_roi[1],
-                    merged_count_roi[2],
-                    merged_count_roi[3],
+                    COUNT_MERGED_ROI[0],
+                    COUNT_MERGED_ROI[1],
+                    COUNT_MERGED_ROI[2],
+                    COUNT_MERGED_ROI[3],
                 ),
                 replace=[["持有数", ""]],
             )
@@ -336,8 +336,8 @@ class RewardSelector(CustomRecognition):
         category: str,
         decision_path: str,
         blueprint_card: int = -1,
-        part_cards: List[Tuple[int, float]] = [],
-        counts: Dict[int, int] = {},
+        part_cards: List[Tuple[int, float]] | None = None,
+        counts: Dict[int, int] | None = None,
     ) -> Dict[str, Any]:
         """构建返回结果"""
         if part_cards is None:
@@ -356,7 +356,7 @@ class RewardSelector(CustomRecognition):
             rewards[blueprint_card] = TEMPLATE_WEAPON_BLUEPRINT
             reward_details[blueprint_card]["icon"] = TEMPLATE_WEAPON_BLUEPRINT
 
-        for card_idx, score in part_cards:
+        for card_idx, _ in part_cards:
             rewards[card_idx] = TEMPLATE_WEAPON_PART
             reward_details[card_idx]["icon"] = TEMPLATE_WEAPON_PART
             if card_idx in counts:

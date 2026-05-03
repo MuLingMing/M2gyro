@@ -168,23 +168,6 @@
         },
         "action": "Click"
     },
-    "局内放弃委托再点一次": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "副本/副本退出/离开副本/"
-                ],
-                "roi": [
-                    0,
-                    0,
-                    100,
-                    75
-                ]
-            }
-        },
-        "action": "Click"
-    },
     "退出委托仅识别": {
         "recognition": {
             "type": "OCR",
@@ -230,6 +213,110 @@
         "action": "Click",
         "on_error": [
             "弹窗取消"
+        ]
+    },
+    "无尽行动抉择": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "挑战更多轮次可获得"
+                ],
+                "roi": [
+                    640,
+                    60,
+                    600,
+                    600
+                ]
+            }
+        },
+        "next": [
+            "无尽波次撤离",
+            "无尽继续挑战"
+        ]
+    },
+    "无尽继续挑战": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "继续挑战"
+                ],
+                "roi": [
+                    640,
+                    60,
+                    600,
+                    600
+                ]
+            }
+        },
+        "action": "Click"
+    },
+    "无尽波次撤离": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "挑战更多轮次可获得",
+                    "无尽轮次识别"
+                ]
+            }
+        },
+        "next": [
+            "无尽撤离"
+        ]
+    },
+    "挑战更多轮次可获得": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "挑战更多轮次可获得"
+                ],
+                "roi": [
+                    640,
+                    60,
+                    600,
+                    600
+                ]
+            }
+        }
+    },
+    "无尽轮次识别": {
+        //左侧识别到轮次数
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "16"
+                ],
+                "roi": [
+                    150,
+                    60,
+                    150,
+                    600
+                ]
+            }
+        }
+    },
+    "无尽撤离": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "副本/无尽/撤离/"
+                ],
+                "roi": [
+                    165,
+                    110,
+                    950,
+                    480
+                ]
+            }
+        },
+        "action": "Click",
+        "next": [
+            "结束当前任务"
         ]
     }
 }
