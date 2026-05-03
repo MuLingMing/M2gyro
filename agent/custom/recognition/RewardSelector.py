@@ -94,12 +94,11 @@ class RewardSelector(CustomRecognition):
         selection = self._recognize_and_select(context, image)
         elapsed = time.monotonic() - start_time
 
-        logger.info(
-            f"RewardSelector: 选择={selection['index']} "
-            f"分类={selection['category']} "
-            f"决策路径={selection['decision_path']} "
-            f"耗时={elapsed:.3f}s"
-        )
+        # logger.info(
+        #     f"RewardSelector: 选择={selection['index']} "
+        #     f"分类={selection['category']} "
+        #     f"耗时={elapsed:.3f}s"
+        # )
 
         return CustomRecognition.AnalyzeResult(
             box=CLICK_ABSOLUTE_ROIS[selection["index"]],
@@ -149,7 +148,6 @@ class RewardSelector(CustomRecognition):
         """
         blueprint_card = self._match_blueprint(context, MERGED_ICON_ROI, image)
         if blueprint_card == 0:
-            logger.debug("RewardSelector: 图纸在第一位，直接选择")
             return self._build_result(
                 index=0,
                 category="weapon",
@@ -163,10 +161,8 @@ class RewardSelector(CustomRecognition):
             )
 
         part_cards = self._match_all_parts(context, MERGED_ICON_ROI, image)
-        logger.debug(f"RewardSelector: 零件位置={part_cards}")
 
         if len(part_cards) == 0:
-            logger.debug("RewardSelector: 无零件，兜底选最左")
             return self._build_result(
                 index=0,
                 category="unknown",
@@ -174,7 +170,6 @@ class RewardSelector(CustomRecognition):
             )
 
         if len(part_cards) == 1:
-            logger.debug(f"RewardSelector: 单个零件位置={part_cards[0]}")
             return self._build_result(
                 index=part_cards[0][0],
                 category="weapon_part",
@@ -187,16 +182,11 @@ class RewardSelector(CustomRecognition):
                 index=0, category="unknown", decision_path="stopping"
             )
 
-        logger.debug("RewardSelector: 多个零件，识别持有数")
         counts = self._recognize_counts_merged(context, image, part_cards)
-        logger.debug(f"RewardSelector: 持有数={counts}")
 
         min_count = min(counts.values())
         for card_idx, count in counts.items():
             if count == min_count:
-                logger.debug(
-                    f"RewardSelector: 持有数最少的位置={card_idx}, 持有数={min_count}"
-                )
                 return self._build_result(
                     index=card_idx,
                     category="weapon_part",
@@ -233,14 +223,12 @@ class RewardSelector(CustomRecognition):
             ):
                 box_x = self._extract_box_x(result.best_result.box)
                 card_idx = self._infer_card_index(box_x)
-                logger.debug(f"RewardSelector: 图纸匹配成功 位置={card_idx} x={box_x}")
                 return card_idx
         except Exception as e:
             logger.error(
                 f"RewardSelector: _match_blueprint 异常 roi={roi}, error={e}",
                 exc_info=True,
             )
-        logger.debug("RewardSelector: 图纸未匹配")
         return -1
 
     def _match_all_parts(
@@ -271,9 +259,6 @@ class RewardSelector(CustomRecognition):
                         box_x = self._extract_box_x(r.box)
                         card_idx = self._infer_card_index(box_x)
                         matches.append((card_idx, r.score))
-                        logger.debug(
-                            f"RewardSelector: 零件匹配 位置={card_idx} 分数={r.score:.2f}"
-                        )
         except Exception as e:
             logger.error(
                 f"RewardSelector: _match_all_parts 异常 roi={roi}, error={e}",
@@ -318,9 +303,6 @@ class RewardSelector(CustomRecognition):
                             card_idx = self._infer_card_index(box_x)
                             if card_idx in part_indices:
                                 counts[card_idx] = int(numbers[0])
-                                logger.debug(
-                                    f"RewardSelector: 持有数 位置={card_idx} 数量={counts[card_idx]}"
-                                )
         except Exception as e:
             logger.error(
                 f"RewardSelector: _recognize_counts_merged 异常 error={e}",
