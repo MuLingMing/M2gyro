@@ -7,67 +7,20 @@
     "戏剧任务": {},
     "铸造任务": {},
     "钓鱼任务": {},
-    "副本次数": {
-        // "副本次数"option重写"attach",
+    "委托完成次数": {
+        // "委托完成次数"option重写"attach",
         // "attach": {
-        //     "reco": {
-        //         "total_time": 90,
-        //         "Continue": [
-        //             {
-        //                 "name": "驱离复位",
-        //                 "run": 1
-        //             }
-        //         ],
-        //         "logger": false
-        //     },
         //     "act": {
         //         "target_count": 0,
         //     }
         // }
+        // 成功时再计数
         "recognition": {
-            "type": "Custom",
+            "type": "OCR",
             "param": {
-                "custom_recognition": "Countdown",
-                "custom_recognition_param": {
-                    "total_time": 90,
-                    "entry": [
-                        {
-                            "name": "局内复位",
-                            "run": false
-                        }
-                    ],
-                    "Interrupt": [
-                        {
-                            "name": "确认选择",
-                            "run": false,
-                            "interval": 2
-                        },
-                        {
-                            "name": "倍率选择",
-                            "run": false,
-                            "interval": 2
-                        }
-                    ],
-                    "Continue": [
-                        {
-                            "name": "局内复位",
-                            "run": 1
-                        },
-                        {
-                            "name": "释放技能E",
-                            "interval": 3,
-                            "delay": 2
-                        },
-                        {
-                            "name": "释放状态Q",
-                            "interval": 3,
-                            "delay": 2
-                        },
-                        "局内继续游戏"
-                    ],
-                    "Over": "放弃委托",
-                    "logger": false
-                }
+                "expected": [
+                    "委托完成"
+                ]
             }
         },
         "action": {
@@ -88,8 +41,7 @@
                     ]
                 }
             }
-        },
-        "next": []
+        }
     },
     "波次选择": {},
     "委托等级识别": {

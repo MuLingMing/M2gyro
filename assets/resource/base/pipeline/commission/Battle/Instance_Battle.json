@@ -1,4 +1,65 @@
 {
+    "挂机战斗": {
+        //基底挂机战斗流程
+        //在副本中
+        // "attach": {
+        //     "Interrupt": [
+        //         {
+        //             "name": "确认选择",
+        //             "run": false,
+        //             "interval": 2
+        //         }
+        //     ]
+        // },
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "副本/副本退出/离开副本/"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    100,
+                    75
+                ]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "Countdown",
+                "custom_action_param": {
+                    "total_time": 120,
+                    "Interrupt": [
+                        {
+                            "name": "确认选择",
+                            "run": false,
+                            "interval": 2
+                        }
+                    ],
+                    "Continue": [
+                        "局内继续游戏",
+                        {
+                            "name": "局内复位",
+                            "run": 1
+                        },
+                        {
+                            "name": "释放技能E",
+                            "interval": 3,
+                            "delay": 2
+                        },
+                        {
+                            "name": "释放状态Q",
+                            "interval": 3,
+                            "delay": 2
+                        }
+                    ],
+                    "Over": "放弃委托"
+                }
+            }
+        }
+    },
     "释放技能E": {
         //仅识别水母E
         "recognition": {

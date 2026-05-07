@@ -17,12 +17,33 @@
             }
         },
         "next": [
+            "[JumpBack]委托完成次数",
+            "[JumpBack]挂机战斗",
             "[JumpBack]确认选择",
-            "[JumpBack]倍率选择",
-            "[JumpBack]副本次数"
-        ],
-        "on_error": [
-            "退出委托"
+            "[JumpBack]倍率选择"
+        ]
+    },
+    "密函驱离": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "驱离"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    650
+                ]
+            }
+        },
+        "next": [
+            "关卡未开放",
+            "[JumpBack]确认选择",
+            "[JumpBack]选择密函",
+            "[JumpBack]挂机战斗",
+            "[JumpBack]委托报酬选择"
         ]
     }
 }

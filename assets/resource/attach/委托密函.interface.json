@@ -1,0 +1,15 @@
+{
+    "interface_version": 2,
+    "name": "委托密函",
+    "controller": [],
+    "resource": [],
+    "import": [
+        ".../interface.json"
+    ],
+    "task": [
+        {
+            "name": "密函驱离测试",
+            "entry": "密函驱离"
+        }
+    ]
+}

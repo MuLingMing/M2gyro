@@ -1,17 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "./custom_reco/RewardSelector.schema.json",
-    "type": "object",
-    "unevaluatedProperties": false,
-    "properties": {
-        "custom_recognition": {
-            "type": "string",
-            "description": "识别名\n例如：\n\"RewardSelector\"\n\n当值为 RewardSelector 时，对应的 custom_recognition_param 示例：\n{\n}\n"
-        },
-        "custom_recognition_param": {
-            "type": "object"
-        }
-    },
     "if": {
         "properties": {
             "custom_recognition": {
@@ -25,7 +14,8 @@
     "then": {
         "properties": {
             "custom_recognition_param": {
-                "$ref": "#/definitions/RewardSelectorParam"
+                "$ref": "#/definitions/RewardSelectorParam",
+                "description": "RewardSelector 参数\n\n当前无自定义参数，留空即可\n\n示例：\n{}"
             }
         }
     },

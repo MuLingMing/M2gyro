@@ -1,8 +1,22 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "unevaluatedProperties": false,
+    "properties": {
+        "custom_action": {
+            "type": "string",
+            "description": "动作名\n\n支持的自定义动作：\n\n1. Count - 计数器动作，达到目标次数后执行指定节点\n\n2. Countdown - 倒计时动作，在限定时间内循环识别并执行节点\n\n3. OperationRecordAction - 操作录制动作，按顺序执行一系列操作\n\n示例（当 custom_action 为各值时对应的 custom_action_param）：\n\nCount:\n{\n    \"count\": 0,\n    \"target_count\": 3,\n    \"next_node\": [\"node_name\"],\n    \"else_node\": [\"node_name\"],\n    \"reset_node\": [\"node_name\"],\n    \"logger\": false\n}\n\nCountdown:\n{\n    \"total_time\": 90,\n    \"Interrupt\": [\"A1\", {\"name\": \"A2\", \"run\": true, \"interval\": 2, \"max_reco\": 3}],\n    \"Continue\": [{\"name\": \"B\", \"run\": 1, \"interval\": 3, \"delay\": 2}],\n    \"Over\": \"C\"\n}\n\nOperationRecordAction:\n{\n    \"operations\": [\n        {\"action\": \"move\", \"params\": {\"direction\": \"forward\", \"duration\": 2.0}},\n        {\"action\": \"jump\", \"params\": {}},\n        {\"action\": \"turn\", \"params\": {\"angle\": 90.0}},\n        {\"action\": \"wait\", \"params\": {\"duration\": 1.0}}\n    ],\n    \"loop_count\": 1\n}"
+        },
+        "custom_action_param": {
+            "type": "object"
+        }
+    },
     "allOf": [
         {
             "$ref": "./custom_act/Count.schema.json"
+        },
+        {
+            "$ref": "./custom_act/Countdown.schema.json"
         },
         {
             "$ref": "./custom_act/OperationRecordAction.schema.json"

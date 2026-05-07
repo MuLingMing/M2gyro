@@ -1,4 +1,10 @@
 {
+    "角色密函": {},
+    "武器密函": {},
+    "魔之楔密函": {},
+    "角色密函副本": {},
+    "武器密函副本": {},
+    "魔之楔密函副本": {},
     "委托密函页面": {
         "next": [
             "委托-委托密函",
@@ -85,8 +91,7 @@
                 ]
             }
         },
-        "action": "Click",
-        "next": []
+        "action": "Click"
     },
     "购买密函没有放弃则不使用": {
         "recognition": {
@@ -123,144 +128,23 @@
             "无尽撤离"
         ]
     },
-    "密函无尽副本寻路": {},
-    "密函无尽副本战斗": {},
-    "密函驱离副本": {
+    "密函报酬选择页面": {
         "recognition": {
-            "type": "Custom",
+            "type": "OCR",
             "param": {
-                "custom_recognition": "Countdown",
-                "custom_recognition_param": {
-                    "total_time": 120,
-                    "entry": [
-                        {
-                            "name": "局内复位",
-                            "run": false
-                        }
-                    ],
-                    "Interrupt": [
-                        {
-                            "name": "确认选择",
-                            "run": false,
-                            "interval": 2
-                        },
-                        {
-                            "name": "委托报酬选择",
-                            "run": false,
-                            "interval": 2
-                        }
-                    ],
-                    "Continue": [
-                        {
-                            "name": "局内复位",
-                            "run": 1
-                        },
-                        {
-                            "name": "释放技能E",
-                            "interval": 3,
-                            "delay": 2
-                        },
-                        {
-                            "name": "释放状态Q",
-                            "interval": 3,
-                            "delay": 2
-                        },
-                        "局内继续游戏"
-                    ],
-                    "Over": "放弃委托",
-                    "logger": false
-                }
-            }
-        },
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "logger": true,
-                    "count": 0,
-                    "target_count": 0,
-                    "else_node": [
-                        "委托报酬选择",
-                        "确认选择",
-                        "选择密函"
-                    ],
-                    "next_node": [
-                        "退出委托",
-                        "结束当前任务"
-                    ]
-                }
-            }
-        },
-        "on_error": [
-            "退出委托"
-        ]
-    },
-    "密函次数": {
-        "recognition": {
-            "type": "Custom",
-            "param": {
-                "custom_recognition": "Countdown",
-                "custom_recognition_param": {
-                    "total_time": 90,
-                    "entry": [
-                        {
-                            "name": "局内复位",
-                            "run": false
-                        }
-                    ],
-                    "Interrupt": [
-                        {
-                            "name": "确认选择",
-                            "run": false,
-                            "interval": 2
-                        },
-                        {
-                            "name": "倍率选择",
-                            "run": false,
-                            "interval": 2
-                        }
-                    ],
-                    "Continue": [
-                        {
-                            "name": "局内复位",
-                            "run": 1
-                        },
-                        {
-                            "name": "释放技能E",
-                            "interval": 3,
-                            "delay": 2
-                        },
-                        {
-                            "name": "释放状态Q",
-                            "interval": 3,
-                            "delay": 2
-                        },
-                        "局内继续游戏"
-                    ],
-                    "Over": "放弃委托",
-                    "logger": false
-                }
-            }
-        },
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "logger": true,
-                    "count": 0,
-                    "target_count": 0,
-                    "else_node": [
-                        "确认选择",
-                        "倍率选择"
-                    ],
-                    "next_node": [
-                        "退出委托",
-                        "结束当前任务"
-                    ]
-                }
+                "expected": "密函报酬选择"
             }
         }
+    },
+    "关卡未开放": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": "关卡未开放"
+            }
+        },
+        "next": [
+            "退出委托"
+        ]
     }
 }

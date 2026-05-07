@@ -85,11 +85,11 @@ class Count(CustomAction):
         """
 
         # 未命中任何节点，直接返回成功
-        if reco_datail :=argv.reco_detail:
-            if hit:=reco_datail.hit:
+        if reco_datail := argv.reco_detail:
+            if hit := reco_datail.hit:
                 if not hit:
                     return CustomAction.RunResult(success=True)
-        
+
         # 解析参数
         try:
             custom_action_param: dict = json.loads(argv.custom_action_param)
@@ -115,13 +115,13 @@ class Count(CustomAction):
                     "reset_node": (str, list),
                     "logger": bool,
                 }
-                
+
                 params = ParamMerger.merge(
                     "action", custom_action_param, attach_params, schema
                 )
         if not params:
             return CustomAction.RunResult(success=True)
-        
+
         current_count = params.get("count", 0)
         target_count = params.get("target_count", 0)
         next_node = params.get("next_node", [])
@@ -135,7 +135,7 @@ class Count(CustomAction):
 
         # target_count=0时，action运行else_node
         # 使得option修改target_count逻辑相同
-        if current_count < target_count-1 or target_count == 0:
+        if current_count < target_count - 1 or target_count == 0:
             current_count = current_count + 1
             self._reset_nodes(
                 context=context, nodes=argv.node_name, reset_count=current_count
@@ -158,10 +158,8 @@ class Count(CustomAction):
 
             # 运行播报
             if logger_enable:
-                logger.info(
-                    f"{argv.node_name}已达到目标次数{target_count}"
-                )
-            self._run_nodes(context, params["next_node"])
+                logger.info(f"{argv.node_name}已达到目标次数{target_count}")
+            self._run_nodes(context, next_node)
 
         return CustomAction.RunResult(success=True)
 

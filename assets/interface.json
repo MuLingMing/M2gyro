@@ -40,6 +40,7 @@
     },
     "import": [
         "./resource/attach/夜航手册.interface.json",
+        "./resource/attach/委托密函.interface.json",
         "./resource/attach/test.interface.json"
     ],
     "task": [
@@ -279,7 +280,7 @@
                 }
             ],
             "pipeline_override": {
-                "副本次数": {
+                "委托完成次数": {
                     "attach": {
                         "target_count": "{target_count}"
                     }
@@ -298,7 +299,7 @@
                 }
             ],
             "pipeline_override": {
-                "副本次数": {
+                "挂机战斗": {
                     "attach": {
                         "total_time": "{total_time}"
                     }

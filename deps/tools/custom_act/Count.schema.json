@@ -1,17 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "./custom_act/Count.schema.json",
-    "type": "object",
-    "unevaluatedProperties": false,
-    "properties": {
-        "custom_action": {
-            "type": "string",
-            "description": "动作名\n例如：\n\"Count\"\n\n当值为 Count 时，对应的 custom_action_param 示例：\n{\n    \"count\": 0,\n    \"target_count\": 3,\n    \"next_node\": [\"node_name\"],\n    \"else_node\": [\"node_name\"],\n    \"reset_node\": [\"node_name\"],\n    \"logger\": false\n}"
-        },
-        "custom_action_param": {
-            "type": "object"
-        }
-    },
     "if": {
         "properties": {
             "custom_action": {
@@ -25,7 +14,8 @@
     "then": {
         "properties": {
             "custom_action_param": {
-                "$ref": "#/definitions/CountParam"
+                "$ref": "#/definitions/CountParam",
+                "description": "Count 参数\n\n示例：\n{\n    \"count\": 0,\n    \"target_count\": 3,\n    \"next_node\": [\"node_name\"],\n    \"else_node\": [\"node_name\"],\n    \"reset_node\": [\"node_name\"],\n    \"logger\": false\n}\n\n字段说明：\n- count: 当前次数，默认 0，每次执行后自动更新\n- target_count: 目标次数，默认 0，为 0 时始终执行 else_node\n- next_node: 达到目标次数后执行的节点\n- else_node: 未达到目标次数时执行的节点\n- reset_node: 将指定节点的 count 重置为 0\n- logger: 是否输出运行次数，默认 false"
             }
         },
         "required": [

@@ -1,0 +1,190 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "./custom_act/Countdown.schema.json",
+	"if": {
+		"properties": {
+			"custom_action": {
+				"const": "Countdown"
+			}
+		},
+		"required": [
+			"custom_action"
+		]
+	},
+	"then": {
+		"properties": {
+			"custom_action_param": {
+				"$ref": "#/definitions/CountdownParam",
+				"description": "Countdown 参数\n\n示例：\n{\n    \"total_time\": 90,\n    \"Interrupt\": [\"A1\", {\"name\": \"A2\", \"run\": true, \"interval\": 2, \"delay\": 1, \"start_after\": 10, \"max_reco\": 3}],\n    \"Continue\": [{\"name\": \"B\", \"run\": 1, \"interval\": 3, \"delay\": 2}],\n    \"Over\": \"C\"\n}\n\n字段说明：\n- total_time: 总倒计时时间（秒），默认 90，为 0 时无限循环\n- Interrupt: 中断节点列表，识别到后执行并结束（OR 关系）\n- Continue: 继续节点列表，识别到后执行并继续识别（OR 关系）\n- Over: 超时节点列表，超时时执行并结束（OR 关系）\n\n节点对象字段：\n- name: 节点名称（必填）\n- run: 是否执行/执行次数（默认 true）\n- interval: 识别间隔秒数（默认 2.0）\n- delay: 识别成功后延迟秒数（默认 0）\n- start_after: 计时开始后延迟秒数（默认 0）\n- max_reco: 最大尝试识别次数（默认 true）"
+			}
+		},
+		"required": [
+			"custom_action_param"
+		]
+	},
+	"definitions": {
+		"CountdownNode": {
+			"type": "object",
+			"properties": {
+				"name": {
+					"type": "string",
+					"description": "节点名称"
+				},
+				"run": {
+					"oneOf": [
+						{
+							"type": "boolean"
+						},
+						{
+							"type": "integer",
+							"minimum": 0
+						}
+					],
+					"default": true,
+					"description": "是否执行节点（布尔值）或执行次数（整数），默认True。\n\n布尔值格式：true表示执行，false表示仅识别不执行任务\n例如：true\n\n整数格式：执行次数，识别成功且执行任务时递减，减到0后仅识别不执行\n例如：3\n\n与 max_reco 的交互：run 控制「识别成功后是否执行任务」，max_reco 控制「是否参与识别」，两者正交。max_reco 优先级更高：max_reco 耗尽则节点完全失效，run 耗尽则节点仍参与识别但不执行任务"
+				},
+				"interval": {
+					"type": "number",
+					"default": 2.0,
+					"minimum": 0,
+					"description": "识别间隔时间（秒），默认2秒，float格式"
+				},
+				"delay": {
+					"type": "number",
+					"default": 0.0,
+					"minimum": 0,
+					"description": "识别成功后的延迟时间（秒），默认0秒，float格式。用于增加二次识别，确保识别结果稳定"
+				},
+				"start_after": {
+					"type": "number",
+					"default": 0.0,
+					"minimum": 0,
+					"description": "计时开始后多少秒再开始判定该节点，默认0秒（立即开始），float格式"
+				},
+				"max_reco": {
+					"oneOf": [
+						{
+							"type": "boolean"
+						},
+						{
+							"type": "integer",
+							"minimum": 0
+						}
+					],
+					"default": true,
+					"description": "是否识别（布尔值）或最大尝试识别次数（整数），默认true。\n\n布尔值格式：true表示无限制识别，false表示跳过识别（节点直接失效）\n例如：true\n\n整数格式：最大尝试识别次数，每次尝试识别时递减，减到0后节点失效\n例如：3\n\n与 run 的交互：max_reco 控制「是否参与识别」，run 控制「识别成功后是否执行任务」，两者正交。max_reco 优先级更高：max_reco 耗尽则节点完全失效，run 耗尽则节点仍参与识别但不执行任务"
+				}
+			},
+			"required": [
+				"name"
+			]
+		},
+		"OverNode": {
+			"type": "object",
+			"properties": {
+				"name": {
+					"type": "string",
+					"description": "超时执行的 Pipeline 节点名称"
+				},
+				"run": {
+					"oneOf": [
+						{
+							"type": "boolean"
+						},
+						{
+							"type": "integer",
+							"minimum": 0
+						}
+					],
+					"default": true,
+					"description": "是否执行节点（布尔值）或执行次数（整数），默认 true"
+				},
+				"delay": {
+					"type": "number",
+					"default": 0.0,
+					"minimum": 0,
+					"description": "每次执行前的等待时间（毫秒），默认 0"
+				}
+			},
+			"required": [
+				"name"
+			],
+			"additionalProperties": false
+		},
+		"CountdownParam": {
+			"type": "object",
+			"properties": {
+				"total_time": {
+					"type": "integer",
+					"default": 90,
+					"minimum": 0,
+					"description": "总倒计时时间（秒），默认90秒。total_time=0时，进入无限循环模式"
+				},
+				"Interrupt": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "array",
+							"items": {
+								"oneOf": [
+									{
+										"type": "string"
+									},
+									{
+										"$ref": "#/definitions/CountdownNode"
+									}
+								]
+							}
+						}
+					],
+					"description": "中断节点列表，识别到该节点时，根据run配置执行对应节点并结束。节点内部逻辑为OR关系\n\n支持格式：\n- 单个节点名称（字符串）：\n  \"node_name\"\n\n- 节点列表（数组）：\n  [\n    \"node_name\",\n    {\n        \"name\": \"node_name\",\n        \"run\": false,\n        \"interval\": 2,\n        \"delay\": 1,\n        \"start_after\": 10,\n        \"max_reco\": 3\n    }\n]\n\n节点对象字段：\n- name: 节点名称（必填）\n- run: 是否执行/执行次数（默认 true）\n- interval: 识别间隔秒数（默认 2.0）\n- delay: 识别成功后延迟秒数（默认 0）\n- start_after: 计时开始后延迟秒数（默认 0）\n- max_reco: 最大尝试识别次数（默认 true）"
+				},
+				"Continue": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "array",
+							"items": {
+								"oneOf": [
+									{
+										"type": "string"
+									},
+									{
+										"$ref": "#/definitions/CountdownNode"
+									}
+								]
+							}
+						}
+					],
+					"description": "继续节点列表，识别到该节点时，根据run配置执行对应节点并继续识别。节点内部逻辑为OR关系\n\n支持格式：\n- 单个节点名称（字符串）：\n  \"node_name\"\n\n- 节点列表（数组）：\n  [\n    \"node_name\",\n    {\n        \"name\": \"node_name\",\n        \"run\": 1,\n        \"interval\": 3,\n        \"delay\": 2,\n        \"start_after\": 0,\n        \"max_reco\": true\n    }\n]\n\n节点对象字段：\n- name: 节点名称（必填）\n- run: 是否执行/执行次数（默认 true）\n- interval: 识别间隔秒数（默认 2.0）\n- delay: 识别成功后延迟秒数（默认 0）\n- start_after: 计时开始后延迟秒数（默认 0）\n- max_reco: 最大尝试识别次数（默认 true）"
+				},
+				"Over": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "array",
+							"items": {
+								"oneOf": [
+									{
+										"type": "string"
+									},
+									{
+										"$ref": "#/definitions/OverNode"
+									}
+								]
+							}
+						}
+					],
+					"description": "超时节点列表，超时时，根据run配置执行对应节点并结束。节点内部逻辑为OR关系。注意：Over节点仅支持name、run、delay三个字段，interval、start_after、max_reco等时间参数使用主节点的配置值\n\n支持格式：\n- 单个节点名称（字符串）：\n  \"node_name\"\n\n- 节点列表（数组）：\n  [\n    \"node_name\",\n    {\n        \"name\": \"node_name\",\n        \"run\": 1,\n        \"delay\": 2\n    }\n]\n\n节点对象字段：\n- name: 节点名称（必填）\n- run: 是否执行/执行次数（默认 true）\n- delay: 每次执行前的等待时间（毫秒），默认 0"
+				}
+			},
+			"additionalProperties": false
+		}
+	}
+}

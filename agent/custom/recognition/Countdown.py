@@ -39,7 +39,7 @@ class Countdown(CustomRecognition):
        - 间隔interval秒识别一次节点列表
 
     2. 节点分类与处理
-        2.1 Interrupt: ["A1", {"name": "A2", "run": "True", "interval": 2, "hit": True, "delay": 1}]
+        2.1 Interrupt: ["A1", {"name": "A2", "run": "True", "interval": 2, "delay": 1}]
             - 间隔interval秒执行一次
             - 识别到A1/A2时，执行对应节点并结束
         2.2 Continue: "B"
@@ -61,7 +61,7 @@ class Countdown(CustomRecognition):
     {
         "total_time": 总倒计时时间（秒），默认60秒,
         "entry": 入口节点名称，默认无入口节点,
-        "Interrupt": ["A1", {"name": "A2", "run": "True", "interval": 2, "hit": True, "delay": 1, "start_after": 10, "max_recognitions": 3}],
+        "Interrupt": ["A1", {"name": "A2", "run": "True", "interval": 2, "delay": 1, "start_after": 10, "max_reco": 3}],
         "Continue": "B",
         "Over": ["C"],
         "logger": 是否开启日志，默认false
@@ -72,16 +72,15 @@ class Countdown(CustomRecognition):
     - Interrupt: 中断节点列表，识别到该节点时，执行对应节点并结束
     - Continue: 继续节点列表，识别到该节点时，执行对应节点并继续识别
     - Over: 超时节点列表，超时时执行对应节点并结束
-        - 支持节点格式：{"name": "C", "run": "True", "interval": 2, "hit": True}
+        - 支持节点格式：{"name": "C", "run": "True", "interval": 2}
         - interval: 识别name的间隔时间（秒），默认2秒
-        - hit: 识别detail返回值，默认True
         - start_after: 计时开始后多少秒再开始判定该节点，默认0秒（立即开始）
-        - max_recognitions: 是否识别或最大识别成功次数，只有识别成功时才会递减，默认true无限制，false则不识别
+        - max_reco: 最大尝试识别次数，每次尝试识别时递减，默认true无限制，false则不识别
     - logger: 是否开启日志，默认False
 
     备注：
     - total_time=0时，进入无限循环模式
-    - 支持节点格式：{"name": "A1", "run": "True", "interval": 2, "hit": True, "start_after": 10, "max_recognitions": 3}
+    - 支持节点格式：{"name": "A1", "run": "True", "interval": 2, "start_after": 10, "max_reco": 3}
     - 节点内部逻辑为OR关系，调用节点的基础识别器实现，故不设为AND关系与反转逻辑
     """
     def analyze(
@@ -126,10 +125,9 @@ class Countdown(CustomRecognition):
                         "name": str,
                         "run": (bool, int),  # run 可以是布尔值或整数
                         "interval": (int, float),  # interval 可以是整数或浮点数
-                        "hit": bool,
                         "delay": (int, float),  # delay 可以是整数或浮点数
                         "start_after": (int, float),  # start_after 可以是整数或浮点数
-                        "max_recognitions": (bool, int),  # max_recognitions 可以是布尔值或整数
+                        "max_reco": (bool, int),  # max_reco 可以是布尔值或整数
                     }
                     # 节点列表类型（字符串、对象或数组）
                     node_list_type = (str, node_schema, list)
@@ -226,12 +224,11 @@ class Countdown(CustomRecognition):
                 tracker.on_check(current_time)
                 result = self._run_recognition(context, tracker.parsed, image)
                 if result and result.hit:
-                    tracker.on_hit()
                     if logger_enable:
                         logger.debug(f"Countdown: {argv.node_name} 识别到中断节点 {tracker.parsed.get('name')}")
                     return CustomRecognition.AnalyzeResult(
                         box=result.box,
-                        detail={"hit": tracker.hit}
+                        detail={"hit": True}
                     )
             
             # 检查 Continue 节点
@@ -242,10 +239,8 @@ class Countdown(CustomRecognition):
                 if logger_enable:
                     logger.debug(f"Countdown: {argv.node_name} 检查继续节点 {tracker.parsed.get('name')}")
                 tracker.on_check(current_time)
-                result = self._run_recognition(context, tracker.parsed, image)
-                if result and result.hit:
-                    tracker.on_hit()
-                    if logger_enable:
+                self._run_recognition(context, tracker.parsed, image)
+                if logger_enable:
                         logger.debug(f"Countdown: {argv.node_name} 识别到继续节点 {tracker.parsed.get('name')}")
             
             # 计算下次检查时间
@@ -280,14 +275,13 @@ class Countdown(CustomRecognition):
         if parsed_over:
             image = context.tasker.controller.post_screencap().wait().get()
             for parsed in parsed_over:
-                hit = parsed.get("hit", True)
                 result = self._run_recognition(context, parsed, image)
                 if result and result.hit:
                     logger.debug(
                         f"Countdown: {argv.node_name} 任务超时！执行超时节点 {parsed.get('name')}"
                     )
                     return CustomRecognition.AnalyzeResult(
-                        box=result.box, detail={"hit": hit}
+                        box=result.box, detail={"hit": True}
                     )
 
         return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
@@ -299,9 +293,8 @@ class Countdown(CustomRecognition):
             self.parsed = parsed
             self.interval = parsed.get("interval", DEFAULT_INTERVAL)
             self.start_after = parsed.get("start_after", 0.0)
-            self.hit = parsed.get("hit", True)
             self.timestamp = start_time
-            max_rec = parsed.get("max_recognitions", True)
+            max_rec = parsed.get("max_reco", True)
             self.remaining = max_rec if isinstance(max_rec, int) and max_rec >= 0 else None
             self.is_disabled = max_rec is False
             self.available_time = start_time + self.start_after
@@ -325,9 +318,6 @@ class Countdown(CustomRecognition):
         def on_check(self, current_time: float):
             """更新检查时间戳"""
             self.timestamp = current_time
-        
-        def on_hit(self):
-            """识别成功时调用"""
             if self.remaining is not None:
                 self.remaining -= 1
 
@@ -416,7 +406,7 @@ class Countdown(CustomRecognition):
 
     def _parse_bool_or_int(self, value, default=True):
         """
-        解析布尔或整数参数（用于 max_recognitions）
+        解析布尔或整数参数（用于 max_reco）
         参数:
         - value: 要解析的值
         - default: 默认值
@@ -442,9 +432,9 @@ class Countdown(CustomRecognition):
     def _parse_node(self, param: str | dict) -> dict:
         """
         解析节点参数
-        param格式为{"name": "A1", "run": "True", "interval": 2, "hit": True, "delay": 1, "start_after": 10, "max_recognitions": 3}
+        param格式为{"name": "A1", "run": "True", "interval": 2, "delay": 1, "start_after": 10, "max_reco": 3}
         默认run为True，对齐_run_recognition逻辑
-        max_recognitions表示最大识别成功次数
+        max_reco表示最大尝试识别次数
         """
         if not param:
             return {"name": ""}
@@ -462,16 +452,14 @@ class Countdown(CustomRecognition):
             interval = self._parse_number(param.get("interval", DEFAULT_INTERVAL), DEFAULT_INTERVAL, 0)
             delay = self._parse_number(param.get("delay", 0.0), 0.0, 0)
             start_after = self._parse_number(param.get("start_after", 0.0), 0.0, 0)
-            max_recognitions = self._parse_bool_or_int(param.get("max_recognitions", True))
-            hit = param.get("hit", True)
+            max_reco = self._parse_bool_or_int(param.get("max_reco", True))
             
             return {
                 "name": name,
                 "run": run,
                 "interval": interval,
-                "hit": hit,
                 "delay": delay,
                 "start_after": start_after,
-                "max_recognitions": max_recognitions,
+                "max_reco": max_reco,
             }
         return {}

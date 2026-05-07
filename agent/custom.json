@@ -25,14 +25,19 @@
         "file_path": "custom/action/CheckResolution.py"
     },
     "Countdown": {
-        "type": "recognition",
+        "type": "action",
         "class": "Countdown",
-        "file_path": "custom/recognition/Countdown.py"
+        "file_path": "custom/action/Countdown.py"
     },
     "RewardSelector": {
         "type": "recognition",
         "class": "RewardSelector",
         "file_path": "custom/recognition/RewardSelector.py"
+    },
+    "CovertStage": {
+        "type": "recognition",
+        "class": "CovertStage",
+        "file_path": "custom/recognition/CovertStage.py"
     },
     "OperationRecordAction": {
         "type": "action",
