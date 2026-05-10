@@ -12,15 +12,15 @@ TOUCH_SWIPE_DURATION_MS = 70
 class AdbPlatform(PlatformBase):
     """ADB平台实现，优先使用 config/default.json 中的配置"""
 
-    def __init__(self, platform_context: Controller):
-        super().__init__(platform_context)
+    def __init__(self, platform_controller: Controller):
+        super().__init__(platform_controller)
         self._controller_type = "adb"
         self._controller = None
 
-        if isinstance(platform_context, Controller):
-            self._controller = platform_context
-        elif isinstance(platform_context, Context) and hasattr(platform_context, "tasker"):
-            self._controller = platform_context.tasker.controller
+        if isinstance(platform_controller, Controller):
+            self._controller = platform_controller
+        elif isinstance(platform_controller, Context) and hasattr(platform_controller, "tasker"):
+            self._controller = platform_controller.tasker.controller
 
         self._config_manager = ConfigManager()
         self._touch_positions = self._load_touch_positions()
@@ -156,10 +156,38 @@ class AdbPlatform(PlatformBase):
         x, y = self._get_position("spiral_leap_button", 1166, 475)
         return self._click_button(x, y, self._get_contact("spiral_leap_button"))
 
-    def crouch(self) -> bool:
-        """下蹲（瞬时动作）"""
+    def crouch(self, duration: float = 0.1) -> bool:
+        """下蹲
+
+        参数：
+        - duration: 按住按键的时间（秒），默认 0.1
+        duration > 0: 完整的按下-等待-松开
+        duration <= 0: 只按下，不松开（由时间线系统管理）
+
+        返回：
+        - bool: 是否成功
+        """
+        if not self._controller:
+            return False
+        
         x, y = self._get_position("crouch_button", 1166, 620)
-        return self._click_button(x, y, self._get_contact("crouch_button"))
+        contact = self._get_contact("crouch_button")
+
+        x = max(0, min(x, 1279))
+        y = max(0, min(y, 719))
+
+        self._controller.post_touch_move(x, y, contact, 0).wait()
+        self._controller.post_touch_down(x, y, contact, 0).wait()
+
+        self._active_contacts["crouch"] = contact
+
+        if duration > 0:
+            time.sleep(duration)
+            self._controller.post_touch_up(contact).wait()
+            if "crouch" in self._active_contacts:
+                del self._active_contacts["crouch"]
+
+        return True
 
     def charge_attack(self, duration: float, x: Optional[int] = None, y: Optional[int] = None) -> bool:
         """蓄力攻击
@@ -288,6 +316,20 @@ class AdbPlatform(PlatformBase):
                 contact = self._active_contacts["charge_attack"]
                 self._controller.post_touch_up(contact).wait()
                 del self._active_contacts["charge_attack"]
+            return True
+        except Exception:
+            return False
+
+    def release_crouch(self):
+        """释放下蹲（供时间线系统调用）"""
+        try:
+            if not self._controller:
+                return False
+
+            if "crouch" in self._active_contacts:
+                contact = self._active_contacts["crouch"]
+                self._controller.post_touch_up(contact).wait()
+                del self._active_contacts["crouch"]
             return True
         except Exception:
             return False

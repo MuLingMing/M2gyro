@@ -419,7 +419,7 @@ class ActionTimeline:
         - action: 要停止的动作
 
         执行流程：
-        1. 特定动作特殊处理（move/charge_attack 释放摇杆）
+        1. 特定动作特殊处理（move/charge_attack/crouch 释放按键）
         2. 标记状态为已完成
         3. 调用结束回调
         """
@@ -429,6 +429,9 @@ class ActionTimeline:
         elif action.action_name == "charge_attack":
             if hasattr(self._platform, "release_charge_attack"):
                 self._platform.release_charge_attack()
+        elif action.action_name == "crouch":
+            if hasattr(self._platform, "release_crouch"):
+                self._platform.release_crouch()
 
         action.state = ActionState.COMPLETED
 
@@ -478,6 +481,9 @@ class ActionTimeline:
                 elif action.action_name == "interact":
                     interaction_type = params.get("interaction_type", "default")
                     method(interaction_type)
+                elif action.action_name == "crouch":
+                    duration = 0 if is_start else (action.duration if action.duration > 0 else 0.1) * duration_factor
+                    method(duration)
                 elif action.action_name == "swipe":
                     start_x = params.get("start_x", 0)
                     start_y = params.get("start_y", 0)

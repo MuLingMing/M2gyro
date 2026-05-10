@@ -2,7 +2,7 @@
 """
 下蹲动作，具有以下功能：
 1. 执行一次下蹲
-2. 无需参数
+2. 支持按住时间控制
 """
 
 from typing import Dict, Any
@@ -18,16 +18,18 @@ class CrouchAction(ActionBase):
     功能说明：
     1. 单次下蹲
        - 执行一次下蹲动作
-       - 无需任何参数
+       - 支持按住时间控制
 
     参数格式：
     {
         "action": "crouch",
-        "params": {}
+        "params": {
+            "duration": 1.0
+        }
     }
 
     字段说明：
-    - params: 无需参数，可为空
+    - duration: 按住按键的时间（秒），默认 0.1
     """
 
     @property
@@ -45,13 +47,15 @@ class CrouchAction(ActionBase):
         执行动作
 
         参数：
-        - params: 动作参数，无需使用
+        - params: 动作参数，包含 duration
 
         返回值：
         - bool: 是否成功
 
         执行流程：
-        1. 调用平台 crouch 方法
-        2. 返回执行结果
+        1. 获取 duration 参数（默认 0.1）
+        2. 调用平台 crouch 方法
+        3. 返回执行结果
         """
-        return self._platform.crouch()
+        duration = params.get("duration", 0.1)
+        return self._platform.crouch(duration)

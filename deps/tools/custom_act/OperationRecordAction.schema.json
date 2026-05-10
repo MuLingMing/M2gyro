@@ -473,8 +473,9 @@
             "properties": {
                 "duration": {
                     "type": "number",
+                    "default": 0.1,
                     "minimum": 0,
-                    "description": "持续时间（秒），必须 >= 0"
+                    "description": "按住按键的时间（秒），默认 0.1，必须 >= 0"
                 },
                 "overlays": {
                     "type": "array",
@@ -485,7 +486,7 @@
                 }
             },
             "additionalProperties": false,
-            "description": "crouch 动作参数\n\n字段：\n- duration: 持续时间秒数（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{}  或  {\"duration\": 0.5}"
+            "description": "crouch 动作参数\n\n字段：\n- duration: 按住按键的时间秒数（默认 0.1）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{}  或  {\"duration\": 0.5}"
         },
         "SpiralLeapParams": {
             "type": "object",

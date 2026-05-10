@@ -7,13 +7,13 @@ from maa.context import Context
 class PlatformBase(ABC):
     """平台抽象基类"""
 
-    def __init__(self, platform_context: Controller):
+    def __init__(self, platform_controller: Controller):
         """初始化平台
 
         Args:
-            platform_context: 控制器实例
+            platform_controller: 控制器实例
         """
-        self._platform_context = platform_context
+        self._platform_controller = platform_controller
         self._controller_type = "unknown"
 
     @abstractmethod
@@ -84,8 +84,11 @@ class PlatformBase(ABC):
         pass
 
     @abstractmethod
-    def crouch(self) -> bool:
+    def crouch(self, duration: float = 0.1) -> bool:
         """下蹲
+
+        Args:
+            duration: 按住按键的时间（秒），默认 0.1
 
         Returns:
             是否成功

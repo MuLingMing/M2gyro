@@ -4,7 +4,7 @@
     "controller": [],
     "resource": [],
     "import": [
-        ".../interface.json"
+        "./interface.json"
     ],
     "task": [
         {
@@ -12,7 +12,7 @@
             "entry": "密函驱离"
         },
         {
-            "name": "委托密函",
+            "name": "委托密函2",
             "entry": "委托密函",
             "option": [
                 "密函区域选择",
@@ -22,7 +22,7 @@
         }
     ],
     "option": {
-        "密函区域选择": {
+        "密函区域选择2": {
             "type": "checkbox",
             "label": "密函选择",
             "description": "选择密函类型，默认全部",
@@ -64,7 +64,7 @@
                 }
             ]
         },
-        "密函关卡列表选择": {
+        "密函关卡列表选择2": {
             "type": "checkbox",
             "label": "关卡选择",
             "description": "选择要匹配的关卡，不选则默认全部",

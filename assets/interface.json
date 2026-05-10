@@ -39,9 +39,12 @@
         ]
     },
     "import": [
+        "./resource/attach/委托.interface.json",
         "./resource/attach/夜航手册.interface.json",
         "./resource/attach/委托密函.interface.json",
-        "./resource/attach/test.interface.json"
+        "./resource/attach/预设.interface.json",
+        "./resource/attach/测试.interface.json",
+        "./aaa.interface.json"
     ],
     "task": [
         {
@@ -69,205 +72,9 @@
                 "超时时间",
                 "倍率书副本次数"
             ]
-        },
-        {
-            "name": "角色经验",
-            "entry": "角色经验",
-            "description": "角色经验本，避险。仅支持50级副本。",
-            "option": [
-                "角色经验等级",
-                "单次倍率",
-                "超时时间",
-                "倍率书副本次数"
-            ]
-        },
-        {
-            "name": "角色突破",
-            "entry": "角色突破",
-            "description": "角色突破本，探险/无尽。仅支持每一五波使用倍率书",
-            "option": [
-                "角色突破等级",
-                "属性选择",
-                "波次选择",
-                "角色突破倍率波次",
-                "单次倍率",
-                "超时时间"
-            ]
-        },
-        {
-            "name": "武器经验",
-            "entry": "武器经验",
-            "description": "武器经验本，驱逐。仅支持50级副本。",
-            "option": [
-                "武器经验等级",
-                "单次倍率",
-                "超时时间",
-                "倍率书副本次数"
-            ]
-        },
-        {
-            "name": "武器突破",
-            "entry": "武器突破",
-            "description": "武器突破本，调停。仅支持每一五波使用倍率书",
-            "option": [
-                "武器突破等级",
-                "单次倍率",
-                "超时时间",
-                "倍率书副本次数"
-            ]
-        },
-        {
-            "name": "魔之楔本",
-            "entry": "魔之楔本",
-            "description": "魔之楔本，驱离。",
-            "option": [
-                "魔之楔本等级",
-                "单次倍率",
-                "超时时间",
-                "倍率书副本次数"
-            ]
-        },
-        {
-            "name": "深红凝珠",
-            "entry": "深红凝珠",
-            "description": "深红凝珠本，护送。仅支持50级副本。",
-            "option": [
-                "深红凝珠等级",
-                "单次倍率",
-                "超时时间",
-                "倍率书副本次数"
-            ]
-        },
-        {
-            "name": "皎皎信物",
-            "entry": "皎皎信物",
-            "description": "皎皎信物本，扼守/无尽。仅支持50级副本。",
-            "option": [
-                "皎皎信物等级",
-                "波次选择",
-                "皎皎信物倍率波次",
-                "单次倍率",
-                "超时时间"
-            ]
         }
     ],
     "option": {
-        "夜航手册等级": {
-            "type": "select",
-            "cases": [
-                {
-                    "name": "1"
-                },
-                {
-                    "name": "2"
-                }
-            ]
-        },
-        "夜航手册序号": {
-            "type": "select",
-            "cases": [
-                {
-                    "name": "1"
-                },
-                {
-                    "name": "2"
-                }
-            ]
-        },
-        "角色经验等级": {
-            "type": "select",
-            "label": "等级选择",
-            "description": "仅支持50级。",
-            "cases": [
-                {
-                    "name": "50"
-                }
-            ]
-        },
-        "角色突破等级": {
-            "type": "select",
-            "label": "等级选择",
-            "description": "仅支持50级。",
-            "cases": [
-                {
-                    "name": "50"
-                }
-            ]
-        },
-        "武器经验等级": {
-            "type": "select",
-            "label": "等级选择",
-            "description": "仅支持50级。",
-            "cases": [
-                {
-                    "name": "50"
-                }
-            ]
-        },
-        "武器突破等级": {
-            "type": "select",
-            "label": "等级选择",
-            "description": "仅支持50级。",
-            "cases": [
-                {
-                    "name": "50"
-                }
-            ]
-        },
-        "魔之楔本等级": {
-            "type": "select",
-            "label": "等级选择",
-            "description": "40、60、80、100。",
-            "cases": [
-                {
-                    "name": "40"
-                },
-                {
-                    "name": "60",
-                    "pipeline_override": {
-                        "委托等级识别": {
-                            "expected": "60"
-                        }
-                    }
-                },
-                {
-                    "name": "80",
-                    "pipeline_override": {
-                        "委托等级识别": {
-                            "expected": "80"
-                        }
-                    }
-                },
-                {
-                    "name": "100",
-                    "pipeline_override": {
-                        "委托等级识别": {
-                            "expected": "100"
-                        }
-                    }
-                }
-            ]
-        },
-        "深红凝珠等级": {
-            "type": "select",
-            "label": "等级选择",
-            "description": "仅支持50级。",
-            "cases": [
-                {
-                    "name": "50"
-                }
-            ]
-        },
-        "皎皎信物等级": {
-            "type": "select",
-            "label": "等级选择",
-            "description": "仅支持50级。",
-            "cases": [
-                {
-                    "name": "50"
-                }
-            ]
-        },
         "倍率书副本次数": {
             "type": "input",
             "inputs": [
@@ -293,8 +100,8 @@
                 {
                     "name": "total_time",
                     "label": "超时时间",
-                    "description": "设置局内超时时间，默认120s",
-                    "default": "120",
+                    "description": "设置局内超时时间，默认180s",
+                    "default": "180",
                     "pipeline_type": "int"
                 }
             ],
@@ -318,20 +125,9 @@
                     "name": "1倍绿书",
                     "pipeline_override": {
                         "倍率选择": {
-                            "recognition": {
-                                "type": "TemplateMatch",
-                                "param": {
-                                    "template": [
-                                        "委托手册/1绿书_图标.png"
-                                    ],
-                                    "roi": [
-                                        165,
-                                        110,
-                                        950,
-                                        480
-                                    ]
-                                }
-                            }
+                            "template": [
+                                "委托手册/1绿书_图标.png"
+                            ]
                         }
                     }
                 },
@@ -339,20 +135,9 @@
                     "name": "2倍蓝书",
                     "pipeline_override": {
                         "倍率选择": {
-                            "recognition": {
-                                "type": "TemplateMatch",
-                                "param": {
-                                    "template": [
-                                        "委托手册/2蓝书_图标.png"
-                                    ],
-                                    "roi": [
-                                        165,
-                                        110,
-                                        950,
-                                        480
-                                    ]
-                                }
-                            }
+                            "template": [
+                                "委托手册/2蓝书_图标.png"
+                            ]
                         }
                     }
                 },
@@ -360,20 +145,9 @@
                     "name": "8倍蓝书",
                     "pipeline_override": {
                         "倍率选择": {
-                            "recognition": {
-                                "type": "TemplateMatch",
-                                "param": {
-                                    "template": [
-                                        "委托手册/8紫书_图标.png"
-                                    ],
-                                    "roi": [
-                                        165,
-                                        110,
-                                        950,
-                                        480
-                                    ]
-                                }
-                            }
+                            "template": [
+                                "委托手册/8紫书_图标.png"
+                            ]
                         }
                     }
                 },
@@ -381,20 +155,9 @@
                     "name": "20倍金书",
                     "pipeline_override": {
                         "倍率选择": {
-                            "recognition": {
-                                "type": "TemplateMatch",
-                                "param": {
-                                    "template": [
-                                        "委托手册/20金书_图标.png"
-                                    ],
-                                    "roi": [
-                                        165,
-                                        110,
-                                        950,
-                                        480
-                                    ]
-                                }
-                            }
+                            "template": [
+                                "委托手册/20金书_图标.png"
+                            ]
                         }
                     }
                 }
@@ -408,45 +171,6 @@
                 },
                 {
                     "name": "12波"
-                }
-            ]
-        },
-        "属性选择": {
-            "type": "select",
-            "cases": [
-                {
-                    "name": "水"
-                },
-                {
-                    "name": "火"
-                }
-            ]
-        },
-        "角色突破倍率波次": {
-            "type": "select",
-            "label": "波次选择",
-            "cases": [
-                {
-                    "name": "每一波",
-                    "description": "选择每一波使用倍率书"
-                },
-                {
-                    "name": "每五波",
-                    "description": "选择每五波使用倍率书"
-                }
-            ]
-        },
-        "皎皎信物倍率波次": {
-            "type": "select",
-            "label": "波次选择",
-            "cases": [
-                {
-                    "name": "每一波",
-                    "description": "选择每一波使用倍率书"
-                },
-                {
-                    "name": "每三波",
-                    "description": "选择每三波使用倍率书"
                 }
             ]
         }

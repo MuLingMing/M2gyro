@@ -91,7 +91,15 @@
         },
         "crouch": {
             "description": "下蹲动作",
-            "parameters": {}
+            "parameters": {
+                "duration": {
+                    "type": "number",
+                    "required": false,
+                    "default": 0.1,
+                    "min": 0,
+                    "description": "按住按键的时间（秒），默认 0.1"
+                }
+            }
         },
         "wait": {
             "description": "等待动作",

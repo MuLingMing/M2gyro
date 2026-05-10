@@ -60,6 +60,18 @@ FALLBACK_TAB_X: Dict[str, int] = {
 
 VALID_REGIONS = {"角色", "武器", "魔之楔"}
 
+REGION_ATTACH_MAP: Dict[str, str] = {
+    "region_0": "角色",
+    "region_1": "武器",
+    "region_2": "魔之楔",
+}
+
+STAGE_ATTACH_MAP: Dict[str, str] = {
+    "stage_0": "探险",
+    "stage_1": "驱离",
+    "stage_2": "扼守",
+}
+
 
 class CovertStage(CustomRecognition):
     """
@@ -67,7 +79,14 @@ class CovertStage(CustomRecognition):
 
     注册方式：通过 agent/custom.json 动态注册，不引入装饰器
 
-    参数格式：
+    参数来源（优先级从高到低）：
+    1. 节点 attach（由 interface checkbox 选项注入）
+       - region_0/1/2 → 角色/武器/魔之楔
+       - stage_0/1/2 → 探险/驱离/扼守
+       - 空 attach 时回退到 custom_recognition_param
+    2. custom_recognition_param（直接调用时使用）
+
+    custom_recognition_param 格式：
     {
         "region_types": ["角色", "武器", "魔之楔"],
         "stage_list": ["驱离", "探险", "扼守"]
@@ -122,7 +141,7 @@ class CovertStage(CustomRecognition):
         执行流程:
         1. 校验输入图像有效性（非空、numpy 数组、size > 0）
         2. 检查 stopping 信号，收到则立即返回
-        3. 解析 custom_recognition_param，提取 region_types / stage_list
+        3. 优先从节点 attach 读取 checkbox 选项，无 attach 则回退 custom_recognition_param
         4. 校验 stage_list 非空，为空则 post_stop 终止
         5. 计算 effective_regions（region_types ∩ REGION_PRIORITY，保持优先级顺序）
         6. 单次 OCR → 最近 Tab 分类 → 提取持有数和关卡
@@ -145,9 +164,15 @@ class CovertStage(CustomRecognition):
                 box=None, detail={"hit": False, "reason": "stopping"}
             )
 
-        params = self._parse_params(argv.custom_recognition_param)
-        region_types = params["region_types"]
-        stage_list = params["stage_list"]
+        node_data = context.get_node_data(argv.node_name) or {}
+        attach = node_data.get("attach", {})
+
+        if attach:
+            region_types, stage_list = self._read_options_from_attach(attach)
+        else:
+            params = self._parse_params(argv.custom_recognition_param)
+            region_types = params["region_types"]
+            stage_list = params["stage_list"]
 
         if not stage_list:
             # logger.warning("CovertStage: stage_list 为空")
@@ -238,6 +263,32 @@ class CovertStage(CustomRecognition):
                 "checked_regions": checked_regions,
             },
         )
+
+    @staticmethod
+    def _read_options_from_attach(attach: dict) -> Tuple[List[str], List[str]]:
+        """
+        从节点 attach 中读取 checkbox 选项参数
+
+        attach 键名映射（避免同名覆盖）：
+        - region_0/1/2 → 角色/武器/魔之楔
+        - stage_0/1/2 → 探险/驱离/扼守
+
+        参数:
+        - attach: 节点的 attach 字典
+
+        返回值:
+        - Tuple[regions, stages]:
+            regions: 选中的区域列表，空则回退 REGION_PRIORITY
+            stages: 选中的关卡列表，空则回退 STAGE_PRIORITY
+        """
+        regions = [r for key, r in REGION_ATTACH_MAP.items() if attach.get(key)]
+        stages = [s for key, s in STAGE_ATTACH_MAP.items() if attach.get(key)]
+
+        if not regions and not stages:
+            regions = list(REGION_PRIORITY)
+            stages = list(STAGE_PRIORITY)
+
+        return regions, stages
 
     def _parse_params(self, raw_param: str | dict | None) -> Dict[str, Any]:
         """

@@ -65,11 +65,11 @@ class DesktopPlatform(PlatformBase):
         "MouseLeft": 0x01,
     }
 
-    def __init__(self, platform_context: Controller):
+    def __init__(self, platform_controller: Controller):
         """初始化桌面平台
         
         参数：
-        - platform_context: MAA控制器或上下文对象
+        - platform_controller: MAA控制器或上下文对象
         
         执行流程：
         1. 调用父类初始化
@@ -77,15 +77,15 @@ class DesktopPlatform(PlatformBase):
         3. 初始化控制器引用
         4. 初始化按键跟踪集合
         """
-        super().__init__(platform_context)
+        super().__init__(platform_controller)
         self._controller_type = "desktop"
         self._controller = None
         self._active_keys: set = set()
 
-        if isinstance(platform_context, Controller):
-            self._controller = platform_context
-        elif isinstance(platform_context, Context) and hasattr(platform_context, 'tasker'):
-            self._controller = platform_context.tasker.controller
+        if isinstance(platform_controller, Controller):
+            self._controller = platform_controller
+        elif isinstance(platform_controller, Context) and hasattr(platform_controller, 'tasker'):
+            self._controller = platform_controller.tasker.controller
 
     def move(self, direction: str, duration: float) -> bool:
         """执行移动操作
@@ -190,16 +190,19 @@ class DesktopPlatform(PlatformBase):
         """
         return self.press_key("Q", 0.1)
 
-    def crouch(self) -> bool:
+    def crouch(self, duration: float = 0.1) -> bool:
         """执行下蹲操作
-        
+
+        参数：
+        - duration: 按住按键的时间（秒），默认 0.1
+
         返回：
         - bool: 是否成功
-        
+
         执行流程：
-        1. 按压 C 键 0.1 秒
+        1. 按压 C 键指定时长
         """
-        return self.press_key("C", 0.1)
+        return self.press_key("C", duration)
 
     def charge_attack(self, duration: float, x: Optional[int] = None, y: Optional[int] = None) -> bool:
         """执行蓄力攻击操作

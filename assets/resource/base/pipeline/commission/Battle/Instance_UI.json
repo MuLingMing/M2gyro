@@ -1,4 +1,69 @@
 {
+    //机关破解
+    "机关操作": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": [
+                                    "副本/机关交互/"
+                                ],
+                                "roi": [
+                                    560,
+                                    200,
+                                    460,
+                                    320
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "actionognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "操作"
+                                ],
+                                "roi": [
+                                    560,
+                                    200,
+                                    460,
+                                    320
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "Click",
+        "next": [
+            "巧手快速破解"
+        ]
+    },
+    "巧手快速破解": {
+        //巧手快速破解
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "快速破解"
+                ],
+                "roi": [
+                    900,
+                    400,
+                    380,
+                    320
+                ]
+            }
+        },
+        "action": "Click"
+    },
+    //退出委托
     "退出委托": {
         //委托完成后退出委托
         "recognition": {
@@ -37,23 +102,6 @@
                     590,
                     950,
                     130
-                ]
-            }
-        },
-        "action": "Click"
-    },
-    "下一波次": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "下一波次"
-                ],
-                "roi": [
-                    165,
-                    110,
-                    950,
-                    480
                 ]
             }
         },
@@ -215,6 +263,7 @@
             "弹窗取消"
         ]
     },
+    //无尽行动抉择
     "无尽行动抉择": {
         "recognition": {
             "type": "OCR",
@@ -254,50 +303,22 @@
     },
     "无尽波次撤离": {
         "recognition": {
-            "type": "And",
+            "type": "OCR",
             "param": {
-                "all_of": [
-                    "挑战更多轮次可获得",
-                    "无尽轮次识别"
+                "expected": [
+                    "15"
+                ],
+                "roi": [
+                    150,
+                    60,
+                    150,
+                    600
                 ]
             }
         },
         "next": [
             "无尽撤离"
         ]
-    },
-    "挑战更多轮次可获得": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "挑战更多轮次可获得"
-                ],
-                "roi": [
-                    640,
-                    60,
-                    600,
-                    600
-                ]
-            }
-        }
-    },
-    "无尽轮次识别": {
-        //左侧识别到轮次数
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "16"
-                ],
-                "roi": [
-                    150,
-                    60,
-                    150,
-                    600
-                ]
-            }
-        }
     },
     "无尽撤离": {
         "recognition": {
