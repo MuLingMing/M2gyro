@@ -5,90 +5,40 @@
 2. 获取动作类
 3. 列出所有动作
 4. 创建动作实例
+5. 提供装饰器注册动作
+
+继承自 ModuleRegistry 泛型基类，实现统一的模块注册接口。
 """
 
-from typing import Dict, Type, Optional
+from typing import Optional
 from .base import ActionBase
+from ..registry import ModuleRegistry
 
 
-class ActionRegistry:
+class ActionRegistry(ModuleRegistry[ActionBase]):
     """
     动作注册表
 
+    继承自 ModuleRegistry[ActionBase]，提供统一的模块注册接口。
+
     功能说明：
-    1. 注册管理
+    1. 注册管理（继承自 ModuleRegistry）
        - register: 注册动作类
        - unregister: 注销动作类
 
-    2. 查询获取
-       - get_action: 获取动作类
-       - list_actions: 列出所有动作
+    2. 查询获取（继承自 ModuleRegistry）
+       - get: 获取动作类
+       - list_modules: 列出所有动作
+       - has: 检查动作是否存在
 
-    3. 实例创建
-       - create_action: 创建动作实例
+    3. 实例创建（扩展）
+       - create_action: 创建动作实例（支持 platform 和 context 参数）
 
     使用示例：
     >>> registry = ActionRegistry()
     >>> registry.register("move", MoveAction)
     >>> action = registry.create_action("move", platform)
     """
-
-    def __init__(self):
-        """
-        初始化动作注册表
-
-        执行流程：
-        1. 创建空的动作字典
-        """
-        self._actions: Dict[str, Type[ActionBase]] = {}
-
-    def register(self, action_name: str, action_class: Type[ActionBase]):
-        """
-        注册动作
-
-        参数：
-        - action_name: 动作名称
-        - action_class: 动作类
-
-        执行流程：
-        1. 将动作类存入字典
-        """
-        self._actions[action_name] = action_class
-
-    def unregister(self, action_name: str):
-        """
-        注销动作
-
-        参数：
-        - action_name: 动作名称
-
-        执行流程：
-        1. 检查动作是否存在
-        2. 存在则删除
-        """
-        if action_name in self._actions:
-            del self._actions[action_name]
-
-    def get_action(self, action_name: str) -> Optional[Type[ActionBase]]:
-        """
-        获取动作类
-
-        参数：
-        - action_name: 动作名称
-
-        返回值：
-        - Type[ActionBase] | None: 动作类，不存在返回 None
-        """
-        return self._actions.get(action_name)
-
-    def list_actions(self) -> list:
-        """
-        列出所有动作
-
-        返回值：
-        - list: 动作名称列表
-        """
-        return list(self._actions.keys())
 
     def create_action(self, action_name: str, platform, context=None) -> Optional[ActionBase]:
         """
@@ -107,11 +57,39 @@ class ActionRegistry:
         2. 如果存在，创建实例（传递 context）
         3. 返回实例或 None
         """
-        action_class = self.get_action(action_name)
+        action_class = self.get(action_name)
         if action_class:
-            return action_class(platform, context)
+            action = action_class(platform)
+            if context is not None:
+                action.set_context(context)
+            return action
         return None
 
 
-# 全局动作注册表实例
 action_registry = ActionRegistry()
+
+
+def register_action(name: str):
+    """
+    动作注册装饰器
+
+    功能说明：
+    1. 注册动作类到全局注册表
+    2. 必须显式指定动作名称，与 @register_effect/@register_platform 一致
+
+    参数：
+    - name: 动作名称（必填）
+
+    使用示例：
+    >>> @register_action("move")
+    ... class MoveAction(ActionBase):
+    ...     pass
+
+    执行流程：
+    1. 将动作类注册到全局注册表
+    2. 返回原始类
+    """
+    def decorator(cls):
+        action_registry.register(name, cls)
+        return cls
+    return decorator

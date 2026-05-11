@@ -1,492 +1,512 @@
-# OperationRecording 框架使用指南
+# OperationRecording 操作录制组件
 
-版本: 1.2.0
+## 简介
 
-## 框架特性
+`OperationRecording` 是基于 MaaFramework 的操作录制与回放组件。它支持：
 
-- 自动动作注册：通过装饰器自动注册动作，无需手动修改代码
-- 统一 JSON 参数模板：支持灵活的参数定义和验证
-- 控制器自动检测：自动识别 ADB/Win32 平台
-- 平台扩展支持：轻松添加新的平台实现
-- 零配置扩展：添加新动作只需创建文件，无需修改其他文件
-- 时间线模式：支持复杂动作序列、并行动作叠加、动作优先级
-- 类人化效果：随机反应时间，平滑移动路径、动作间隔延迟
-- 双模式执行：自动检测普通模式和时间线模式
-- 安全停止：支持接收停止通知，释放全部按键
+- **普通模式**：顺序执行操作列表
+- **时间线模式**：复杂动作序列、并行动作叠加、类人化效果
+- **自动模式检测**：根据输入格式自动选择执行模式
+- **统一模块化模板平台**：ModuleRegistry 泛型基类，Action/Effect/Platform 三种模块类型完全对称
+- **平台家族继承**：KeyboardPlatform/TouchPlatform 家族基类，子类仅需提供映射表
 
-## 快速开始
+## 版本
 
-### 1. 添加新动作
+当前版本：**v3.0.0**
 
-步骤 1：在 `actions/basic/` 或 `actions/advanced/` 目录创建动作文件
+## 架构概览
 
-```python
-# actions/basic/new_action.py
-from ..base import ActionBase
-from .. import register_action
-
-
-@register_action("new_action")
-class NewAction(ActionBase):
-    """新动作"""
-
-    @property
-    def name(self) -> str:
-        return "new_action"
-
-    def execute(self, params: dict) -> bool:
-        """执行动作
-
-        Args:
-            params: 动作参数
-
-        Returns:
-            bool: 执行是否成功
-        """
-        return self._platform.new_action(**params)
 ```
-
-步骤 2：在 `config/default.json` 中添加动作配置
-
-```json
-{
-  "new_action": {
-    "description": "新动作",
-    "parameters": {
-      "param1": {
-        "type": "string",
-        "required": true
-      },
-      "param2": {
-        "type": "number",
-        "required": false,
-        "default": 1.0
-      }
-    }
-  }
-}
-```
-
-步骤 3：在平台类中实现动作方法
-
-```python
-# platforms/win32/win32_platform.py
-def new_action(self, param1, param2=1.0):
-    """执行新动作"""
-    # 实现 Win32 平台的新动作
-    return True
-
-# platforms/adb/adb_platform.py
-def new_action(self, param1, param2=1.0):
-    """执行新动作"""
-    # 实现 ADB 平台的新动作
-    return True
-```
-
-### 2. 使用动作
-
-普通模式（顺序执行）：
-
-```json
-[
-  {
-    "action": "move",
-    "params": {
-      "direction": "forward",
-      "duration": 1.0
-    }
-  },
-  {
-    "action": "jump",
-    "params": {}
-  },
-  {
-    "action": "charge_attack",
-    "params": {
-      "duration": 2.0
-    }
-  },
-  {
-    "action": "crouch",
-    "params": {}
-  }
-]
-```
-
-时间线模式（复杂序列）：
-
-```json
-{
-  "operations": [
-    {"action": "move", "params": {"direction": "left"}, "duration": 2.0},
-    {"action": "wait", "duration": 2.0},
-    {
-      "action": "move",
-      "params": {"direction": "forward"},
-      "duration": 8.0,
-      "overlays": [{"action": "dodge", "params": {"direction": "forward"}, "at": 3.0}]
-    },
-    {
-      "action": "move",
-      "params": {"direction": "left"},
-      "duration": 12.0,
-      "overlays": [{"action": "jump", "at": 5.0}]
-    }
-  ],
-  "loop_count": 1
-}
-```
-
-## 框架架构
-
-### 目录结构
-
-```text
 OperationRecording/
-├── __init__.py              # 模块入口，版本 1.2.0
-├── README.md
-├── test_advanced_system.py   # 高级系统测试
-├── test_integration.py       # 集成测试
-├── test_integration_simple.py # 简单集成测试
-├── action_types/            # 数据类型
-│   ├── __init__.py
-│   ├── operation.py         # Operation 数据结构
-│   └── operation_param.py   # OperationParam 数据结构
-├── actions/                  # 动作系统
-│   ├── __init__.py
-│   ├── base.py              # ActionBase 抽象基类
-│   ├── registry.py          # ActionRegistry 注册表
-│   ├── auto_register.py     # @register_action 装饰器
-│   ├── operation_record_action.py  # MaaFramework 入口
-│   ├── basic/              # 基本动作（8个）
+├── __init__.py                    # 模块入口，统一导出
+├── registry.py                    # ModuleRegistry[T] 泛型注册表基类
+├── actions/                       # 动作模块（模板实例 A）
+│   ├── __init__.py                # base + registry + basic/advanced
+│   ├── base.py                    # ActionBase + TimelineMeta
+│   ├── registry.py                # ActionRegistry + @register_action + action_registry
+│   ├── operation_record_action.py # MaaFW CustomAction 入口
+│   ├── basic/                     # 基础动作
 │   │   ├── move_action.py
 │   │   ├── jump_action.py
 │   │   ├── dodge_action.py
 │   │   ├── turn_action.py
 │   │   ├── interact_action.py
-│   │   ├── charge_attack_action.py  # 蓄力攻击
-│   │   └── crouch_action.py        # 下蹲
-│   └── advanced/            # 高级动作
+│   │   ├── charge_attack_action.py
+│   │   ├── crouch_action.py
+│   │   ├── wait_action.py
+│   │   ├── run_node_action.py
+│   │   ├── swipe_action.py
+│   │   ├── click_action.py
+│   │   └── press_key_action.py
+│   └── advanced/                  # 高级动作
 │       └── spiral_leap_action.py
-├── config/                  # 配置系统
+├── effects/                       # 效果插件模块（模板实例 B）
+│   ├── __init__.py                # base + registry + builtin
+│   ├── base.py                    # EffectBase 抽象基类
+│   ├── registry.py                # EffectRegistry + @register_effect + effect_registry
+│   ├── manager.py                 # EffectManager 效果管理器
+│   └── builtin/                   # 内置效果插件
+│       ├── acceleration.py
+│       ├── random_delay.py
+│       ├── human_timing.py
+│       ├── reaction_delay.py
+│       └── fatigue.py
+├── platforms/                     # 平台模块（模板实例 C）
+│   ├── __init__.py                # base + registry + desktop/adb
+│   ├── base.py                    # PlatformBase 抽象基类
+│   ├── keyboard.py                # KeyboardPlatform 键盘平台家族基类
+│   ├── touch.py                   # TouchPlatform 触控平台家族基类
+│   ├── registry.py                # PlatformRegistry + @register_platform + platform_registry
+│   ├── factory.py                 # PlatformFactory 平台工厂
+│   ├── desktop/                   # 桌面平台
+│   │   ├── __init__.py
+│   │   └── desktop_platform.py
+│   └── adb/                       # ADB 平台
+│       ├── __init__.py
+│       └── adb_platform.py
+├── core/                          # 核心调度层（不随模块扩展修改）
 │   ├── __init__.py
-│   ├── manager.py           # ConfigManager
-│   └── default.json         # 默认配置
-├── core/                    # 核心功能
-│   ├── __init__.py
-│   ├── humanizer.py         # Humanizer 类人化处理器
-│   ├── operation_executor.py # OperationExecutor 执行器
-│   ├── operation_parser.py  # OperationParser 解析器
-│   └── timeline_manager.py  # ActionTimeline 时间线管理
-└── platforms/               # 平台实现
-    ├── __init__.py
-    ├── base.py              # PlatformBase 抽象基类
-    ├── factory.py           # PlatformFactory 工厂
-    ├── win32/              # Win32 平台
-    │   ├── __init__.py
-    │   └── win32_platform.py
-    └── adb/                # ADB 平台
-        ├── __init__.py
-        └── adb_platform.py
+│   ├── executor.py                # OperationExecutor 执行器
+│   ├── parser.py                  # OperationParser 解析器
+│   ├── timeline.py                # ActionTimeline + TimedAction + ActionPriority + ActionState
+│   ├── types.py                   # Operation + OperationParam 数据结构
+│   └── config.py                  # ConfigManager 配置管理器
+└── config/
+    └── default.json               # 默认配置
 ```
 
-### 核心组件
+## 统一模块化模板平台
 
-| 组件 | 说明 |
-| :--- | :--- |
-| ActionBase | 动作基类，所有动作都继承自它 |
-| ActionRegistry | 动作注册表，管理所有动作 |
-| PlatformBase | 平台基类，定义平台接口（含 `release_all()` 方法） |
-| PlatformFactory | 平台工厂，创建平台实例 |
-| OperationExecutor | 操作执行器，支持双模式执行，含停止响应 |
-| OperationParser | 参数解析器，自动检测模式 |
-| ActionTimeline | 时间线管理器，支持复杂序列 |
-| Humanizer | 类人化处理器，添加随机效果 |
+三种模块类型完全对称，遵循同一模板：
+
+```
+模块类型/
+├── __init__.py          # 导入 base + registry + 子包触发注册
+├── base.py              # 基类定义
+├── registry.py          # 注册表(ModuleRegistry子类) + 装饰器 + 全局实例
+└── 子包/
+    ├── __init__.py      # 导入所有模块触发注册
+    └── *.py             # 各模块实现，使用 @register_xxx("name") 注册
+```
+
+### ModuleRegistry 泛型基类
+
+```python
+from OperationRecording.registry import ModuleRegistry
+
+class ModuleRegistry(Generic[T]):
+    def register(self, name: str, cls: Type[T]) -> None: ...
+    def unregister(self, name: str) -> None: ...
+    def get(self, name: str) -> Optional[Type[T]]: ...
+    def create(self, name: str, *args, **kwargs) -> Optional[T]: ...
+    def list_modules(self) -> List[str]: ...
+    def has(self, name: str) -> bool: ...
+```
+
+### 三种注册表完全对称
+
+| 注册表 | 基类 | 装饰器 | 实例 |
+|--------|------|--------|------|
+| `ActionRegistry` | `ModuleRegistry[ActionBase]` | `@register_action("name")` | `action_registry` |
+| `EffectRegistry` | `ModuleRegistry[EffectBase]` | `@register_effect("name")` | `effect_registry` |
+| `PlatformRegistry` | `ModuleRegistry[PlatformBase]` | `@register_platform("name")` | `platform_registry` |
+
+## TimelineMeta 声明式调度
+
+每个 Action 类通过 `timeline_meta` 类属性声明其时间线行为，时间线调度逻辑自动根据此元数据决定调用方式：
+
+```python
+@dataclass
+class TimelineMeta:
+    has_duration: bool = False
+    release_method: str | None = None
+```
+
+### 调度规则
+
+| 条件 | 调用方式 |
+|------|----------|
+| `has_duration=True` + `duration > 0` | 调用 `start(params)` → 等待 → `release_action(release_method)` |
+| `has_duration=True` + `duration = 0` | 仅调用 `start(params)`（按下不释放） |
+| `has_duration=False` | 调用 `execute(params)`（瞬时完成） |
+
+### 示例
+
+```python
+@register_action("move")
+class MoveAction(ActionBase):
+    timeline_meta = TimelineMeta(has_duration=True, release_method="move")
+
+    def execute(self, params): return self._platform.move(params.get("direction", "forward"), params.get("duration", 1.0))
+    def start(self, params): return self._platform.move(params.get("direction", "forward"), 0)
+
+@register_action("jump")
+class JumpAction(ActionBase):
+    timeline_meta = TimelineMeta(has_duration=False)
+
+    def execute(self, params): return self._platform.jump()
+```
+
+**不再需要修改**：`timeline.py`、`executor.py`、`parser.py`
+
+## 平台家族继承体系
+
+平台层采用家族基类模式，子类仅需提供映射表即可获得完整实现：
+
+```
+PlatformBase (抽象基类)
+├── KeyboardPlatform (键盘家族基类)
+│   └── DesktopPlatform (Windows 桌面)
+└── TouchPlatform (触控家族基类)
+    └── AdbPlatform (Android ADB)
+```
+
+### KeyboardPlatform
+
+子类需提供：
+- `_key_codes: Dict[str, int]` — 按键名到虚拟键码的映射
+- `_action_key_map: Dict[str, List[str]]` — 动作名到按键名列表的映射（用于 `release_action()`）
+
+```python
+@register_platform("desktop")
+class DesktopPlatform(KeyboardPlatform):
+    _key_codes = {"W": 0x57, "A": 0x41, "S": 0x53, "D": 0x44, "Space": 0x20, ...}
+    _action_key_map = {"move": ["W", "A", "S", "D"], "crouch": ["C"], "charge_attack": ["MouseLeft"]}
+```
+
+### TouchPlatform
+
+子类需提供：
+- `_touch_positions: Dict[str, Dict]` — 按钮位置配置（格式：`{"button_name": {"x": int, "y": int, "contact": int, ...}}`）
+- `_generic_contact: int` — 通用触点 ID
+
+```python
+@register_platform("adb")
+class AdbPlatform(TouchPlatform):
+    _touch_positions = {
+        "joystick_center": {"x": 225, "y": 536, "contact": 0, "joystick_run_offset": -60},
+        "jump_button": {"x": 978, "y": 410, "contact": 1},
+        ...
+    }
+    _generic_contact = 8
+```
+
+### 状态跟踪
+
+| 平台家族 | 状态跟踪 | 类型 |
+|----------|----------|------|
+| KeyboardPlatform | `_active_keys` | `set` — 当前按下的键码集合 |
+| TouchPlatform | `_active_contacts` | `Dict[str, int]` — contact_name → contact_id 映射 |
+
+### 释放机制
+
+- **`release_action(action_name)`**：根据动作名释放对应按键/触点
+  - KeyboardPlatform：通过 `_action_key_map` 查找按键列表，发送 `post_key_up`
+  - TouchPlatform：`"move"` 调用 `_joystick_center()` 归位摇杆，其他从 `_active_contacts` 查找并 `post_touch_up`
+- **`release_all()`**：释放所有活跃按键/触点，清空状态跟踪
+
+## ActionState 状态机
+
+时间线模式下每个动作经历以下状态：
+
+```
+SCHEDULED → RUNNING → COMPLETED
+                   ↘ CANCELLED（释放失败时）
+```
+
+| 状态 | 值 | 说明 |
+|------|---|------|
+| `SCHEDULED` | 1 | 已计划，等待开始时间 |
+| `RUNNING` | 2 | 运行中 |
+| `PAUSED` | 3 | 已暂停（预留） |
+| `COMPLETED` | 4 | 已完成 |
+| `CANCELLED` | 5 | 已取消（`release_action()` 失败时标记） |
+
+## 动作参考
+
+### 基础动作
+
+| 动作名 | 类型 | 参数 | 说明 |
+|--------|------|------|------|
+| `move` | 持续 | `direction`: forward/backward/left/right, `duration`: 秒 | 移动，`release_method="move"` |
+| `crouch` | 持续 | `duration`: 秒 | 下蹲，`release_method="crouch"` |
+| `charge_attack` | 持续 | `duration`: 秒, `x`/`y`: 可选坐标 | 蓄力攻击，`release_method="charge_attack"` |
+| `jump` | 瞬时 | — | 跳跃 |
+| `dodge` | 瞬时 | `direction`: 可选方向 | 闪避 |
+| `turn` | 瞬时 | `angle`: 角度（正右负左） | 转向 |
+| `interact` | 瞬时 | `interaction_type`: 交互类型 | 交互 |
+| `swipe` | 瞬时 | `start_x/y`, `end_x/y`, `duration` | 滑动 |
+| `click` | 瞬时 | `x`, `y` | 点击 |
+| `press_key` | 瞬时 | `key`: 按键名, `duration`: 秒 | 按键 |
+| `wait` | 瞬时 | `duration`: 秒 / `until`: 绝对时间点 | 等待（仅时间线模式） |
+| `run_node` | 瞬时 | `node`: 节点名, `blocking`: 是否阻塞 | 执行 Pipeline 节点 |
+
+### 高级动作
+
+| 动作名 | 类型 | 参数 | 说明 |
+|--------|------|------|------|
+| `spiral_leap` | 瞬时 | — | 螺旋飞跃 |
+
+### 通用时间线参数
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `duration` | float | 动作持续时间（秒），顶层参数 |
+| `overlays` | list | 叠加动作列表，每个包含 `action`/`params`/`at` |
+
+## 新增模块标准流程
+
+### 新增 Action
+
+1. 在 `actions/basic/` 或 `actions/advanced/` 下创建新文件
+2. 继承 `ActionBase`，声明 `timeline_meta`
+3. 使用 `@register_action("action_name")` 注册
+4. 在对应 `__init__.py` 中导入触发注册
+5. 在 `platforms/desktop/` 和 `platforms/adb/` 中实现平台方法
+6. 更新 Schema
+
+```python
+from ..base import ActionBase, TimelineMeta
+from ..registry import register_action
+
+@register_action("my_action")
+class MyAction(ActionBase):
+    timeline_meta = TimelineMeta(has_duration=True, release_method="my_action")
+
+    def execute(self, params: dict) -> bool:
+        return self._platform.my_action(params.get("target"))
+
+    def start(self, params: dict) -> bool:
+        return self._platform.my_action(params.get("target"))
+```
+
+**不再需要修改**：`timeline.py`、`executor.py`、`parser.py`
+
+### 新增 Effect
+
+1. 在 `effects/builtin/` 下创建新文件
+2. 继承 `EffectBase`，实现 `apply()` 接口
+3. 使用 `@register_effect("my_effect")` 注册
+4. 在 `effects/builtin/__init__.py` 中导入触发注册
+5. 在 `config/default.json` 的 `effects.plugins` 中添加配置
+
+```python
+from ..base import EffectBase
+from ..registry import register_effect
+
+@register_effect("my_effect")
+class MyEffect(EffectBase):
+    name: ClassVar[str] = "my_effect"
+
+    def __init__(self, config=None):
+        super().__init__(config)
+        self._factor = self._config.get("factor", 0.1)
+
+    def apply(self, action_name: str, params: dict, context: dict) -> dict:
+        return params
+```
+
+**不再需要修改**：任何核心文件
+
+### 新增 Platform
+
+**类型 A（依赖家族基类）**：继承 KeyboardPlatform 或 TouchPlatform，仅需提供映射表。
+
+```python
+from ..keyboard import KeyboardPlatform
+from ..registry import register_platform
+
+@register_platform("my_desktop")
+class MyDesktopPlatform(KeyboardPlatform):
+    _key_codes = {"W": 0x57, ...}
+    _action_key_map = {"move": ["W", "A", "S", "D"], ...}
+```
+
+**类型 B（全新平台）**：继承 PlatformBase，实现所有抽象方法。
+
+```python
+from ..base import PlatformBase
+from ..registry import register_platform
+
+@register_platform("my_platform")
+class MyPlatform(PlatformBase):
+    def click(self, x, y) -> bool: ...
+    def swipe(self, sx, sy, ex, ey, dur) -> bool: ...
+    def press_key(self, key, dur) -> bool: ...
+    def release_key(self, key) -> bool: ...
+    def release_all(self) -> bool: ...
+```
+
+**不再需要修改**：`factory.py`、`executor.py`、任何核心文件
+
+## 效果插件系统
+
+拟人化等效果通过插件系统管理，遵循开闭原则。每个效果插件可独立 `enabled` 控制。
+
+### 内置插件
+
+| 插件 | 功能 | 默认状态 | Config 字段 |
+|------|------|----------|-------------|
+| `acceleration` | 加减速效果 | 启用 | `actions`, `factor` |
+| `random_delay` | 随机延迟 | 启用 | `actions`, `min_ms`, `max_ms`, `gap_min_ms`, `gap_max_ms` |
+| `human_timing` | 时序微变 | 启用 | `duration_variance`, `wait_variance`, `min_duration_ms` |
+| `reaction_delay` | 反应延迟 | 禁用 | `min_ms`, `max_ms` |
+| `fatigue` | 疲劳模拟 | 禁用 | `threshold`, `factor`, `base_min_ms`, `base_max_ms` |
+
+### 效果钩子
+
+| 方法 | 调用时机 | 用途 |
+|------|----------|------|
+| `pre_action()` | 动作执行前 | 添加延迟（如反应时间、疲劳） |
+| `apply()` | 参数处理时 | 修改参数（如加减速标记、随机延迟值） |
+| `post_action()` | 动作执行后 | 后处理（预留） |
+
+### 配置示例
+
+```json
+{
+    "effects": {
+        "enabled": true,
+        "plugins": {
+            "acceleration": {
+                "enabled": true,
+                "actions": ["move"],
+                "factor": 0.15
+            },
+            "random_delay": {
+                "enabled": true,
+                "actions": ["jump"],
+                "min_ms": 20,
+                "max_ms": 80
+            }
+        }
+    }
+}
+```
+
+## 时间线模式
+
+时间线模式支持复杂动作序列，包括并行动作叠加。自动检测条件：`operations` 中任一项包含 `duration` 或 `overlays` 字段（顶层或 `params` 中）。
+
+### 参数格式
+
+```json
+{
+    "operations": [
+        {
+            "action": "move",
+            "params": {
+                "direction": "left",
+                "duration": 0,
+                "acceleration": true,
+                "overlays": [
+                    {
+                        "action": "turn",
+                        "params": { "angle": 45.0 },
+                        "at": 0.3
+                    }
+                ]
+            },
+            "duration": 2.0
+        }
+    ],
+    "loop_count": 1
+}
+```
+
+### Wait 动作
+
+```json
+{"action": "wait", "params": {"duration": 1.0}}
+{"action": "wait", "params": {"until": 5.0}}
+```
+
+- `duration`：相对等待时长
+- `until`：绝对时间点（相对于时间线开始），如果当前时间已超过则不等待
+
+### 停止响应
+
+时间线执行过程中检查 `context.tasker.stopping`，收到停止信号时：
+1. 调用 `platform.release_all()` 释放所有按键/触点
+2. 调用 `timeline.stop()` 停止时间线
+3. 返回 `False`
+
+## 平台支持
+
+### 桌面平台（Desktop）
+
+- 继承 `KeyboardPlatform`，使用键盘模拟
+- 自动检测条件：控制器名称包含 `win32` 或 `desktop`
+- 状态跟踪：`_active_keys`（键码集合）
+
+### ADB 平台（Android）
+
+- 继承 `TouchPlatform`，使用触摸控制
+- 自动检测条件：控制器名称包含 `adb` 或 `android`
+- 状态跟踪：`_active_contacts`（contact_name → contact_id）
+- 分辨率基准：**720p (1280x720)**，所有坐标基于此分辨率
 
 ### 平台检测
 
-平台类型通过 MaaFramework 的 `Controller` 属性自动检测：
+`PlatformFactory.detect_platform()` 通过 `controller.name` 和 `controller.config` 自动判断平台类型，默认回退到 `"adb"`。
 
-- **ADB 平台**：检测 `uuid` 或 `info` 中包含 `adb`、`android`、`emulator` 字符串
-- **Win32 平台**：检测 `uuid` 或 `info` 中包含 `win32`、`windows` 字符串
+## 配置管理
 
-```python
-# PlatformFactory.detect_platform() 内部逻辑
-uuid = getattr(controller, 'uuid', None)
-info = getattr(controller, 'info', None)
-# 根据字符串匹配判断平台类型
-```
-
-### 按键跟踪
-
-为支持安全停止功能，各平台维护活跃按键/触点集合：
-
-- **Win32 平台**：`self._active_keys: set` - 跟踪已按下未释放的键码
-- **ADB 平台**：`self._active_contacts: Dict[str, int]` - 跟踪已按下未释放的触点
-
-### 工作流程
-
-1. 框架启动时，自动扫描并注册所有动作
-2. 根据控制器类型自动检测平台类型
-3. 创建相应的平台实例
-4. 解析操作序列，自动检测模式（普通/时间线）
-5. 执行动作序列，调用平台方法
-6. 返回执行结果
-
-### 安全停止
-
-执行过程中可响应停止通知，释放全部按键：
+`ConfigManager` 支持点分隔键路径访问：
 
 ```python
-# OperationExecutor.execute_timeline() 内部逻辑
-while self._timeline.get_status()['is_running']:
-    if context is not None and getattr(context.tasker, 'stopping', False):
-        self._platform.release_all()  # 释放全部按键
-        self._timeline.stop()
-        return False
-    self._timeline.update()
+cm = ConfigManager()
+cm.get("effects.enabled")           # True
+cm.get("effects.plugins.acceleration.factor")  # 0.15
+cm.get("nonexistent.key", "default")  # "default"
+cm.set("effects.enabled", False)
+cm.save("path/to/config.json")
 ```
 
-`PlatformBase.release_all()` 方法由各平台实现：
+## 使用示例
 
-- **Win32**：遍历 `_active_keys`，调用 `post_key_up` 释放
-- **ADB**：遍历 `_active_contacts`，调用 `post_touch_up` 释放
-
-## 支持的动作类型
-
-| 动作 | 说明 | 参数 |
-| :--- | :--- | :--- |
-| move | 移动 | direction (forward/backward/left/right), duration |
-| jump | 跳跃 | 无 |
-| dodge | 闪避/冲刺 | direction (可选) |
-| turn | 转向 | angle |
-| interact | 交互 | interaction_type |
-| spiral_leap | 螺旋飞跃 | 无 |
-| crouch | 下蹲 | 无 |
-| charge_attack | 蓄力攻击 | duration, x, y |
-| wait | 等待 | duration |
-| run_node | 执行 Pipeline 节点 | node (必填), blocking (可选) |
-
-## 动作执行架构
-
-### 两种执行模式
-
-框架支持两种完全兼容的执行模式，确保动作在任何情况下都能正确工作：
-
-#### 1. 普通模式（`OperationExecutor`）
-
-100% 使用 `action_registry` 中的动作类执行，适用于简单的顺序执行。
-所有动作都通过 `ActionBase` 子类实现，统一调用 `execute()` 方法。
-
-#### 2. 时间线模式（`ActionTimeline`）
-
-优先尝试平台方法（保证时间准确、流畅），没有平台方法时，回退到 `action_registry` 中的动作类执行。
-
-执行优先级：
-
-1. 先检查：`getattr(self._platform, action.action_name, None)`
-2. 有平台方法：使用平台方法执行（`move`/`charge_attack`/`dodge`/`turn`/`interact`/`swipe`/`click`/`press_key`）
-3. 没有平台方法：使用 `action_registry.create_action()` 执行（`run_node`）
-
-### 新增动作的完整指南
-
-#### 类型 A：新增一个依赖平台的动作（推荐）
-
-需要在两个平台（`desktop`/`adb`）中都实现：
-
-1. 在 `platforms/base.py` 中添加抽象方法
-2. 在 `platforms/desktop/desktop_platform.py` 中实现
-3. 在 `platforms/adb/adb_platform.py` 中实现
-4. 在 `actions/basic/` 中创建动作类，继承 `ActionBase`，用 `@register_action` 注册
-5. 在 `actions/basic/__init__.py` 中导入
-6. 更新 `deps/tools/custom_act/OperationRecordAction.schema.json`
-
-#### 类型 B：新增一个不依赖平台的动作（类似 `run_node`）
-
-不需要在平台中实现，直接创建动作类：
-
-1. 在 `actions/basic/` 中创建动作类，继承 `ActionBase`，用 `@register_action` 注册
-2. 在 `actions/basic/__init__.py` 中导入
-3. 更新 `deps/tools/custom_act/OperationRecordAction.schema.json`
-4. 完成！两种模式自动支持！
-
-## 平台配置
-
-### Win32 平台（键盘映射）
+### Pipeline JSON 调用
 
 ```json
 {
-  "win32": {
-    "description": "Windows平台，使用键盘模拟",
-    "key_mappings": {
-      "forward": "W",
-      "backward": "S",
-      "left": "A",
-      "right": "D",
-      "jump": "Space",
-      "interact": "F",
-      "dodge": "Shift",
-      "spiral_leap": "Q",
-      "crouch": "C"
+    "custom_action": "OperationRecordAction",
+    "custom_action_param": {
+        "operations": [
+            {"action": "move", "params": {"direction": "forward", "duration": 1.0}},
+            {"action": "jump", "params": {}}
+        ],
+        "loop_count": 1
     }
-  }
 }
 ```
 
-### ADB 平台（触摸坐标）
-
-```json
-{
-  "adb": {
-    "description": "ADB平台，使用触摸控制",
-    "touch_positions": {
-      "joystick_center": {"x": 195, "y": 551, "contact": 0},
-      "jump_button": {"x": 980, "y": 410, "contact": 2},
-      "sprint_button": {"x": 1200, "y": 360, "contact": 3},
-      "interact_button": {"x": 730, "y": 355, "contact": 4},
-      "spiral_leap_button": {"x": 1100, "y": 480, "contact": 5},
-      "view_control_center": {"x": 1000, "y": 360, "contact": 1},
-      "crouch_button": {"x": 850, "y": 450, "contact": 6},
-      "charge_attack_button": {"x": 730, "y": 355, "contact": 7}
-    },
-    "generic_contact": 8
-  }
-}
-```
-
-触点配置说明：每个动作使用独立的触点ID，支持动作重叠执行。
-
-## 时间线模式详解
-
-时间线模式支持复杂的动作序列编排：
-
-### 基本语法
-
-```json
-{
-  "operations": [
-    {
-      "action": "动作名称",
-      "params": {...},
-      "duration": 持续时间(秒),
-      "priority": 优先级(可选),
-      "overlays": [
-        {"action": "动作名称", "params": {...}, "at": 触发时间(秒)}
-      ]
-    }
-  ],
-  "loop_count": 循环次数
-}
-```
-
-### 示例：复杂动作序列
-
-```json
-{
-  "operations": [
-    {"action": "move", "params": {"direction": "left"}, "duration": 2.0},
-    {"action": "wait", "duration": 2.0},
-    {
-      "action": "move",
-      "params": {"direction": "forward"},
-      "duration": 8.0,
-      "overlays": [{"action": "dodge", "params": {"direction": "forward"}, "at": 3.0}]
-    },
-    {
-      "action": "move",
-      "params": {"direction": "left"},
-      "duration": 12.0,
-      "overlays": [{"action": "jump", "at": 5.0}]
-    }
-  ],
-  "loop_count": 1
-}
-```
-
-## 类人化效果
-
-框架内置类人化处理器，使动作更自然：
-
-### 配置项
-
-```json
-{
-  "humanization": {
-    "enabled": true,
-    "reaction_time_range_ms": [50, 200],
-    "action_delay_range_ms": [30, 100],
-    "smooth_move_enabled": true,
-    "random_offset_enabled": true,
-    "jitter_enabled": false
-  }
-}
-```
-
-### 效果说明
-
-| 效果 | 说明 |
-| :--- | :--- |
-| 反应时间 | 随机延迟 50-200ms 后执行动作 |
-| 动作间隔 | 动作之间添加 30-100ms 随机间隔 |
-| 平滑移动 | 摇杆移动使用平滑插值 |
-| 随机偏移 | 坐标添加微小随机偏移 |
-| 抖动效果 | 模拟人手抖动（可选） |
-
-## 最佳实践
-
-- 动作设计：每个动作应该专注于单一功能
-- 参数定义：在 JSON 中明确定义参数类型和默认值
-- 平台实现：确保在所有支持的平台上都有实现
-- 错误处理：在动作执行中添加适当的错误处理
-- 时间线设计：使用 overlays 实现并发动作，避免动作冲突
-
-## 平台扩展
-
-要添加新的平台支持：
-
-1. 创建平台目录：`platforms/new_platform/`
-2. 创建平台类，继承自 `PlatformBase`
-3. 实现所有抽象方法
-4. 在 `PlatformFactory` 中注册平台类型
-5. 在 `config/default.json` 中添加平台配置
-
-## 故障排除
-
-| 问题 | 解决方法 |
-| :--- | :--- |
-| 动作未注册 | 检查动作文件是否在正确目录，装饰器是否正确 |
-| 参数验证失败 | 检查 JSON 配置中的参数定义 |
-| 平台检测失败 | 确保控制器对象有正确的属性 |
-| 动作执行失败 | 检查平台实现是否完整 |
-| 触点冲突 | 确保每个动作使用独立的触点ID |
-
-## 性能优化
-
-- 动作缓存：频繁使用的动作会被缓存
-- 延迟优化：根据平台特性调整动作延迟
-- 批量执行：支持批量执行多个动作
-- 测试模式：时间线支持跳过实际等待，加速测试
-
-## 导出模块
+### Python API 调用
 
 ```python
-from OperationRecording import (
-    # 数据类型
-    Operation,
-    OperationParam,
-    # 核心组件
-    OperationExecutor,
-    OperationParser,
-    ActionTimeline,
-    TimedAction,
-    ActionPriority,
-    Humanizer,
-    humanizer,
-    # 动作基础
-    ActionBase,
-    ActionRegistry,
-    action_registry,
-    # MaaFramework 入口
-    OperationRecordAction,
-)
+from maa.context import Context
+from OperationRecording import OperationExecutor
+
+def run_operations(context: Context):
+    executor = OperationExecutor(context)
+
+    # 普通模式
+    from OperationRecording import OperationParam
+    param = OperationParam(operations=[...], loop_count=1)
+    executor.execute(param)
+
+    # 时间线模式
+    sequence = [
+        {"action": "move", "params": {"direction": "left", "duration": 1.0}, "duration": 2.0},
+        {"action": "jump", "params": {}},
+        {"action": "wait", "params": {"duration": 0.5}},
+    ]
+    executor.execute_timeline(sequence, loop_count=1)
+
+    # 统一入口（自动检测模式）
+    executor.execute_unified({"operations": [...], "loop_count": 1})
 ```
+
+## 依赖
+
+- Python 3.10+
+- MaaFramework

@@ -7,7 +7,8 @@
 """
 
 from typing import List, Dict, Any, Optional, Tuple
-from ..action_types import Operation, OperationParam
+from .types import Operation, OperationParam
+from utils.logger import logger
 
 
 class OperationParser:
@@ -93,7 +94,8 @@ class OperationParser:
 
             params = operation_data.get("params", {})
             return Operation(action=action, params=params)
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[OperationParser] 解析操作失败: {operation_data}, 错误: {e}")
             return None
 
     @staticmethod
@@ -168,31 +170,32 @@ class OperationParser:
 
             params = item.get("params", {}) or {}
             duration = float(params.get("duration", item.get("duration", 0.0)))
-            
+
             result = {
                 "action": action,
                 "duration": duration,
-                "params": params
+                "params": params,
             }
 
-            # 解析叠加动作（从 params 中获取，或保留旧格式的兼容性）
             overlays = params.get("overlays", item.get("overlays", []))
             if overlays and isinstance(overlays, list):
                 parsed_overlays = []
                 for overlay in overlays:
                     overlay_action = overlay.get("action")
                     if overlay_action:
-                        parsed_overlays.append({
-                            "action": overlay_action,
-                            "params": overlay.get("params", {}) or {},
-                            "at": float(overlay.get("at", 0.0))
-                        })
+                        parsed_overlays.append(
+                            {
+                                "action": overlay_action,
+                                "params": overlay.get("params", {}) or {},
+                                "at": float(overlay.get("at", 0.0)),
+                            }
+                        )
                 if parsed_overlays:
                     result["overlays"] = parsed_overlays
 
             return result
         except Exception as e:
-            print(f"Error parsing sequence item: {e}")
+            logger.error(f"[OperationParser] 解析序列项失败: {e}")
             return None
 
     @staticmethod
@@ -218,11 +221,9 @@ class OperationParser:
             if not isinstance(item, dict):
                 continue
 
-            # 检查顶层是否有时间线特征字段
             if "duration" in item or "overlays" in item:
                 return True
 
-            # 检查 params 中是否有时间线特征字段
             params = item.get("params", {})
             if isinstance(params, dict) and ("duration" in params or "overlays" in params):
                 return True
@@ -248,15 +249,12 @@ class OperationParser:
         3. 执行对应解析
         4. 返回结果
         """
-        # 检查是否为时间线模式
         operations_data = param.get("operations", [])
 
         if OperationParser.is_timeline_sequence(operations_data):
-            # 时间线模式
             sequence = OperationParser.parse_timeline_sequence(operations_data)
             loop_count = param.get("loop_count", 1)
             return ("timeline", {"sequence": sequence, "loop_count": loop_count})
         else:
-            # 普通模式
             operation_param = OperationParser.parse_param(param)
             return ("normal", operation_param)

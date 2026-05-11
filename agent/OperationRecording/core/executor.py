@@ -8,14 +8,16 @@
 """
 
 from typing import List, Optional, Dict, Any
+import time
+import traceback
 from maa.context import Context
-from ..action_types import Operation, OperationParam
+from .types import Operation, OperationParam
 from ..platforms import PlatformFactory
 from ..actions import action_registry
-from ..config import ConfigManager
-from .timeline_manager import ActionTimeline
-from .humanizer import humanizer
-from .operation_parser import OperationParser
+from .config import ConfigManager
+from ..effects import EffectManager
+from .timeline import ActionTimeline
+from .parser import OperationParser
 from utils.logger import logger
 
 
@@ -26,7 +28,7 @@ class OperationExecutor:
     功能说明：
     1. 初始化
        - _init_platform: 初始化平台
-       - _init_humanizer: 初始化类人化
+       - _init_effect_manager: 初始化效果管理器
 
     2. 执行
        - execute: 普通模式执行
@@ -34,7 +36,6 @@ class OperationExecutor:
        - execute_unified: 统一执行入口
 
     3. 工具
-       - _detect_controller_type: 检测控制器类型
        - get_execution_status: 获取执行状态
        - get_platform: 获取平台对象
 
@@ -57,15 +58,29 @@ class OperationExecutor:
         执行流程：
         1. 保存上下文
         2. 初始化平台
-        3. 初始化类人化
-        4. 初始化时间线
+        3. 初始化效果管理器
         """
         self._context = context
         self._platform = None
         self._config_manager = ConfigManager()
         self._timeline = None
+        self._effect_manager: Optional[EffectManager] = None
         self._init_platform()
-        self._init_humanizer()
+        self._init_effect_manager()
+
+    def _init_effect_manager(self):
+        """
+        初始化效果管理器
+
+        执行流程：
+        1. 读取 effects 配置
+        2. 通过 EffectManager.from_config 创建实例
+        """
+        effects_config = self._config_manager.get_effects_config()
+        if effects_config:
+            self._effect_manager = EffectManager.from_config(effects_config)
+        else:
+            self._effect_manager = EffectManager()
 
     def _init_platform(self):
         """
@@ -78,74 +93,8 @@ class OperationExecutor:
         """
         if self._context and hasattr(self._context, 'tasker'):
             controller = self._context.tasker.controller
-            controller_type = self._detect_controller_type(controller)
+            controller_type = PlatformFactory.detect_platform(controller)
             self._platform = PlatformFactory.create_platform(controller_type, controller)
-
-    def _init_humanizer(self):
-        """
-        初始化类人化
-
-        执行流程：
-        1. 读取配置
-        2. 应用配置到全局 humanizer
-        """
-        humanizer_config = self._config_manager.get('humanization', {})
-
-        if humanizer_config.get('enabled', True):
-            humanizer.enabled = True
-            humanizer.reaction_time_ms = (
-                humanizer_config.get('reaction_time_ms', {}).get('min', 80),
-                humanizer_config.get('reaction_time_ms', {}).get('max', 200)
-            )
-            humanizer.action_gap_ms = (
-                humanizer_config.get('action_gap_ms', {}).get('min', 30),
-                humanizer_config.get('action_gap_ms', {}).get('max', 150)
-            )
-            humanizer.acceleration_factor = humanizer_config.get('acceleration_factor', 0.15)
-            humanizer.deceleration_factor = humanizer_config.get('deceleration_factor', 0.15)
-        else:
-            humanizer.enabled = False
-
-    def _detect_controller_type(self, controller):
-        """
-        检测控制器类型
-
-        参数：
-        - controller: 控制器对象
-
-        返回：
-        - str: 平台类型（"adb" 或 "win32"）
-
-        执行流程：
-        1. 检查 controller name
-        2. 检查 controller config
-        3. 检查 controller uuid
-        4. 默认返回 adb
-        """
-        if controller is None:
-            return 'adb'
-
-        if hasattr(controller, 'name'):
-            name = str(controller.name).lower()
-            if 'adb' in name or 'android' in name:
-                return 'adb'
-            elif 'win32' in name or 'windows' in name:
-                return 'win32'
-
-        if hasattr(controller, 'config'):
-            config = controller.config
-            if isinstance(config, dict):
-                if config.get('type') == 'adb':
-                    return 'adb'
-                if 'adb_path' in config or 'adb_serial' in config:
-                    return 'adb'
-
-        if hasattr(controller, 'uuid'):
-            uuid = str(getattr(controller, 'uuid', '')).lower()
-            if 'adb' in uuid or 'emulator' in uuid:
-                return 'adb'
-
-        return 'adb'
 
     def execute(self, param: OperationParam) -> bool:
         """
@@ -160,7 +109,7 @@ class OperationExecutor:
         执行流程：
         1. 检查平台是否初始化
         2. 循环执行次数
-        3. 依次执行每个操作
+        3. 依次执行每个操作（检查停止信号）
         """
         if not self._platform:
             return False
@@ -168,10 +117,14 @@ class OperationExecutor:
         try:
             for _ in range(param.loop_count):
                 for operation in param.operations:
+                    if self._context is not None and getattr(self._context.tasker, 'stopping', False):
+                        self._platform.release_all()
+                        return False
                     if not self._execute_operation(operation):
                         return False
             return True
-        except Exception:
+        except Exception as e:
+            logger.error(f"[OperationExecutor] execute 异常: {type(e).__name__}: {e}")
             return False
 
     def execute_unified(self, param: Dict[str, Any]) -> bool:
@@ -198,13 +151,14 @@ class OperationExecutor:
             if mode == "timeline":
                 sequence = result.get("sequence", [])
                 loop_count = result.get("loop_count", 1)
-                return self.execute_timeline(sequence, loop_count, context=self._context)
+                return self.execute_timeline(sequence, loop_count)
             else:
                 return self.execute(result)
-        except Exception:
+        except Exception as e:
+            logger.error(f"[OperationExecutor] execute_unified 异常: {type(e).__name__}: {e}")
             return False
 
-    def execute_timeline(self, sequence: List[Dict[str, Any]], loop_count: int = 1, test_mode: bool = False, context: Optional[Context] = None) -> bool:
+    def execute_timeline(self, sequence: List[Dict[str, Any]], loop_count: int = 1, test_mode: bool = False) -> bool:
         """
         执行时间线序列
 
@@ -212,7 +166,6 @@ class OperationExecutor:
         - sequence: 时间线序列
         - loop_count: 循环次数，默认 1
         - test_mode: 测试模式，默认 False
-        - context: MAA 上下文对象
 
         返回：
         - bool: 是否成功
@@ -229,26 +182,27 @@ class OperationExecutor:
 
         try:
             for _ in range(loop_count):
-                self._timeline = ActionTimeline(self._platform, self._context)
+                self._timeline = ActionTimeline(self._platform, self._context, self._effect_manager)
 
-                if test_mode or not humanizer.enabled:
+                if test_mode:
                     self._timeline.set_test_mode(True)
 
                 self._timeline.from_sequence(sequence)
                 self._timeline.start()
 
                 while self._timeline.get_status()['is_running']:
-                    if context is not None and getattr(context.tasker, 'stopping', False):
+                    if self._context is not None and getattr(self._context.tasker, 'stopping', False):
                         self._platform.release_all()
                         self._timeline.stop()
                         return False
                     self._timeline.update()
-                    if not test_mode and humanizer.enabled:
-                        import time
+                    if not test_mode:
                         time.sleep(0.01)
 
             return True
-        except Exception:
+        except Exception as e:
+            logger.error(f"[OperationExecutor] execute_timeline 异常: {type(e).__name__}: {e}")
+            logger.error(f"[OperationExecutor] 堆栈信息:\n{traceback.format_exc()}")
             return False
 
     def get_execution_status(self):
@@ -261,20 +215,25 @@ class OperationExecutor:
         执行流程：
         1. 收集平台信息
         2. 收集时间线信息
-        3. 返回完整状态
+        3. 收集效果管理器信息
+        4. 返回完整状态
         """
         platform_type = "unknown"
         if self._platform is not None:
-            platform_type = getattr(self._platform, '_controller_type', 'unknown')
+            platform_type = self._platform.controller_type
 
         timeline_status = None
         if self._timeline is not None:
             timeline_status = self._timeline.get_status()
 
+        effects_enabled = False
+        if self._effect_manager is not None:
+            effects_enabled = self._effect_manager.enabled
+
         return {
             "platform_type": platform_type,
             "platform_initialized": self._platform is not None,
-            "humanizer_enabled": humanizer.enabled,
+            "effects_enabled": effects_enabled,
             "timeline_status": timeline_status
         }
 
@@ -291,7 +250,7 @@ class OperationExecutor:
         执行流程：
         1. 检查平台是否初始化
         2. 从注册表创建动作（传递 context）
-        3. 添加类人化延迟
+        3. 通过 EffectManager 应用效果（延迟 + 参数修改）
         4. 执行动作
         """
         if not self._platform:
@@ -302,14 +261,25 @@ class OperationExecutor:
             if not action:
                 return False
 
-            if humanizer.enabled:
-                humanizer.human_delay()
+            if not action.validate_params(operation.params):
+                logger.warning(f"[OperationExecutor] 参数验证失败: {operation.action}")
+                return False
 
-            result = action.execute(operation.params)
+            context = {"duration": operation.params.get("duration", 0), "is_instant": True, "is_timeline": False}
+            if self._effect_manager is not None:
+                self._effect_manager.pre_action(operation.action, context)
+                params = self._effect_manager.apply_effects(operation.action, operation.params, context)
+            else:
+                params = operation.params
+
+            result = action.execute(params)
+
+            if self._effect_manager is not None:
+                self._effect_manager.post_action(operation.action, context)
+
             return result
         except Exception as e:
             logger.error(f"[OperationExecutor] 执行异常: {type(e).__name__}: {e}")
-            import traceback
             logger.error(f"[OperationExecutor] 堆栈信息:\n{traceback.format_exc()}")
             return False
 

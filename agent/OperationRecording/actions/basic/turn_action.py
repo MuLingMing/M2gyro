@@ -7,7 +7,7 @@
 """
 
 from typing import Dict, Any
-from ..base import ActionBase
+from ..base import ActionBase, TimelineMeta
 from .. import register_action
 
 
@@ -34,15 +34,7 @@ class TurnAction(ActionBase):
     - angle: 转向角度，单位度，默认 0.0，支持 int 或 float
     """
 
-    @property
-    def name(self) -> str:
-        """
-        动作名称
-
-        返回值：
-        - str: "turn"
-        """
-        return "turn"
+    timeline_meta = TimelineMeta(has_duration=False)
 
     def execute(self, params: Dict[str, Any]) -> bool:
         """
@@ -75,5 +67,5 @@ class TurnAction(ActionBase):
         验证规则：
         1. angle 必须是 int 或 float
         """
-        angle = params.get("angle")
+        angle = params.get("angle", 0.0)
         return isinstance(angle, (int, float))

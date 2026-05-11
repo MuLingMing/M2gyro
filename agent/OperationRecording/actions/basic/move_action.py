@@ -7,7 +7,7 @@
 """
 
 from typing import Dict, Any
-from ..base import ActionBase
+from ..base import ActionBase, TimelineMeta
 from .. import register_action
 
 
@@ -40,15 +40,10 @@ class MoveAction(ActionBase):
     - duration: 持续时间，单位秒，默认 1.0，必须 >= 0
     """
 
-    @property
-    def name(self) -> str:
-        """
-        动作名称
-
-        返回值：
-        - str: "move"
-        """
-        return "move"
+    timeline_meta = TimelineMeta(
+        has_duration=True,
+        release_method="move",
+    )
 
     def execute(self, params: Dict[str, Any]) -> bool:
         """
@@ -70,6 +65,19 @@ class MoveAction(ActionBase):
         duration = params.get("duration", 1.0)
         return self._platform.move(direction, duration)
 
+    def start(self, params: Dict[str, Any]) -> bool:
+        """
+        时间线模式：按下摇杆（不松开）
+
+        参数：
+        - params: 动作参数，包含 direction
+
+        返回值：
+        - bool: 是否成功
+        """
+        direction = params.get("direction", "forward")
+        return self._platform.move(direction, 0)
+
     def validate_params(self, params: Dict[str, Any]) -> bool:
         """
         验证参数
@@ -84,8 +92,8 @@ class MoveAction(ActionBase):
         1. direction 必须在指定范围内
         2. duration 必须 >= 0
         """
-        direction = params.get("direction")
+        direction = params.get("direction", "forward")
         if direction not in ["forward", "backward", "left", "right"]:
             return False
         duration = params.get("duration", 0)
-        return duration >= 0
+        return isinstance(duration, (int, float)) and duration >= 0

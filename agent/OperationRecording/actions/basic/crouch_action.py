@@ -6,7 +6,7 @@
 """
 
 from typing import Dict, Any
-from ..base import ActionBase
+from ..base import ActionBase, TimelineMeta
 from .. import register_action
 
 
@@ -32,15 +32,10 @@ class CrouchAction(ActionBase):
     - duration: 按住按键的时间（秒），默认 0.1
     """
 
-    @property
-    def name(self) -> str:
-        """
-        动作名称
-
-        返回值：
-        - str: "crouch"
-        """
-        return "crouch"
+    timeline_meta = TimelineMeta(
+        has_duration=True,
+        release_method="crouch",
+    )
 
     def execute(self, params: Dict[str, Any]) -> bool:
         """
@@ -59,3 +54,15 @@ class CrouchAction(ActionBase):
         """
         duration = params.get("duration", 0.1)
         return self._platform.crouch(duration)
+
+    def start(self, params: Dict[str, Any]) -> bool:
+        """
+        时间线模式：按下下蹲键（不松开）
+
+        参数：
+        - params: 动作参数（未使用）
+
+        返回值：
+        - bool: 是否成功
+        """
+        return self._platform.crouch(0)

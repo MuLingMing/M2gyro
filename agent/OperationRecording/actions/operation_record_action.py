@@ -10,12 +10,13 @@ OperationRecordAction，MaaFramework Custom Action 入口点。
 """
 
 import json
+import traceback
 from typing import Optional
 from maa.context import Context
 from maa.custom_action import CustomAction
-from ..action_types import OperationParam
-from ..core.operation_executor import OperationExecutor
-from ..core.operation_parser import OperationParser
+from ..core.executor import OperationExecutor
+from ..core.parser import OperationParser
+from utils.logger import logger
 
 
 class OperationRecordAction(CustomAction):
@@ -72,7 +73,21 @@ class OperationRecordAction(CustomAction):
     10. run_node - 执行节点动作
        参数：
        - node: 节点名称（必填）
-       - blocking: 是否阻塞等待节点执行完成（可选，默认 false）
+    11. swipe - 滑动动作
+       参数：
+       - start_x: 起始X坐标（必填）
+       - start_y: 起始Y坐标（必填）
+       - end_x: 结束X坐标（必填）
+       - end_y: 结束Y坐标（必填）
+       - duration: 滑动持续时间（秒，可选，默认 0.5）
+    12. click - 点击动作
+       参数：
+       - x: X坐标（必填）
+       - y: Y坐标（必填）
+    13. press_key - 按键动作
+       参数：
+       - key: 按键名称（必填）
+       - duration: 持续时间（秒，可选，默认 0.1）
     
     叠加动作列表格式（可选，时间线模式参数）：
     - overlays: 叠加动作列表，每个包含：
@@ -113,19 +128,25 @@ class OperationRecordAction(CustomAction):
         6. 返回执行结果
         """
         try:
-            custom_action_param = json.loads(argv.custom_action_param)
+            param_str = argv.custom_action_param
+            if not param_str:
+                return False
+            custom_action_param = json.loads(param_str)
 
             self._executor = OperationExecutor(context)
 
-            OperationParser.parse_unified(custom_action_param)
+            mode, result = OperationParser.parse_unified(custom_action_param)
 
-            success = self._executor.execute_unified(custom_action_param)
-
-            return success
+            if mode == "timeline":
+                sequence = result.get("sequence", [])
+                loop_count = result.get("loop_count", 1)
+                return self._executor.execute_timeline(sequence, loop_count)
+            else:
+                return self._executor.execute(result)
 
         except json.JSONDecodeError:
             return False
         except Exception as e:
-            import traceback
-            traceback.print_exc()
+            logger.error(f"[OperationRecordAction] run 异常: {type(e).__name__}: {e}")
+            logger.error(f"[OperationRecordAction] 堆栈信息:\n{traceback.format_exc()}")
             return False

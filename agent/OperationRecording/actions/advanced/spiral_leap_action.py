@@ -6,7 +6,7 @@
 """
 
 from typing import Dict, Any
-from ..base import ActionBase
+from ..base import ActionBase, TimelineMeta
 from .. import register_action
 
 
@@ -30,15 +30,7 @@ class SpiralLeapAction(ActionBase):
     - params: 无需参数，可为空
     """
 
-    @property
-    def name(self) -> str:
-        """
-        动作名称
-
-        返回值：
-        - str: "spiral_leap"
-        """
-        return "spiral_leap"
+    timeline_meta = TimelineMeta(has_duration=False)
 
     def execute(self, params: Dict[str, Any]) -> bool:
         """

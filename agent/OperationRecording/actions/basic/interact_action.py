@@ -6,7 +6,7 @@
 """
 
 from typing import Dict, Any
-from ..base import ActionBase
+from ..base import ActionBase, TimelineMeta
 from .. import register_action
 
 
@@ -38,15 +38,7 @@ class InteractAction(ActionBase):
     - interaction_type: 交互类型，默认 "default"
     """
 
-    @property
-    def name(self) -> str:
-        """
-        动作名称
-
-        返回值：
-        - str: "interact"
-        """
-        return "interact"
+    timeline_meta = TimelineMeta(has_duration=False)
 
     def execute(self, params: Dict[str, Any]) -> bool:
         """

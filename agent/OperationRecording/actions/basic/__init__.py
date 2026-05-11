@@ -14,5 +14,21 @@ from .charge_attack_action import ChargeAttackAction
 from .crouch_action import CrouchAction
 from .wait_action import WaitAction
 from .run_node_action import RunNodeAction
+from .swipe_action import SwipeAction
+from .click_action import ClickAction
+from .press_key_action import PressKeyAction
 
-__all__ = ["MoveAction", "JumpAction", "DodgeAction", "TurnAction", "InteractAction", "ChargeAttackAction", "CrouchAction", "WaitAction", "RunNodeAction"]
+__all__ = [
+    "MoveAction",
+    "JumpAction",
+    "DodgeAction",
+    "TurnAction",
+    "InteractAction",
+    "ChargeAttackAction",
+    "CrouchAction",
+    "WaitAction",
+    "RunNodeAction",
+    "SwipeAction",
+    "ClickAction",
+    "PressKeyAction",
+]

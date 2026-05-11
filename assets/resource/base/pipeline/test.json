@@ -29,7 +29,7 @@
         },
         "action": "Click"
     },
-    "test_OperationRecordAction": {
+    "test_OperationRecordAction_turn": {
         "action": {
             "type": "Custom",
             "param": {
@@ -39,8 +39,66 @@
                         {
                             "action": "turn",
                             "params": {
-                                "angle": -30,
-                                "duration": 2
+                                "angle": -60
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "test_OperationRecordAction_move": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 5,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 2
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "test_OperationRecordAction_jump": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "jump",
+                            "params": {}
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "test_OperationRecordAction_dodge": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "dodge",
+                            "params": {
+                                "direction": "forward"
                             }
                         }
                     ]

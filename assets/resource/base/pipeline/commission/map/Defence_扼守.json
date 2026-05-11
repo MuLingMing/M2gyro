@@ -65,7 +65,7 @@
                             "action": "move",
                             "params": {
                                 "direction": "left",
-                                "duration": 3.0,
+                                "duration": 2.0,
                                 "overlays": [
                                     {
                                         "action": "dodge",
@@ -88,7 +88,7 @@
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 5.3,
+                                "duration": 5.5,
                                 "overlays": [
                                     {
                                         "action": "dodge",
@@ -101,7 +101,7 @@
                             "action": "move",
                             "params": {
                                 "direction": "left",
-                                "duration": 13.0
+                                "duration": 12.5
                             }
                         }
                     ],

@@ -7,7 +7,7 @@
 """
 
 from typing import Dict, Any
-from ..base import ActionBase
+from ..base import ActionBase, TimelineMeta
 from .. import register_action
 
 
@@ -48,15 +48,10 @@ class ChargeAttackAction(ActionBase):
     - y: Y 坐标，可选，可为 None
     """
 
-    @property
-    def name(self) -> str:
-        """
-        动作名称
-
-        返回值：
-        - str: "charge_attack"
-        """
-        return "charge_attack"
+    timeline_meta = TimelineMeta(
+        has_duration=True,
+        release_method="charge_attack",
+    )
 
     def execute(self, params: Dict[str, Any]) -> bool:
         """
@@ -79,3 +74,17 @@ class ChargeAttackAction(ActionBase):
         x = params.get("x")
         y = params.get("y")
         return self._platform.charge_attack(duration, x, y)
+
+    def start(self, params: Dict[str, Any]) -> bool:
+        """
+        时间线模式：按下蓄力（不松开）
+
+        参数：
+        - params: 动作参数，包含可选的 x, y
+
+        返回值：
+        - bool: 是否成功
+        """
+        x = params.get("x")
+        y = params.get("y")
+        return self._platform.charge_attack(0, x, y)

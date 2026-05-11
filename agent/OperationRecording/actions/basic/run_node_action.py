@@ -7,7 +7,7 @@
 """
 
 from typing import Dict, Any
-from ..base import ActionBase
+from ..base import ActionBase, TimelineMeta
 from .. import register_action
 
 
@@ -38,15 +38,14 @@ class RunNodeAction(ActionBase):
       - 指定要执行的 Pipeline 节点名称
     """
 
-    @property
-    def name(self) -> str:
-        """
-        动作名称
+    timeline_meta = TimelineMeta(has_duration=False)
 
-        返回值：
-        - str: "run_node"
-        """
-        return "run_node"
+    def __init__(self, platform):
+        super().__init__(platform)
+        self._context = None
+
+    def set_context(self, context) -> None:
+        self._context = context
 
     def execute(self, params: Dict[str, Any]) -> bool:
         """
@@ -77,10 +76,10 @@ class RunNodeAction(ActionBase):
         try:
             result = self._context.run_recognition(node_name, image=self._context.tasker.controller.post_screencap().wait().get())
 
-            if result and result.hit:
-                self._context.run_task(node_name)
+            if not result or not result.hit:
+                return False
 
-            return True
+            return self._context.run_task(node_name)
         except Exception:
             return False
         

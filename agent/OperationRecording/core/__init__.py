@@ -3,10 +3,11 @@
 OperationRecording 核心模块
 """
 
-from .operation_executor import OperationExecutor
-from .operation_parser import OperationParser
-from .timeline_manager import ActionTimeline, TimedAction, ActionPriority
-from .humanizer import Humanizer, ActionSmoother, humanizer, action_smoother
+from .executor import OperationExecutor
+from .parser import OperationParser
+from .timeline import ActionTimeline, TimedAction, ActionPriority, ActionState
+from .types import Operation, OperationParam
+from .config import ConfigManager
 
 __all__ = [
     "OperationExecutor",
@@ -14,8 +15,8 @@ __all__ = [
     "ActionTimeline",
     "TimedAction",
     "ActionPriority",
-    "Humanizer",
-    "ActionSmoother",
-    "humanizer",
-    "action_smoother",
+    "ActionState",
+    "Operation",
+    "OperationParam",
+    "ConfigManager",
 ]

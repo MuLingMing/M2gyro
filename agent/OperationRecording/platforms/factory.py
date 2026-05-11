@@ -1,89 +1,114 @@
-from typing import Optional, Dict, Type
+# -*- coding: utf-8 -*-
+"""
+平台工厂
+
+功能：
+1. 检测控制器类型
+2. 创建平台实例
+3. 从配置初始化平台
+
+平台注册通过 @register_platform 装饰器自动完成，
+不再需要硬编码 if-elif 分支。
+"""
+
+from typing import Optional
 from .base import PlatformBase
-from maa.controller import Controller
+from .registry import platform_registry
 
 
 class PlatformFactory:
-    """平台工厂类"""
-    
-    # 平台类型映射
-    _platform_classes: Dict[str, Type[PlatformBase]] = {}
-    
+    """
+    平台工厂
+
+    功能说明：
+    1. detect_platform: 检测控制器类型
+    2. create_platform: 创建平台实例
+
+    平台注册通过 @register_platform 装饰器自动完成：
+    - @register_platform("desktop") → DesktopPlatform
+    - @register_platform("adb") → AdbPlatform
+
+    使用示例：
+    >>> platform = PlatformFactory.create_platform("desktop", controller)
+    >>> platform = PlatformFactory.create_from_config(config, controller)
+    """
+
     @classmethod
-    def register_platform(cls, platform_type: str, platform_class: Type[PlatformBase]):
-        """注册平台类
-        
-        Args:
-            platform_type: 平台类型
-            platform_class: 平台类
+    def detect_platform(cls, controller) -> str:
         """
-        cls._platform_classes[platform_type] = platform_class
-    
+        检测控制器类型
+
+        参数：
+        - controller: MAA 控制器对象
+
+        返回值：
+        - str: 平台类型，"desktop" 或 "adb"
+
+        执行流程：
+        1. 尝试获取控制器名称
+        2. 尝试获取控制器配置
+        3. 根据名称或配置判断平台类型
+        4. 默认返回 "adb"
+        """
+        controller_name = getattr(controller, 'name', None)
+        controller_config = getattr(controller, 'config', None)
+
+        if controller_name:
+            name_lower = controller_name.lower()
+            if 'win32' in name_lower or 'desktop' in name_lower:
+                return "desktop"
+            elif 'adb' in name_lower or 'android' in name_lower:
+                return "adb"
+
+        if controller_config:
+            config_str = str(controller_config).lower()
+            if 'win32' in config_str or 'desktop' in config_str:
+                return "desktop"
+            elif 'adb' in config_str or 'android' in config_str:
+                return "adb"
+
+        return "adb"
+
     @classmethod
-    def create_platform(cls, platform_type: str, controller: Controller) -> Optional[PlatformBase]:
-        """创建平台实例
-        
-        Args:
-            platform_type: 平台类型
-            controller: 控制器实例
-            
-        Returns:
-            平台实例
+    def create_platform(cls, platform_type: str, controller) -> Optional[PlatformBase]:
         """
-        # 动态导入平台类
-        if platform_type == "desktop" or platform_type == "win32":
-            from .desktop import DesktopPlatform
-            cls.register_platform("desktop", DesktopPlatform)
-            cls.register_platform("win32", DesktopPlatform)
-        elif platform_type == "adb":
-            from .adb import AdbPlatform
-            cls.register_platform("adb", AdbPlatform)
-        
-        # 创建平台实例
-        platform_class = cls._platform_classes.get(platform_type)
-        if platform_class:
-            return platform_class(controller)
-        return None
-    
+        创建平台实例
+
+        参数：
+        - platform_type: 平台类型
+        - controller: MAA 控制器对象
+
+        返回值：
+        - PlatformBase | None: 平台实例，失败返回 None
+
+        执行流程：
+        1. 规范化平台类型名称
+        2. 确保平台模块已导入（触发 @register_platform）
+        3. 从注册表创建实例
+        """
+        normalized_type = platform_type.lower()
+        if normalized_type == "win32":
+            normalized_type = "desktop"
+
+        return platform_registry.create(normalized_type, controller)
+
     @classmethod
-    def detect_platform(cls, controller: Controller) -> str:
-        """检测控制器类型
-
-        Args:
-            controller: 控制器实例
-
-        Returns:
-            str: 平台类型
+    def create_from_config(cls, config: dict, controller) -> Optional[PlatformBase]:
         """
-        if controller is None:
-            return 'adb'
+        从配置创建平台实例
 
-        if hasattr(controller, 'uuid'):
-            uuid = str(getattr(controller, 'uuid', '')).lower()
-            if 'adb' in uuid or 'android' in uuid or 'emulator' in uuid:
-                return 'adb'
-            if 'win32' in uuid or 'windows' in uuid or 'desktop' in uuid:
-                return 'desktop'
+        参数：
+        - config: 配置字典，需包含 platform_type 字段
+        - controller: MAA 控制器对象
 
-        if hasattr(controller, 'info'):
-            info = str(getattr(controller, 'info', '')).lower()
-            if 'adb' in info or 'android' in info:
-                return 'adb'
-            if 'win32' in info or 'windows' in info or 'desktop' in info:
-                return 'desktop'
+        返回值：
+        - PlatformBase | None: 平台实例，失败返回 None
 
-        if hasattr(controller, 'name'):
-            name = str(getattr(controller, 'name', '')).lower()
-            if 'adb' in name or 'android' in name:
-                return 'adb'
-            if 'win32' in name or 'windows' in name or 'desktop' in name:
-                return 'desktop'
-
-        if hasattr(controller, 'config'):
-            config = str(getattr(controller, 'config', '')).lower()
-            if 'adb' in config or 'android' in config:
-                return 'adb'
-            if 'win32' in config or 'windows' in config or 'desktop' in config:
-                return 'desktop'
-
-        return 'adb'
+        执行流程：
+        1. 检测平台类型
+        2. 创建平台实例
+        """
+        platform_type = config.get("platform_type")
+        if not platform_type:
+            platform_type = cls.detect_platform(controller)
+        return cls.create_platform(platform_type, controller)

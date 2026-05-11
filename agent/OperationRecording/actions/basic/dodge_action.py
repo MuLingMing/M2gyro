@@ -7,7 +7,7 @@
 """
 
 from typing import Dict, Any
-from ..base import ActionBase
+from ..base import ActionBase, TimelineMeta
 from .. import register_action
 
 
@@ -42,15 +42,7 @@ class DodgeAction(ActionBase):
     - direction: 闪避方向，可选值为 forward/backward/left/right，可为空，无默认
     """
 
-    @property
-    def name(self) -> str:
-        """
-        动作名称
-
-        返回值：
-        - str: "dodge"
-        """
-        return "dodge"
+    timeline_meta = TimelineMeta(has_duration=False)
 
     def execute(self, params: Dict[str, Any]) -> bool:
         """

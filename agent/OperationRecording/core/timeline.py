@@ -9,14 +9,15 @@
 """
 
 import time
-import random
-from typing import List, Dict, Any, Optional, Callable, Union
-from enum import Enum
+import traceback
+from typing import List, Dict, Any, Optional, Callable, ClassVar
+from enum import Enum, IntEnum
 from utils.logger import logger
 from ..actions import action_registry
+from ..effects import EffectManager
 
 
-class ActionPriority(Enum):
+class ActionPriority(IntEnum):
     """
     动作优先级枚举
 
@@ -65,6 +66,8 @@ class TimedAction:
     - on_end: 结束回调，可选
     """
 
+    _next_id: ClassVar[int] = 0
+
     def __init__(self,
                  action_name: str,
                  params: Optional[Dict[str, Any]] = None,
@@ -74,6 +77,8 @@ class TimedAction:
                  blocking: bool = False,
                  on_start: Optional[Callable[[], None]] = None,
                  on_end: Optional[Callable[[], None]] = None):
+        TimedAction._next_id += 1
+        self.id = TimedAction._next_id
         self.action_name = action_name
         self.params: Dict[str, Any] = params if params is not None else {}
         self.start_time = start_time
@@ -153,29 +158,26 @@ class ActionTimeline:
        - is_instant: 判断瞬时动作
     """
 
-    def __init__(self, platform, context=None):
+    def __init__(self, platform, context=None, effect_manager: Optional[EffectManager] = None):
         """
         初始化时间线
 
         参数：
         - platform: 平台对象
         - context: MAA Context 对象，可选
+        - effect_manager: 效果管理器，可选
         """
         self._platform = platform
         self._context = context
+        self._effect_manager = effect_manager or EffectManager()
         self._actions: List[TimedAction] = []
-        self._active_actions: Dict[str, TimedAction] = {}
+        self._active_actions: Dict[int, TimedAction] = {}
         self._start_time = 0.0
         self._is_running = False
         self._paused = False
         self._speed = 1.0
         self._test_mode = False
         self._simulated_time = 0.0
-
-        self._human_enabled = True
-        self._min_delay_ms = 30
-        self._max_delay_ms = 150
-        self._acceleration_factor = 0.1
 
     def add_action(self, action: TimedAction):
         """
@@ -221,14 +223,11 @@ class ActionTimeline:
             params: Dict[str, Any] = item.get("params", {}) or {}
 
             if action_name == "wait":
-                # 优先使用 until 参数（等待到目标时间点）
                 until = params.get("until")
                 if isinstance(until, (int, float)):
-                    # 计算需要等待的时间
                     wait_time = max(0.0, until - current_time)
                     current_time += wait_time
                 else:
-                    # 使用 duration 参数（等待指定时长）
                     duration = params.get("duration", item.get("duration", 1.0))
                     if isinstance(duration, (int, float)):
                         current_time += duration
@@ -252,12 +251,13 @@ class ActionTimeline:
 
                 overlay_params: Dict[str, Any] = overlay.get("params", {}) or {}
                 overlay_at: float = float(overlay.get("at", 0.0))
+                overlay_duration: float = float(overlay.get("duration", 0))
 
                 self.add_action(TimedAction(
                     action_name=overlay_action,
                     params=overlay_params,
                     start_time=current_time + overlay_at,
-                    duration=0,
+                    duration=overlay_duration,
                     priority=ActionPriority.HIGH,
                     blocking=False
                 ))
@@ -278,6 +278,7 @@ class ActionTimeline:
         self._is_running = True
         self._paused = False
         self._simulated_time = 0.0
+        self._active_actions.clear()
 
         for action in self._actions:
             action.state = ActionState.SCHEDULED
@@ -306,7 +307,7 @@ class ActionTimeline:
         2. 停止所有活跃动作
         """
         self._is_running = False
-        for action_name, action in self._active_actions.items():
+        for action_id, action in self._active_actions.items():
             self._stop_action(action)
 
     def update(self):
@@ -316,8 +317,8 @@ class ActionTimeline:
         执行流程：
         1. 检查是否运行或暂停
         2. 获取已流逝时间
-        3. 检查并启动准备好的动作
-        4. 检查并停止应结束的动作
+        3. 检查并停止应结束的动作（先释放旧动作）
+        4. 检查并启动准备好的动作（再启动新动作）
         5. 检查是否完全完成
         """
         if not self._is_running or self._paused:
@@ -328,18 +329,18 @@ class ActionTimeline:
         if self._test_mode:
             self._simulated_time += 0.5
 
+        completed_actions: List[int] = []
+        for action_id, action in self._active_actions.items():
+            if action.should_end(elapsed):
+                completed_actions.append(action_id)
+
+        for action_id in completed_actions:
+            action = self._active_actions.pop(action_id)
+            self._stop_action(action)
+
         for action in self._actions:
             if action.should_start(elapsed):
                 self._start_action(action)
-
-        completed_actions: List[str] = []
-        for action_name, action in self._active_actions.items():
-            if action.should_end(elapsed):
-                completed_actions.append(action_name)
-
-        for action_name in completed_actions:
-            action = self._active_actions.pop(action_name)
-            self._stop_action(action)
 
         if self._is_complete(elapsed):
             self.stop()
@@ -376,15 +377,15 @@ class ActionTimeline:
         - action: 要执行的动作
 
         执行流程：
-        1. 检查类人化（非瞬时），添加延迟
+        1. 通过 EffectManager 执行 pre_action 回调（如添加延迟）
         2. 检查是否有阻塞性动作冲突
         3. 更新状态为运行中
         4. 执行动作
         5. 瞬时动作立即完成
         6. 调用开始回调
         """
-        if self._human_enabled and not action.is_instant():
-            self._human_delay()
+        context = {"duration": action.duration, "is_instant": action.is_instant(), "is_timeline": True}
+        self._effect_manager.pre_action(action.action_name, context)
 
         try:
             can_execute = True
@@ -397,6 +398,9 @@ class ActionTimeline:
                 action.state = ActionState.RUNNING
                 action._start_timestamp = time.time()
 
+                if action.on_start:
+                    action.on_start()
+
                 self._execute_action(action, is_start=True)
 
                 if action.is_instant():
@@ -404,12 +408,10 @@ class ActionTimeline:
                     if action.on_end:
                         action.on_end()
                 else:
-                    self._active_actions[action.action_name] = action
-
-                if action.on_start:
-                    action.on_start()
-        except Exception:
-            pass
+                    self._active_actions[action.id] = action
+        except Exception as e:
+            logger.error(f"[TimelineManager] _start_action 异常: {type(e).__name__}: {e}")
+            logger.error(f"[TimelineManager] 堆栈信息:\n{traceback.format_exc()}")
 
     def _stop_action(self, action: TimedAction):
         """
@@ -419,143 +421,67 @@ class ActionTimeline:
         - action: 要停止的动作
 
         执行流程：
-        1. 特定动作特殊处理（move/charge_attack/crouch 释放按键）
+        1. 直接通过 action_cls 获取 release_method，调用平台释放方法
         2. 标记状态为已完成
         3. 调用结束回调
         """
-        if action.action_name == "move":
-            if hasattr(self._platform, "release_joystick"):
-                self._platform.release_joystick()
-        elif action.action_name == "charge_attack":
-            if hasattr(self._platform, "release_charge_attack"):
-                self._platform.release_charge_attack()
-        elif action.action_name == "crouch":
-            if hasattr(self._platform, "release_crouch"):
-                self._platform.release_crouch()
+        action_cls = action_registry.get(action.action_name)
+        if action_cls and action_cls.timeline_meta.has_duration and action_cls.timeline_meta.release_method:
+            success = self._platform.release_action(action_cls.timeline_meta.release_method)
+            if not success:
+                logger.warning(f"[TimelineManager] release_action('{action_cls.timeline_meta.release_method}') failed for action '{action.action_name}'")
+                action.state = ActionState.CANCELLED
+                if action.on_end:
+                    action.on_end()
+                return
 
         action.state = ActionState.COMPLETED
+
+        post_context = {"duration": action.duration, "is_instant": action.is_instant(), "is_timeline": True}
+        self._effect_manager.post_action(action.action_name, post_context)
 
         if action.on_end:
             action.on_end()
 
     def _execute_action(self, action: TimedAction, is_start: bool = True):
         """
-        执行动作
+        执行单个动作
 
         参数：
         - action: 要执行的动作
         - is_start: 是否为开始阶段（结束阶段为 False）
 
         执行流程：
-        1. 应用类人化效果
-        2. 优先使用平台方法（move、charge_attack 等）
-        3. 如果没有平台方法（比如 run_node），使用 action_registry 执行
+        1. 通过 EffectManager 应用效果插件
+        2. 通过 action_registry 创建动作实例
+        3. 根据 timeline_meta 通用调度 start/execute/stop
+        4. 无注册动作：回退到平台同名方法（无参调用）
         """
-        params = self._apply_human_effects(action)
+        context = {"duration": action.duration, "is_instant": action.is_instant(), "is_timeline": True}
+        params = self._effect_manager.apply_effects(action.action_name, action.params, context)
 
         try:
-            method = getattr(self._platform, action.action_name, None)
-            
-            if method is not None:
-                # 有平台方法，使用原来的方式，保证流畅和时间准确
-                duration_factor = 0 if self._test_mode else 1
+            action_obj = action_registry.create_action(action.action_name, self._platform, self._context)
 
-                if action.action_name == "move":
-                    direction = params.get("direction", "center")
-                    duration = 0 if is_start else (action.duration if action.duration > 0 else 0.1) * duration_factor
-                    method(direction, duration)
-                elif action.action_name == "charge_attack":
-                    duration = 0 if is_start else (action.duration if action.duration > 0 else 0.5) * duration_factor
-                    x = params.get("x")
-                    y = params.get("y")
-                    method(duration, x, y)
-                elif action.action_name == "dodge":
-                    direction = params.get("direction")
-                    if direction:
-                        method(direction)
+            if action_obj is not None:
+                if is_start:
+                    if action_obj.timeline_meta.has_duration and action.duration > 0:
+                        action_obj.start(params)
                     else:
-                        method()
-                elif action.action_name == "turn":
-                    angle = params.get("angle", 0.0)
-                    method(angle)
-                elif action.action_name == "interact":
-                    interaction_type = params.get("interaction_type", "default")
-                    method(interaction_type)
-                elif action.action_name == "crouch":
-                    duration = 0 if is_start else (action.duration if action.duration > 0 else 0.1) * duration_factor
-                    method(duration)
-                elif action.action_name == "swipe":
-                    start_x = params.get("start_x", 0)
-                    start_y = params.get("start_y", 0)
-                    end_x = params.get("end_x", 0)
-                    end_y = params.get("end_y", 0)
-                    duration = (action.duration if action.duration > 0 else 0.5) * duration_factor
-                    method(start_x, start_y, end_x, end_y, duration)
-                elif action.action_name == "click":
-                    x = params.get("x", 0)
-                    y = params.get("y", 0)
-                    method(x, y)
-                elif action.action_name == "press_key":
-                    key = params.get("key", "")
-                    duration = (action.duration if action.duration > 0 else 0.1) * duration_factor
-                    method(key, duration)
+                        action_obj.execute(params)
                 else:
-                    method()
+                    if action_obj.timeline_meta.has_duration:
+                        action_obj.stop()
             else:
-                # 没有平台方法，尝试用 action_registry 执行（比如 run_node）
-                # 对于瞬时动作，只在 is_start=True 时执行一次
-                if action.is_instant() and not is_start:
+                if not is_start:
                     return
-                
-                action_obj = action_registry.create_action(action.action_name, self._platform, self._context)
-                
-                if action_obj:
-                    result = action_obj.execute(params)
+
+                logger.warning(f"动作 '{action.action_name}' 未在注册表中注册，跳过执行")
+                return
 
         except Exception as e:
             logger.error(f"[TimelineManager] _execute_action 异常: {type(e).__name__}: {e}")
-            import traceback
             logger.error(f"[TimelineManager] 堆栈信息:\n{traceback.format_exc()}")
-
-    def _apply_human_effects(self, action: TimedAction) -> Dict[str, Any]:
-        """
-        应用类人化效果
-
-        参数：
-        - action: 动作对象
-
-        返回：
-        - Dict[str, Any]: 处理后的参数
-
-        执行流程：
-        1. 复制参数
-        2. move 动作添加加速标记
-        3. jump 动作添加随机延迟
-        """
-        params = action.params.copy()
-
-        if not self._human_enabled:
-            return params
-
-        if action.action_name == "move" and action.duration > 0:
-            params['acceleration'] = True
-            params['deceleration'] = True
-
-        if action.action_name == "jump":
-            params['random_delay'] = random.uniform(0.02, 0.08)
-
-        return params
-
-    def _human_delay(self):
-        """
-        添加类人化随机延迟
-
-        执行流程：
-        1. 计算随机延迟
-        2. sleep 延迟时间
-        """
-        delay = random.uniform(self._min_delay_ms, self._max_delay_ms) / 1000.0
-        time.sleep(delay)
 
     def _is_complete(self, elapsed: float) -> bool:
         """
@@ -570,7 +496,7 @@ class ActionTimeline:
         执行流程：
         1. 无动作：已完成
         2. 任何动作未结束：未完成
-        3. 无活跃动作且超过最后一个动作结束时间：已完成
+        3. 所有动作已结束：已完成
         """
         if not self._actions:
             return True
@@ -579,12 +505,7 @@ class ActionTimeline:
             if not action.has_ended(elapsed):
                 return False
 
-        if not self._active_actions:
-            last_action = self._actions[-1]
-            if self._test_mode or elapsed >= last_action.start_time + max(last_action.duration, 0.001):
-                return True
-
-        return False
+        return True
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -602,6 +523,6 @@ class ActionTimeline:
             "is_running": self._is_running,
             "is_paused": self._paused,
             "elapsed_time": self._get_elapsed_time(),
-            "active_actions": list(self._active_actions.keys()),
+            "active_actions": [a.action_name for a in self._active_actions.values()],
             "total_actions": len(self._actions)
         }

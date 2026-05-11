@@ -59,10 +59,11 @@ class Countdown(CustomAction):
     - start_after: 计时开始后多少秒再开始判定该节点，默认0秒
     - max_reco: 最大尝试识别次数，默认true无限制，false则不识别
 
-    run 与 max_reco 交互（正交关系，max_reco 优先级更高）：
+    run 与 max_reco 交互（正交关系，任一条件满足即失效）：
     - max_reco 控制「是否参与识别」：每次尝试识别时递减，耗尽后节点不再参与识别
     - run 控制「识别成功后是否执行任务」：识别成功且执行任务时递减
-    - max_reco 耗尽 → 节点完全失效（不再识别）；run 耗尽 → 节点仍参与识别但不执行任务
+    - max_reco 耗尽 → 节点完全失效（不再识别）
+    - run 为 int 且耗尽 → 节点完全失效（不再识别也不执行）
     - run=false, max_reco=true → 仅识别不执行任务
     - run=true, max_reco=false → 跳过识别也不运行
     """
@@ -120,11 +121,21 @@ class Countdown(CustomAction):
         ]
         parsed_over = [self._parse_node(node) for node in Over]
 
+        # all_trackers_list = list(chain(interrupt_trackers, continue_trackers))
+        # logger.info(f"[Countdown] {argv.node_name} 启动 | total_time={total_time} | "
+        #              f"Interrupt={len(interrupt_trackers)} | Continue={len(continue_trackers)} | Over={len(parsed_over)}")
+        # for t in all_trackers_list:
+        #     c = t.config
+        #     logger.info(f"  [{c.name}] run={c.run}(remaining={t.run_remaining}) "
+        #                  f"interval={c.interval} delay={c.delay} start_after={c.start_after} "
+        #                  f"max_reco={c.max_reco}(remaining={t.remaining})")
+
         while True:
             current_time = time.monotonic()
             elapsed = current_time - start_time
 
             if total_time > 0 and elapsed >= total_time:
+                # logger.info(f"[Countdown] {argv.node_name} 超时 elapsed={elapsed:.1f}s >= {total_time}s")
                 break
 
             if context.tasker.stopping:
@@ -141,9 +152,11 @@ class Countdown(CustomAction):
                     total_time,
                     elapsed,
                 )
+                # logger.debug(f"[Countdown] 无需检查 elapsed={elapsed:.1f}s sleep={sleep_time:.1f}s")
                 time.sleep(sleep_time)
                 continue
 
+            # logger.info(f"[Countdown] 开始检查 elapsed={elapsed:.1f}s")
             image = context.tasker.controller.post_screencap().wait().get()
 
             for tracker in interrupt_trackers:
@@ -158,7 +171,12 @@ class Countdown(CustomAction):
                 if not tracker.should_check(current_time, elapsed):
                     continue
                 tracker.on_check(current_time)
+                # c = tracker.config
+                # logger.info(f"[Countdown] 检查 [{c.name}] run_remaining={tracker.run_remaining} remaining={tracker.remaining}")
                 self._recog_and_confirm(context, tracker, image)
+
+            current_time = time.monotonic()
+            elapsed = current_time - start_time
 
             sleep_time = self._calculate_sleep(
                 chain(interrupt_trackers, continue_trackers),
@@ -166,6 +184,7 @@ class Countdown(CustomAction):
                 total_time,
                 elapsed,
             )
+            # logger.info(f"[Countdown] 本轮结束 elapsed={elapsed:.1f}s sleep={sleep_time:.1f}s")
             time.sleep(sleep_time)
 
         if parsed_over:
@@ -246,7 +265,7 @@ class Countdown(CustomAction):
         for tracker in trackers:
             if tracker.is_exhausted:
                 continue
-            active_intervals.append(tracker.interval)
+            active_intervals.append(tracker.config.interval)
             next_checks.append(
                 max(tracker.get_next_check_time(), tracker.available_time)
             )
@@ -282,21 +301,34 @@ class Countdown(CustomAction):
         try:
             result = context.run_recognition(config.name, image=image)
             if not result or not result.hit:
+                # logger.debug(f"[Countdown] [{config.name}] 未识别到")
                 return None
 
+            # logger.info(f"[Countdown] [{config.name}] 识别命中 (score={result.hit})")
+
             if config.delay > 0:
+                # logger.info(f"[Countdown] [{config.name}] 二次确认等待 {config.delay}s")
                 time.sleep(config.delay)
                 confirm_image = context.tasker.controller.post_screencap().wait().get()
                 result = context.run_recognition(config.name, image=confirm_image)
                 if not result or not result.hit:
+                    # logger.info(f"[Countdown] [{config.name}] 二次确认失败")
                     return None
+                # logger.info(f"[Countdown] [{config.name}] 二次确认成功 (score={result.hit})")
 
             if isinstance(config.run, bool) and config.run:
+                # logger.info(f"[Countdown] [{config.name}] 执行任务 (run=True)")
                 self._run_task(context, config.name)
-            elif isinstance(config.run, int) and config.run > 0:
+            elif (
+                isinstance(config.run, int)
+                and tracker.run_remaining is not None
+                and tracker.run_remaining > 0
+            ):
+                # logger.info(f"[Countdown] [{config.name}] 执行任务 (run_remaining={tracker.run_remaining})")
                 self._run_task(context, config.name)
-                if tracker.run_remaining is not None:
-                    tracker.run_remaining -= 1
+                tracker.run_remaining -= 1
+            # else:
+            #     logger.info(f"[Countdown] [{config.name}] 跳过执行 (run={config.run}, run_remaining={tracker.run_remaining})")
 
             return result
         except Exception as e:
@@ -392,9 +424,10 @@ class _NodeTracker:
     - remaining（max_reco）：控制「是否参与识别」，每次 on_check 递减
     - run_remaining（run）：控制「识别成功后是否执行任务」，在 _recog_and_confirm 中递减
 
-    is_exhausted 仅检查 remaining（max_reco），即 max_reco 优先级更高：
+    is_exhausted 检查两个条件（任一满足即失效）：
     - remaining 耗尽 → 节点不再参与识别
-    - run_remaining 耗尽 → 节点仍参与识别，但不执行任务
+    - run 为 int 且 run_remaining 耗尽 → 节点完全失效（不再识别也不执行）
+    - run=False 时 run_remaining=0，但不触发失效（仅跳过执行）
 
     max_reco 语义：
     - True  → remaining = None（无限制识别）
@@ -415,6 +448,8 @@ class _NodeTracker:
         max_rec = config.max_reco
         if max_rec is False:
             self.remaining = 0
+        elif isinstance(max_rec, bool):
+            self.remaining = None
         elif isinstance(max_rec, int) and max_rec >= 0:
             self.remaining = max_rec
         else:
@@ -422,7 +457,7 @@ class _NodeTracker:
 
         run = config.run
         if isinstance(run, bool):
-            self.run_remaining = None
+            self.run_remaining = None if run else 0
         elif isinstance(run, int) and run >= 0:
             self.run_remaining = run
         else:
@@ -430,7 +465,12 @@ class _NodeTracker:
 
     @property
     def is_exhausted(self) -> bool:
-        return self.remaining is not None and self.remaining <= 0
+        return (self.remaining is not None and self.remaining <= 0) or (
+            isinstance(self.config.run, int)
+            and not isinstance(self.config.run, bool)
+            and self.run_remaining is not None
+            and self.run_remaining <= 0
+        )
 
     def should_check(self, current_time: float, elapsed: float) -> bool:
         if self.is_exhausted:

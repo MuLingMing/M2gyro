@@ -6,7 +6,7 @@
 """
 
 from typing import Dict, Any
-from ..base import ActionBase
+from ..base import ActionBase, TimelineMeta
 from .. import register_action
 
 
@@ -42,15 +42,7 @@ class WaitAction(ActionBase):
       - 如果当前时间 >= until，则不等待
     """
 
-    @property
-    def name(self) -> str:
-        """
-        动作名称
-
-        返回值：
-        - str: "wait"
-        """
-        return "wait"
+    timeline_meta = TimelineMeta(has_duration=False)
 
     def execute(self, params: Dict[str, Any]) -> bool:
         """

@@ -2,10 +2,24 @@
 """
 平台模块
 
-提供平台抽象基类和工厂类，支持 ADB 和 Win32 平台实现。
+支持不同的控制器类型（如 Win32、ADB）的操作映射。
+使用 @register_platform 装饰器自动注册平台实现。
 """
 
 from .base import PlatformBase
+from .keyboard import KeyboardPlatform
+from .touch import TouchPlatform
 from .factory import PlatformFactory
+from .registry import PlatformRegistry, platform_registry, register_platform
+from . import desktop
+from . import adb
 
-__all__ = ["PlatformBase", "PlatformFactory"]
+__all__ = [
+    "PlatformBase",
+    "KeyboardPlatform",
+    "TouchPlatform",
+    "PlatformFactory",
+    "PlatformRegistry",
+    "platform_registry",
+    "register_platform",
+]
