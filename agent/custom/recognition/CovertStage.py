@@ -253,7 +253,7 @@ class CovertStage(CustomRecognition):
         # logger.info(
         #     f"CovertStage: 所有区域不满足，终止任务链 checked={checked_regions}"
         # )
-        context.tasker.post_stop()
+        # context.tasker.post_stop()
         return CustomRecognition.AnalyzeResult(
             box=None,
             detail={
@@ -455,12 +455,10 @@ class CovertStage(CustomRecognition):
             if len(tab_positions) == 2:
                 self._infer_missing_tab(tab_positions)
             sorted_tabs = sorted(tab_positions.items(), key=lambda x: x[1])
-            # logger.info(f"CovertStage: 动态 Tab 位置 {tab_positions}")
+            # logger.debug(f"[CovertStage] 动态 Tab 位置 {tab_positions}")
         else:
             missing = VALID_REGIONS - set(tab_positions.keys())
-            # logger.warning(
-            #     f"CovertStage: Tab 标签识别不足 2 个（缺少 {missing}），使用降级位置"
-            # )
+            logger.warning(f"[CovertStage] Tab 标签识别不足 2 个（缺少 {missing}），使用降级位置")
             sorted_tabs = sorted(FALLBACK_TAB_X.items(), key=lambda x: x[1])
 
         counts: Dict[str, Optional[int]] = {r: None for r in VALID_REGIONS}
@@ -468,19 +466,19 @@ class CovertStage(CustomRecognition):
             r: [] for r in VALID_REGIONS
         }
         seen_names: Dict[str, set] = {r: set() for r in VALID_REGIONS}
+        held_label_items: List[Dict[str, Any]] = []
+        region_candidates: Dict[str, List[Dict[str, Any]]] = {r: [] for r in VALID_REGIONS}
 
         for item in ocr_items:
             region = self._find_nearest_region(item["box_x"], sorted_tabs)
             if region is None:
                 continue
 
-            numbers = re.findall(r"\d+", item["text"])
-            if numbers and region in VALID_REGIONS:
-                counts[region] = int(numbers[0])
-
+            text = item["text"]
+            matched_stage = False
             seen = seen_names.get(region, set())
             for expected in stage_list:
-                if expected in item["text"] and expected not in seen:
+                if expected in text and expected not in seen:
                     seen.add(expected)
                     stages_by_region[region].append(
                         {
@@ -488,11 +486,53 @@ class CovertStage(CustomRecognition):
                             "box": item["box"],
                         }
                     )
+                    matched_stage = True
                     break
 
-        # logger.debug(
-        #     f"CovertStage: 分类结果 counts={counts} stages={stages_by_region}"
-        # )
+            if not matched_stage:
+                count_match = re.search(r"持有数\s*(\d+)", text)
+                if count_match and region in VALID_REGIONS:
+                    counts[region] = int(count_match.group(1))
+                elif re.fullmatch(r"持有数", text.strip()) and region in VALID_REGIONS:
+                    held_label_items.append(
+                        {"region": region, "box_y": item["box"][1]}
+                    )
+                elif re.fullmatch(r"\d+", text.strip()) and region in VALID_REGIONS:
+                    region_candidates[region].append(
+                        {
+                            "value": int(text.strip()),
+                            "box": item["box"],
+                            "box_y": item["box"][1],
+                        }
+                    )
+
+        for label in held_label_items:
+            region = label["region"]
+            if counts[region] is not None:
+                continue
+            label_y = label["box_y"]
+            best_digit: Optional[int] = None
+            best_dist = 9999
+            for candidate in region_candidates[region]:
+                dist = abs(candidate["box_y"] - label_y)
+                if dist < best_dist:
+                    best_dist = dist
+                    best_digit = candidate["value"]
+            if best_digit is not None:
+                counts[region] = best_digit
+                logger.debug(
+                    "[CovertStage] 持有数关联: region=%s label_y=%s digit=%s dist=%s",
+                    region,
+                    label_y,
+                    best_digit,
+                    best_dist,
+                )
+
+        missing_counts = [r for r in VALID_REGIONS if counts.get(r) is None]
+        if missing_counts:
+            logger.warning("[CovertStage] 持有数读取缺失区域: %s", missing_counts)
+
+        # logger.debug("[CovertStage] 分类结果: counts=%s stages=%s", counts, stages_by_region)
         return counts, stages_by_region, is_dynamic
 
     @staticmethod

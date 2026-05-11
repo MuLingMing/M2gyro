@@ -8,6 +8,27 @@
         },
         "action": "Click"
     },
+    "test_CovertStages": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "CovertStage",
+                "custom_recognition_param": {
+                    "region_types": [
+                        "角色",
+                        "武器",
+                        "魔之楔"
+                    ],
+                    "stage_list": [
+                        "驱离",
+                        "探险",
+                        "扼守"
+                    ]
+                }
+            }
+        },
+        "action": "Click"
+    },
     "test_OperationRecordAction": {
         "action": {
             "type": "Custom",
