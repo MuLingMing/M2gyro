@@ -3,8 +3,5 @@
     "name": "预设",
     "controller": [],
     "resource": [],
-    "import": [
-        ".../interface.json"
-    ],
     "preset": []
 }

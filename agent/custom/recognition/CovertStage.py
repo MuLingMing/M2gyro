@@ -30,8 +30,9 @@
 - FALLBACK_TAB_X: 动态布局降级时使用的硬编码 Tab 中心 X 坐标
 
 返回值：
-- 正常命中: AnalyzeResult(box=关卡ROI, detail={hit, region, stage, held_count, ...})
-- 全部不满足: AnalyzeResult(box=None, detail={hit=False, terminated=True, ...}) + post_stop()
+- 类型1 命中关卡: AnalyzeResult(box=关卡ROI, detail={hit=True, region, stage, ...})
+- 类型2 页面正确但无命中: AnalyzeResult(box=[0,0,0,0], detail={hit=False, tabs_found_count=3, ...})
+- 类型3 未识别到页面: AnalyzeResult(box=None, detail={hit=False, tabs_found_count<3, ...})
 """
 
 import json
@@ -135,8 +136,9 @@ class CovertStage(CustomRecognition):
 
         返回值:
         - CustomRecognition.AnalyzeResult:
-            命中时 box=选中关卡的 ROI，detail 包含区域/关卡/持有数等信息
-            未命中时 box=None，detail 包含 terminated=True 和失败原因
+            类型1 命中关卡: box=选中关卡的 ROI，detail 包含 hit=True/区域/关卡/持有数等信息
+            类型2 页面正确但无命中: box=[0,0,0,0]，detail 包含 hit=False/tabs_found_count=3
+            类型3 未识别到页面: box=None，detail 包含 hit=False/tabs_found_count<3
 
         执行流程:
         1. 校验输入图像有效性（非空、numpy 数组、size > 0）
@@ -149,7 +151,9 @@ class CovertStage(CustomRecognition):
            a. 跳过持有数 <= 0 或无法识别的区域
            b. 跳过无命中关卡的区域
            c. 第一个满足条件的区域，按 STAGE_PRIORITY 选最优关卡并返回
-        8. 所有区域均不满足 → post_stop() 终止任务链
+        8. 所有区域均不满足 → 根据 tabs_found_count 区分：
+           a. tabs_found_count == 3（页面正确但无命中）→ 返回 box=[0,0,0,0]
+           b. tabs_found_count < 3（未识别到页面）→ 返回 box=None
         """
         image = argv.image
 
@@ -197,7 +201,7 @@ class CovertStage(CustomRecognition):
             )
 
         ocr_items = self._do_unified_ocr(context, image)
-        counts, stages, is_dynamic = self._classify_all(ocr_items, stage_list)
+        counts, stages, is_dynamic, tabs_found_count = self._classify_all(ocr_items, stage_list)
 
         checked_regions: List[Dict[str, Any]] = []
         for region in effective_regions:
@@ -250,17 +254,24 @@ class CovertStage(CustomRecognition):
                 },
             )
 
-        # logger.info(
-        #     f"CovertStage: 所有区域不满足，终止任务链 checked={checked_regions}"
-        # )
-        # context.tasker.post_stop()
+        if tabs_found_count == 3:
+            return CustomRecognition.AnalyzeResult(
+                box=[0, 0, 0, 0],
+                detail={
+                    "hit": False,
+                    "reason": "all_regions_exhausted",
+                    "checked_regions": checked_regions,
+                    "tabs_found_count": tabs_found_count,
+                },
+            )
+
         return CustomRecognition.AnalyzeResult(
             box=None,
             detail={
                 "hit": False,
-                "terminated": True,
                 "reason": "all_regions_exhausted",
                 "checked_regions": checked_regions,
+                "tabs_found_count": tabs_found_count,
             },
         )
 
@@ -421,7 +432,7 @@ class CovertStage(CustomRecognition):
         self,
         ocr_items: List[Dict[str, Any]],
         stage_list: List[str],
-    ) -> Tuple[Dict[str, Optional[int]], Dict[str, List[Dict[str, Any]]], bool]:
+    ) -> Tuple[Dict[str, Optional[int]], Dict[str, List[Dict[str, Any]]], bool, int]:
         """
         从 OCR 结果中一步完成：找 Tab → 分配区域 → 提取持有数和关卡
 
@@ -436,10 +447,11 @@ class CovertStage(CustomRecognition):
         - stage_list: 待匹配的关卡名称列表
 
         返回值:
-        - Tuple[counts, stages, is_dynamic]:
+        - Tuple[counts, stages, is_dynamic, tabs_found_count]:
             counts: {区域名: 持有数或None}
             stages: {区域名: [{name, box}, ...]}
             is_dynamic: 是否为动态检测结果
+            tabs_found_count: 实际从 OCR 中识别到的 Tab 标签数量（推断前，0~3）
         """
         tab_positions: Dict[str, int] = {}
 
@@ -449,7 +461,8 @@ class CovertStage(CustomRecognition):
                     tab_positions[label] = item["box_x"]
                     break
 
-        is_dynamic = len(tab_positions) >= 2
+        tabs_found_count = len(tab_positions)
+        is_dynamic = tabs_found_count >= 2
 
         if is_dynamic:
             if len(tab_positions) == 2:
@@ -533,7 +546,7 @@ class CovertStage(CustomRecognition):
             logger.warning("[CovertStage] 持有数读取缺失区域: %s", missing_counts)
 
         # logger.debug("[CovertStage] 分类结果: counts=%s stages=%s", counts, stages_by_region)
-        return counts, stages_by_region, is_dynamic
+        return counts, stages_by_region, is_dynamic, tabs_found_count
 
     @staticmethod
     def _find_nearest_region(

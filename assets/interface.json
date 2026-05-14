@@ -43,8 +43,7 @@
         "./resource/attach/夜航手册.interface.json",
         "./resource/attach/委托密函.interface.json",
         "./resource/attach/预设.interface.json",
-        "./resource/attach/测试.interface.json",
-        "./aaa.interface.json"
+        "./resource/attach/测试.interface.json"
     ],
     "task": [
         {

@@ -3,9 +3,6 @@
     "name": "委托密函",
     "controller": [],
     "resource": [],
-    "import": [
-        ".../interface.json"
-    ],
     "task": [
         {
             "name": "密函驱离测试",
@@ -69,27 +66,26 @@
             "label": "关卡选择",
             "description": "选择要匹配的关卡，不选则默认全部",
             "default_case": [
-                "探险",
                 "驱离",
-                "扼守"
+                "探险"
             ],
             "cases": [
-                {
-                    "name": "探险",
-                    "pipeline_override": {
-                        "密函副本选择": {
-                            "attach": {
-                                "stage_0": true
-                            }
-                        }
-                    }
-                },
                 {
                     "name": "驱离",
                     "pipeline_override": {
                         "密函副本选择": {
                             "attach": {
                                 "stage_1": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "探险",
+                    "pipeline_override": {
+                        "密函副本选择": {
+                            "attach": {
+                                "stage_0": true
                             }
                         }
                     }

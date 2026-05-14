@@ -26,10 +26,27 @@
                 }
             }
         },
-        "action": "Click",
-        "next": [
-            "密函驱离"
-        ]
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "IfElse",
+                "custom_action_param": {
+                    "true": {
+                        "items": [
+                            {
+                                "action": "Click",
+                                "param": {
+                                    "target": true
+                                }
+                            }
+                        ],
+                        "next": [
+                            "密函驱离"
+                        ]
+                    }
+                }
+            }
+        }
     },
     "委托密函页面": {
         "next": [

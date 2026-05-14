@@ -1,0 +1,653 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "./custom_act/IfElse.schema.json",
+    "if": {
+        "properties": {
+            "custom_action": {
+                "const": "IfElse"
+            }
+        },
+        "required": [
+            "custom_action"
+        ]
+    },
+    "then": {
+        "properties": {
+            "custom_action_param": {
+                "$ref": "#/definitions/IfElseParam",
+                "description": "IfElse 条件分支参数\n\n根据前序识别结果的 detail.hit 字段分支执行：hit=True 走 true 分支，hit=False 走 false 分支\n\n对象格式（带 next）：\n{\n    \"true\": {\n        \"items\": [{\"action\": \"Click\", \"param\": {\"target\": true}}],\n        \"next\": [\"NextStep1\"]\n    },\n    \"false\": {\n        \"items\": [\"HandleNoMatch\"],\n        \"next\": [\"NextStep2\"]\n    }\n}\n\n简写格式（无 next）：\n{\n    \"true\": [{\"action\": \"Click\", \"param\": {\"target\": true}}],\n    \"false\": [\"HandleNoMatch\"]\n}\n\n字段说明：\n- true: hit=True 时执行的分支\n- false: hit=False 时执行的分支\n\n分支格式：\n- 数组: 分支项列表，无 next\n- 对象: {items: [...], next: [...]}\n  - items: 分支项列表\n  - next: 分支执行完毕后依次执行的 Pipeline 节点列表\n\n分支项格式：\n- 字符串: Pipeline 节点名，通过 context.run_task() 执行\n- 字典: {\"action\": \"操作类型\", \"param\": {操作参数}}，通过 context.run_action_direct() 执行\n  action 可选值: Click, LongPress, Swipe, MultiSwipe, TouchDown, TouchMove, TouchUp, ClickKey, LongPressKey, KeyDown, KeyUp, InputText, StartApp, StopApp, StopTask, Scroll, Command, Shell, Screencap, Custom"
+            }
+        },
+        "required": [
+            "custom_action_param"
+        ]
+    },
+    "definitions": {
+        "IfElseParam": {
+            "type": "object",
+            "properties": {
+                "true": {
+                    "$ref": "#/definitions/BranchDef",
+                    "description": "hit=True 时执行的分支。可省略，省略则不执行任何操作"
+                },
+                "false": {
+                    "$ref": "#/definitions/BranchDef",
+                    "description": "hit=False 时执行的分支。可省略，省略则不执行任何操作"
+                }
+            },
+            "additionalProperties": false
+        },
+        "BranchDef": {
+            "oneOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/BranchItem"
+                    },
+                    "description": "分支项列表（简写格式，无 next）"
+                },
+                {
+                    "type": "object",
+                    "description": "分支定义（对象格式，带 next）\n\n字段：\n- items: 分支项列表\n- next: 分支执行完毕后依次执行的 Pipeline 节点列表\n\n示例：\n{\"items\": [{\"action\": \"Click\", \"param\": {\"target\": true}}], \"next\": [\"NextStep\"]}",
+                    "properties": {
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/BranchItem"
+                            },
+                            "description": "分支项列表"
+                        },
+                        "next": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ],
+                            "description": "分支执行完毕后依次执行的 Pipeline 节点列表。支持单个节点名（字符串）或节点列表（数组）"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "BranchItem": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "description": "Pipeline 节点名，通过 context.run_task() 执行"
+                },
+                {
+                    "$ref": "#/definitions/ActionDef"
+                }
+            ]
+        },
+        "ActionDef": {
+            "type": "object",
+            "description": "直接操作定义，通过 context.run_action_direct() 执行\n\n示例：\n{\"action\": \"Click\", \"param\": {\"target\": true}}\n{\"action\": \"Swipe\", \"param\": {\"begin\": true, \"end\": [true], \"duration\": [200]}}\n{\"action\": \"ClickKey\", \"param\": {\"key\": [65]}}\n{\"action\": \"Custom\", \"param\": {\"custom_action\": \"MyAction\", \"custom_action_param\": {}}}",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "enum": [
+                        "DoNothing",
+                        "Click",
+                        "LongPress",
+                        "Swipe",
+                        "MultiSwipe",
+                        "TouchDown",
+                        "TouchMove",
+                        "TouchUp",
+                        "ClickKey",
+                        "LongPressKey",
+                        "KeyDown",
+                        "KeyUp",
+                        "InputText",
+                        "StartApp",
+                        "StopApp",
+                        "StopTask",
+                        "Scroll",
+                        "Command",
+                        "Shell",
+                        "Screencap",
+                        "Custom"
+                    ],
+                    "description": "操作类型，对应 JActionType 枚举值"
+                },
+                "param": {
+                    "type": "object",
+                    "description": "操作参数，与 Pipeline JSON 中 action 参数格式一致。不同 action 类型对应不同参数字段"
+                }
+            },
+            "required": [
+                "action"
+            ],
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "action": {
+                                "const": "Click"
+                            }
+                        },
+                        "required": [
+                            "action"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "param": {
+                                "$ref": "#/definitions/ClickParam"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "action": {
+                                "const": "LongPress"
+                            }
+                        },
+                        "required": [
+                            "action"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "param": {
+                                "$ref": "#/definitions/LongPressParam"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "action": {
+                                "const": "Swipe"
+                            }
+                        },
+                        "required": [
+                            "action"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "param": {
+                                "$ref": "#/definitions/SwipeParam"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "action": {
+                                "const": "ClickKey"
+                            }
+                        },
+                        "required": [
+                            "action"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "param": {
+                                "$ref": "#/definitions/ClickKeyParam"
+                            }
+                        },
+                        "required": [
+                            "param"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "action": {
+                                "const": "LongPressKey"
+                            }
+                        },
+                        "required": [
+                            "action"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "param": {
+                                "$ref": "#/definitions/LongPressKeyParam"
+                            }
+                        },
+                        "required": [
+                            "param"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "action": {
+                                "const": "InputText"
+                            }
+                        },
+                        "required": [
+                            "action"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "param": {
+                                "$ref": "#/definitions/InputTextParam"
+                            }
+                        },
+                        "required": [
+                            "param"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "action": {
+                                "const": "StartApp"
+                            }
+                        },
+                        "required": [
+                            "action"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "param": {
+                                "$ref": "#/definitions/StartAppParam"
+                            }
+                        },
+                        "required": [
+                            "param"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "action": {
+                                "const": "StopApp"
+                            }
+                        },
+                        "required": [
+                            "action"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "param": {
+                                "$ref": "#/definitions/StopAppParam"
+                            }
+                        },
+                        "required": [
+                            "param"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "action": {
+                                "const": "Scroll"
+                            }
+                        },
+                        "required": [
+                            "action"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "param": {
+                                "$ref": "#/definitions/ScrollParam"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "action": {
+                                "const": "Custom"
+                            }
+                        },
+                        "required": [
+                            "action"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "param": {
+                                "$ref": "#/definitions/CustomActionParam"
+                            }
+                        },
+                        "required": [
+                            "param"
+                        ]
+                    }
+                }
+            ]
+        },
+        "ClickParam": {
+            "type": "object",
+            "description": "Click 操作参数\n\n字段：\n- target: 点击目标，true 表示点击识别区域中心（默认），或 [x, y, w, h] 坐标\n- target_offset: 目标偏移 [x, y, w, h]，默认 [0, 0, 0, 0]\n- contact: 触控点编号（多指触控），默认 0\n- pressure: 按压力度，默认 1\n\n示例：\n{\"target\": true}\n{\"target\": [100, 200, 50, 50], \"target_offset\": [0, 0, 0, 0]}",
+            "properties": {
+                "target": {
+                    "description": "点击目标，true 表示点击识别区域中心"
+                },
+                "target_offset": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "default": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "description": "目标偏移 [x, y, w, h]，默认 [0, 0, 0, 0]"
+                },
+                "contact": {
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0,
+                    "description": "触控点编号（多指触控），默认 0"
+                },
+                "pressure": {
+                    "type": "integer",
+                    "default": 1,
+                    "minimum": 0,
+                    "description": "按压力度，默认 1"
+                }
+            },
+            "additionalProperties": false
+        },
+        "LongPressParam": {
+            "type": "object",
+            "description": "LongPress 操作参数\n\n字段：\n- target: 长按目标，true 表示识别区域中心（默认）\n- target_offset: 目标偏移 [x, y, w, h]，默认 [0, 0, 0, 0]\n- duration: 长按时长（毫秒），默认 1000\n- contact: 触控点编号，默认 0\n- pressure: 按压力度，默认 1\n\n示例：\n{\"target\": true, \"duration\": 2000}",
+            "properties": {
+                "target": {
+                    "description": "长按目标，true 表示识别区域中心"
+                },
+                "target_offset": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "default": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "description": "目标偏移 [x, y, w, h]，默认 [0, 0, 0, 0]"
+                },
+                "duration": {
+                    "type": "integer",
+                    "default": 1000,
+                    "minimum": 0,
+                    "description": "长按时长（毫秒），默认 1000"
+                },
+                "contact": {
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0,
+                    "description": "触控点编号，默认 0"
+                },
+                "pressure": {
+                    "type": "integer",
+                    "default": 1,
+                    "minimum": 0,
+                    "description": "按压力度，默认 1"
+                }
+            },
+            "additionalProperties": false
+        },
+        "SwipeParam": {
+            "type": "object",
+            "description": "Swipe 操作参数\n\n字段：\n- begin: 起始位置，true 表示识别区域中心（默认）\n- begin_offset: 起始偏移 [x, y, w, h]，默认 [0, 0, 0, 0]\n- end: 终点位置列表，[true] 表示识别区域中心（默认）\n- end_offset: 终点偏移列表，默认 [[0, 0, 0, 0]]\n- end_hold: 终点停留时间列表（毫秒），默认 [0]\n- duration: 滑动时长列表（毫秒），默认 [200]\n- only_hover: 是否仅悬停，默认 false\n- contact: 触控点编号，默认 0\n- pressure: 按压力度，默认 1\n\n示例：\n{\"begin\": true, \"end\": [true], \"duration\": [500]}",
+            "properties": {
+                "starting": {
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0,
+                    "description": "MultiSwipe 中使用，默认 0"
+                },
+                "begin": {
+                    "description": "起始位置，true 表示识别区域中心",
+                    "default": true
+                },
+                "begin_offset": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "default": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "description": "起始偏移 [x, y, w, h]，默认 [0, 0, 0, 0]"
+                },
+                "end": {
+                    "type": "array",
+                    "description": "终点位置列表，[true] 表示识别区域中心",
+                    "default": [
+                        true
+                    ]
+                },
+                "end_offset": {
+                    "type": "array",
+                    "description": "终点偏移列表，默认 [[0, 0, 0, 0]]",
+                    "default": [
+                        [
+                            0,
+                            0,
+                            0,
+                            0
+                        ]
+                    ]
+                },
+                "end_hold": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "default": [
+                        0
+                    ],
+                    "description": "终点停留时间列表（毫秒），默认 [0]"
+                },
+                "duration": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "default": [
+                        200
+                    ],
+                    "description": "滑动时长列表（毫秒），默认 [200]"
+                },
+                "only_hover": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "是否仅悬停，默认 false"
+                },
+                "contact": {
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0,
+                    "description": "触控点编号，默认 0"
+                },
+                "pressure": {
+                    "type": "integer",
+                    "default": 1,
+                    "minimum": 0,
+                    "description": "按压力度，默认 1"
+                }
+            },
+            "additionalProperties": false
+        },
+        "ClickKeyParam": {
+            "type": "object",
+            "description": "ClickKey 操作参数\n\n字段：\n- key: 按键代码列表（必填），如 [65] 表示 A 键\n\n示例：\n{\"key\": [65]}",
+            "properties": {
+                "key": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "description": "按键代码列表（必填），如 [65] 表示 A 键"
+                }
+            },
+            "required": [
+                "key"
+            ],
+            "additionalProperties": false
+        },
+        "LongPressKeyParam": {
+            "type": "object",
+            "description": "LongPressKey 操作参数\n\n字段：\n- key: 按键代码列表（必填）\n- duration: 长按时长（毫秒），默认 1000\n\n示例：\n{\"key\": [65], \"duration\": 2000}",
+            "properties": {
+                "key": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "description": "按键代码列表（必填）"
+                },
+                "duration": {
+                    "type": "integer",
+                    "default": 1000,
+                    "minimum": 0,
+                    "description": "长按时长（毫秒），默认 1000"
+                }
+            },
+            "required": [
+                "key"
+            ],
+            "additionalProperties": false
+        },
+        "InputTextParam": {
+            "type": "object",
+            "description": "InputText 操作参数\n\n字段：\n- input_text: 输入文本（必填）\n\n示例：\n{\"input_text\": \"Hello\"}",
+            "properties": {
+                "input_text": {
+                    "type": "string",
+                    "description": "输入文本（必填）"
+                }
+            },
+            "required": [
+                "input_text"
+            ],
+            "additionalProperties": false
+        },
+        "StartAppParam": {
+            "type": "object",
+            "description": "StartApp 操作参数\n\n字段：\n- package: 应用包名（必填）\n\n示例：\n{\"package\": \"com.example.app\"}",
+            "properties": {
+                "package": {
+                    "type": "string",
+                    "description": "应用包名（必填）"
+                }
+            },
+            "required": [
+                "package"
+            ],
+            "additionalProperties": false
+        },
+        "StopAppParam": {
+            "type": "object",
+            "description": "StopApp 操作参数\n\n字段：\n- package: 应用包名（必填）\n\n示例：\n{\"package\": \"com.example.app\"}",
+            "properties": {
+                "package": {
+                    "type": "string",
+                    "description": "应用包名（必填）"
+                }
+            },
+            "required": [
+                "package"
+            ],
+            "additionalProperties": false
+        },
+        "ScrollParam": {
+            "type": "object",
+            "description": "Scroll 操作参数\n\n字段：\n- target: 滚动目标，true 表示识别区域中心（默认）\n- target_offset: 目标偏移 [x, y, w, h]，默认 [0, 0, 0, 0]\n- dx: 水平滚动距离，默认 0\n- dy: 垂直滚动距离，默认 0\n\n示例：\n{\"target\": true, \"dy\": 100}",
+            "properties": {
+                "target": {
+                    "description": "滚动目标，true 表示识别区域中心",
+                    "default": true
+                },
+                "target_offset": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "default": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "description": "目标偏移 [x, y, w, h]，默认 [0, 0, 0, 0]"
+                },
+                "dx": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "水平滚动距离，默认 0"
+                },
+                "dy": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "垂直滚动距离，默认 0"
+                }
+            },
+            "additionalProperties": false
+        },
+        "CustomActionParam": {
+            "type": "object",
+            "description": "Custom 操作参数\n\n字段：\n- custom_action: 自定义动作名（必填）\n- target: 目标，true 表示识别区域中心（默认）\n- custom_action_param: 自定义动作参数\n- target_offset: 目标偏移 [x, y, w, h]，默认 [0, 0, 0, 0]\n\n示例：\n{\"custom_action\": \"MyAction\", \"custom_action_param\": {}}",
+            "properties": {
+                "custom_action": {
+                    "type": "string",
+                    "description": "自定义动作名（必填）"
+                },
+                "target": {
+                    "description": "目标，true 表示识别区域中心",
+                    "default": true
+                },
+                "custom_action_param": {
+                    "description": "自定义动作参数"
+                },
+                "target_offset": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "default": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "description": "目标偏移 [x, y, w, h]，默认 [0, 0, 0, 0]"
+                }
+            },
+            "required": [
+                "custom_action"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

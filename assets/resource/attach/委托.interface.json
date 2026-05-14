@@ -3,9 +3,6 @@
     "name": "委托",
     "controller": [],
     "resource": [],
-    "import": [
-        ".../interface.json"
-    ],
     "task": [
         {
             "name": "角色经验",

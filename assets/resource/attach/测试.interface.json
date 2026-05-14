@@ -4,9 +4,6 @@
     "interface_version": 2,
     "controller": [],
     "resource": [],
-    "import": [
-        ".../interface.json"
-    ],
     "preset": [
         {
             "name": "1",
