@@ -63,7 +63,8 @@
                                         "name": "扼守未抵达目的地",
                                         "run": true,
                                         "interval": 2,
-                                        "start_after": 10
+                                        "start_after": 10,
+                                        "max_reco": 1
                                     }
                                 ]
                             }
@@ -111,7 +112,8 @@
                                         "name": "扼守未抵达目的地",
                                         "run": true,
                                         "interval": 2,
-                                        "start_after": 10
+                                        "start_after": 10,
+                                        "max_reco": 1
                                     }
                                 ]
                             }
@@ -172,7 +174,8 @@
                                         "name": "扼守未抵达目的地",
                                         "run": true,
                                         "interval": 2,
-                                        "start_after": 10
+                                        "start_after": 10,
+                                        "max_reco": 1
                                     }
                                 ]
                             }
