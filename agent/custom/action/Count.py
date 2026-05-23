@@ -238,12 +238,12 @@ class Count(CustomAction):
         - bool: 是否需要输出
 
         输出规则:
-        - 每 50 次计数输出一次
+        - 每 10 次计数输出一次
         - 第 1 次和第 10 次也会输出
         """
         if count <= 0:  # 非正整数不输出
             return False
-        return count % 50 == 0 or count == 1 or count == 10
+        return count % 10 == 0 or count == 1 or count == 10
 
         # # 计算count的数量级（科学计数法10^n）：如count=5→1，count=50→10，count=500→100
         # count_str = str(count)
