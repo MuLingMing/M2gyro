@@ -12,7 +12,8 @@
                 "夜航手册等级选择",
                 "单次倍率",
                 "超时时间",
-                "倍率书副本次数"
+                "倍率书副本次数",
+                "倍率书副本次数播报"
             ]
         }
     ],
@@ -64,7 +65,7 @@
                                         "run": true,
                                         "interval": 2,
                                         "start_after": 10,
-                                        "max_reco": 1
+                                        "max_reco": 5
                                     }
                                 ]
                             }
@@ -113,7 +114,7 @@
                                         "run": true,
                                         "interval": 2,
                                         "start_after": 10,
-                                        "max_reco": 1
+                                        "max_reco": 5
                                     }
                                 ]
                             }
@@ -175,7 +176,7 @@
                                         "run": true,
                                         "interval": 2,
                                         "start_after": 10,
-                                        "max_reco": 1
+                                        "max_reco": 5
                                     }
                                 ]
                             }

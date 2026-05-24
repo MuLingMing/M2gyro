@@ -101,7 +101,13 @@
                             "action": "move",
                             "params": {
                                 "direction": "left",
-                                "duration": 12.5
+                                "duration": 12.5,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 1.0
+                                    }
+                                ]
                             }
                         }
                     ],

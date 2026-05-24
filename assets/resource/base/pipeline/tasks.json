@@ -25,7 +25,7 @@
             "param": {
                 "custom_action": "Count",
                 "custom_action_param": {
-                    "logger": true,
+                    "logger_count": true,
                     "count": 0,
                     "target_count": 0,
                     "else_node": [

@@ -69,7 +69,8 @@
             "option": [
                 "单次倍率",
                 "超时时间",
-                "倍率书副本次数"
+                "倍率书副本次数",
+                "倍率书副本次数播报"
             ]
         }
     ],
@@ -89,6 +90,25 @@
                 "委托完成次数": {
                     "attach": {
                         "target_count": "{target_count}"
+                    }
+                }
+            }
+        },
+        "倍率书副本次数播报": {
+            "type": "input",
+            "inputs": [
+                {
+                    "name": "logger_count",
+                    "label": "副本次数播报",
+                    "description": "请输入播报间隔，默认为10，即每十次播报一次副本次数。",
+                    "default": "10",
+                    "pipeline_type": "int"
+                }
+            ],
+            "pipeline_override": {
+                "委托完成次数": {
+                    "attach": {
+                        "logger_count": "{logger_count}"
                     }
                 }
             }

@@ -38,7 +38,7 @@ class Count(CustomAction):
         "next_node": ["node1", "node2"],
         "else_node": ["node3"],
         "reset_node": ["node4"],
-        "logger": False
+        "logger_count": False
     }
 
     字段说明：
@@ -55,7 +55,7 @@ class Count(CustomAction):
     - reset_node: 将指定节点的 count 重置为 0
       - 支持多个节点
       - 可以为空
-    - logger: 是否输出运行次数，默认 False
+    - logger_count: 是否输出运行次数或按倍数输出运行次数，默认 False
 
     备注：
     - target_count=0 时，始终执行 else_node
@@ -113,7 +113,7 @@ class Count(CustomAction):
                     "next_node": (str, list),
                     "else_node": (str, list),
                     "reset_node": (str, list),
-                    "logger": bool,
+                    "logger_count": (bool, int),
                 }
 
                 params = ParamMerger.merge(
@@ -127,7 +127,7 @@ class Count(CustomAction):
         next_node = params.get("next_node", [])
         else_node = params.get("else_node", [])
         reset_node = params.get("reset_node", [])
-        logger_enable = params.get("logger", False)
+        logger_count = params.get("logger_count", False)
 
         # 重设reset_node的count为0
         if reset_node:
@@ -142,8 +142,8 @@ class Count(CustomAction):
             )
 
             # 运行播报
-            if logger_enable:
-                if self._magnitude(current_count):
+            if logger_count:
+                if self._magnitude(count=current_count, logger_count=logger_count):
                     if target_count == 0:
                         logger.info(f"当前运行次数为{current_count}, 无限循环中...")
                     else:
@@ -157,7 +157,7 @@ class Count(CustomAction):
             self._reset_nodes(context=context, nodes=argv.node_name, reset_count=0)
 
             # 运行播报
-            if logger_enable:
+            if logger_count:
                 logger.info(f"{argv.node_name}已达到目标次数{target_count}")
             self._run_nodes(context, next_node)
 
@@ -227,22 +227,28 @@ class Count(CustomAction):
             # )
             # print(f"重设节点{node}内容检查为{node_custom_action_param_check}")
 
-    def _magnitude(self, count: int) -> bool:
+    def _magnitude(self, count: int, logger_count: int = 10) -> bool:
         """
         判断是否需要输出运行次数
 
         参数:
         - count: 当前计数
+        - logger_count: 目标计数，False表示不输出，其他值表示按该次数的倍数输出
 
         返回值:
         - bool: 是否需要输出
 
         输出规则:
-        - 每 10 次计数输出一次
-        - 第 1 次和第 10 次也会输出
+        - 如果 logger_count 为 False，不输出
+        - 如果 logger_count 为整数，每 logger_count 次计数输出一次
+        - 第 1 次和第 logger_count 次也会输出
         """
         if count <= 0:  # 非正整数不输出
             return False
+        if logger_count <= 0 or logger_count == False:  # 无限循环不输出
+            return False
+        elif isinstance(logger_count, int):  # 每logger_count次输出一次
+            return count % logger_count == 0 or count == 1 or count == logger_count
         return count % 10 == 0 or count == 1 or count == 10
 
         # # 计算count的数量级（科学计数法10^n）：如count=5→1，count=50→10，count=500→100
