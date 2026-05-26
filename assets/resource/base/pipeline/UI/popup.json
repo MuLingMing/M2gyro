@@ -55,7 +55,11 @@
                 ]
             }
         },
-        "action": "Click"
+        "action": "Click",
+        "next": [
+            "弹窗开始挑战",
+            "空"
+        ]
     },
     "弹窗确认选择": {
         "recognition": {
@@ -72,7 +76,11 @@
                 ]
             }
         },
-        "action": "Click"
+        "action": "Click",
+        "next": [
+            "弹窗确认选择",
+            "空"
+        ]
     },
     "弹窗取消": {
         //弹窗取消文字：放弃、取消
@@ -88,7 +96,11 @@
                 ]
             }
         },
-        "action": "Click"
+        "action": "Click",
+        "next": [
+            "弹窗取消",
+            "空"
+        ]
     },
     "公告关闭": {
         "recognition": {
