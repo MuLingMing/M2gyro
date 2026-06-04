@@ -1,7 +1,6 @@
 {
-    "name": "测试",
-    "label": "test",
     "interface_version": 2,
+    "name": "测试",
     "controller": [],
     "resource": [],
     "task": [
