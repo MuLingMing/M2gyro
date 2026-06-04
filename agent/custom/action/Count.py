@@ -247,6 +247,8 @@ class Count(CustomAction):
             return False
         if logger_count <= 0 or logger_count == False:  # 无限循环不输出
             return False
+        elif isinstance(logger_count, bool) and logger_count:  # True表示默认输出10次
+            return count % 10 == 0 or count == 1 or count == 10
         elif isinstance(logger_count, int):  # 每logger_count次输出一次
             return count % logger_count == 0 or count == 1 or count == logger_count
         return count % 10 == 0 or count == 1 or count == 10
