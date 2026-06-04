@@ -116,20 +116,102 @@
             }
         },
         "next": [
-            "挂机战斗"
+            "扼守战斗"
         ]
     },
-    "夜航手册75扼守-羽翼1": {
-        "action": "Click"
+    "夜航手册羽翼扼守-守护.*?应天侍": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "扼守"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    650
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]委托完成次数",
+            "[JumpBack]羽翼扼守-守护.*?应天侍-复仇.*?萼蚀跑图",
+            "[JumpBack]倍率选择",
+            "[JumpBack]确认选择"
+        ]
     },
-    "夜航手册75扼守-羽翼2": {
-        "action": "Click"
+    "夜航手册羽翼扼守-复仇.*?萼蚀": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "扼守"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    650
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]委托完成次数",
+            "[JumpBack]羽翼扼守-守护.*?应天侍-复仇.*?萼蚀跑图",
+            "[JumpBack]倍率选择",
+            "[JumpBack]确认选择"
+        ]
     },
-    "夜航手册80扼守-羽翼1": {
-        "action": "Click"
-    },
-    "夜航手册80扼守-羽翼2": {
-        "action": "Click"
+    "羽翼扼守-守护.*?应天侍-复仇.*?萼蚀跑图": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "前往目标点"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    500
+                ]
+            }
+        },
+        //平台到达目标点
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 5.0,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "loop_count": 1
+                }
+            }
+        },
+        "next": [
+            "扼守战斗无复位"
+        ]
     },
     "扼守未抵达目的地": {
         "recognition": {
@@ -149,5 +231,115 @@
         "next": [
             "局内放弃委托"
         ]
+    },
+    "扼守战斗": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "副本/副本退出/离开副本/"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    100,
+                    75
+                ]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "Countdown",
+                "custom_action_param": {
+                    "total_time": 120,
+                    "Interrupt": [
+                        {
+                            "name": "确认选择",
+                            "run": false,
+                            "interval": 2
+                        },
+                        {
+                            "name": "扼守未抵达目的地",
+                            "run": true,
+                            "interval": 2,
+                            "start_after": 10,
+                            "max_reco": 5
+                        }
+                    ],
+                    "Continue": [
+                        "局内继续游戏",
+                        {
+                            "name": "局内复位",
+                            "run": 1
+                        },
+                        {
+                            "name": "释放技能E",
+                            "interval": 3,
+                            "delay": 2
+                        },
+                        {
+                            "name": "释放状态Q",
+                            "interval": 3,
+                            "delay": 2
+                        }
+                    ],
+                    "Over": "放弃委托"
+                }
+            }
+        }
+    },
+    "扼守战斗无复位": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "副本/副本退出/离开副本/"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    100,
+                    75
+                ]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "Countdown",
+                "custom_action_param": {
+                    "total_time": 120,
+                    "Interrupt": [
+                        {
+                            "name": "确认选择",
+                            "run": false,
+                            "interval": 2
+                        },
+                        {
+                            "name": "扼守未抵达目的地",
+                            "run": true,
+                            "interval": 2,
+                            "start_after": 10,
+                            "max_reco": 5
+                        }
+                    ],
+                    "Continue": [
+                        "局内继续游戏",
+                        {
+                            "name": "释放技能E",
+                            "interval": 3,
+                            "delay": 2
+                        },
+                        {
+                            "name": "释放状态Q",
+                            "interval": 3,
+                            "delay": 2
+                        }
+                    ],
+                    "Over": "放弃委托"
+                }
+            }
+        }
     }
 }

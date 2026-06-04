@@ -5,7 +5,7 @@
     "properties": {
         "custom_recognition": {
             "type": "string",
-            "description": "识别名\n\n支持的自定义识别：\n\n1. RewardSelector - 奖励选择识别，识别并选择指定的奖励选项"
+            "description": "识别名\n\n支持的自定义识别：\n\n1. RewardSelector - 奖励选择识别，识别并选择指定的奖励选项\n\n2. CovertStage - 委托密函关卡选择识别，按区域和优先级选取最优关卡\n\n3. PathTargetReco - 寻路目标识别，识别目的地标志并执行选择策略返回最优目标"
         },
         "custom_recognition_param": {
             "type": "object"
@@ -14,6 +14,9 @@
     "allOf": [
         {
             "$ref": "./custom_reco/RewardSelector.schema.json"
+        },
+        {
+            "$ref": "./custom_reco/PathTargetReco.schema.json"
         }
     ]
 }
