@@ -191,7 +191,7 @@
     },
     "夜航手册内容向上滑动": {
         //夜航手册内容向上滑动，override：next:[副本类型]
-        "post_wait_freezes": 200,
+        "post_wait_freezes": 300,
         "recognition": {
             "type": "OCR",
             "param": {

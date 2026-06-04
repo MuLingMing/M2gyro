@@ -1,5 +1,7 @@
 # M2gyro AI Agent 编码指南
 
+要求要积极使用合适的规则、智能体和skill
+
 ## 项目概览
 
 M2gyro 是基于 [MaaFramework](https://github.com/MaaXYZ/MaaFramework) 开发的游戏自动化工具。
@@ -102,6 +104,7 @@ timeline_meta = TimelineMeta(has_duration=False)
 ```
 
 调度规则：
+
 - `has_duration=True` + `duration > 0`：`start(params)` → 等待 → `release_action(release_method)`
 - `has_duration=True` + `duration = 0`：仅 `start(params)`（按下不释放）
 - `has_duration=False`：`execute(params)`（瞬时完成）
@@ -131,6 +134,7 @@ timeline_meta = TimelineMeta(has_duration=False)
 - **配置驱动**：`default.json` 的 `effects.plugins` 节点定义各插件配置。
 
 新增效果插件流程：
+
 1. 创建效果类文件（`effects/builtin/my_effect.py`）
 2. 使用 `@register_effect("my_effect")` 注册
 3. 在 `effects/builtin/__init__.py` 中导入触发注册

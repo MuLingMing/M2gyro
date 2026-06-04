@@ -51,27 +51,6 @@
             "default_check": true,
             "entry": "启动游戏",
             "description": "必选用于启动游戏"
-        },
-        {
-            "name": "驱离测试",
-            "entry": "驱离",
-            "description": "测试用",
-            "option": [
-                "单次倍率",
-                "超时时间",
-                "倍率书副本次数"
-            ]
-        },
-        {
-            "name": "测试",
-            "entry": "test",
-            "description": "测试用",
-            "option": [
-                "单次倍率",
-                "超时时间",
-                "倍率书副本次数",
-                "倍率书副本次数播报"
-            ]
         }
     ],
     "option": {
