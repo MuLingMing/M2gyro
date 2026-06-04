@@ -119,7 +119,7 @@
             "扼守战斗"
         ]
     },
-    "夜航手册羽翼扼守-守护.*?应天侍": {
+    "夜航手册羽翼扼守-直跑50m": {
         "recognition": {
             "type": "OCR",
             "param": {
@@ -136,34 +136,12 @@
         },
         "next": [
             "[JumpBack]委托完成次数",
-            "[JumpBack]羽翼扼守-守护.*?应天侍-复仇.*?萼蚀跑图",
+            "[JumpBack]羽翼扼守-直跑50m跑图",
             "[JumpBack]倍率选择",
             "[JumpBack]确认选择"
         ]
     },
-    "夜航手册羽翼扼守-复仇.*?萼蚀": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "扼守"
-                ],
-                "roi": [
-                    0,
-                    0,
-                    350,
-                    650
-                ]
-            }
-        },
-        "next": [
-            "[JumpBack]委托完成次数",
-            "[JumpBack]羽翼扼守-守护.*?应天侍-复仇.*?萼蚀跑图",
-            "[JumpBack]倍率选择",
-            "[JumpBack]确认选择"
-        ]
-    },
-    "羽翼扼守-守护.*?应天侍-复仇.*?萼蚀跑图": {
+    "羽翼扼守-直跑50m跑图": {
         "recognition": {
             "type": "OCR",
             "param": {
@@ -202,6 +180,183 @@
                                         "at": 0.5
                                     }
                                 ]
+                            }
+                        }
+                    ],
+                    "loop_count": 1
+                }
+            }
+        },
+        "next": [
+            "扼守战斗无复位"
+        ]
+    },
+    "夜航手册羽翼扼守-直跑70m": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "扼守"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    650
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]委托完成次数",
+            "[JumpBack]羽翼扼守-直跑70m跑图",
+            "[JumpBack]倍率选择",
+            "[JumpBack]确认选择"
+        ]
+    },
+    "羽翼扼守-直跑70m跑图": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "前往目标点"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    500
+                ]
+            }
+        },
+        //平台到达目标点
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 7.3,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "loop_count": 1
+                }
+            }
+        },
+        "next": [
+            "扼守战斗无复位"
+        ]
+    },
+    "夜航手册羽翼扼守-爆破.*?应天侍-猩红.*?萼蚀": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "扼守"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    650
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]委托完成次数",
+            "[JumpBack]羽翼扼守-爆破.*?应天侍-猩红.*?萼蚀跑图",
+            "[JumpBack]倍率选择",
+            "[JumpBack]确认选择"
+        ]
+    },
+    "羽翼扼守-爆破.*?应天侍-猩红.*?萼蚀跑图": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "前往目标点"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    500
+                ]
+            }
+        },
+        //平台到达目标点
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 4.0,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 1.0,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 3.5,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 1.0
                             }
                         }
                     ],
