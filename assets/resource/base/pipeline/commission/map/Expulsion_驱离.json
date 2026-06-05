@@ -43,7 +43,8 @@
             "[JumpBack]确认选择",
             "[JumpBack]选择密函",
             "[JumpBack]挂机战斗",
-            "[JumpBack]委托报酬选择"
+            "[JumpBack]委托报酬选择",
+            "[JumpBack]弹窗关闭匹配识别"
         ]
     }
 }
