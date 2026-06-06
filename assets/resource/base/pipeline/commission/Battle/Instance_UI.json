@@ -290,6 +290,22 @@
                 ]
             }
         },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "Count",
+                "custom_action_param": {
+                    "count": 1,
+                    "target_count": 0,
+                    "else_node": [
+                        "无尽继续挑战",
+                        "倍率选择0加成"
+                    ],
+                    "next_node": [],
+                    "logger_count": 10
+                }
+            }
+        },
         "next": [
             "无尽波次撤离",
             "无尽继续挑战"
@@ -346,9 +362,39 @@
                 ]
             }
         },
-        "action": "Click",
+        "action": "Click"
+    },
+    // 倍率选择0加成
+    "倍率选择0加成": {
+        // 不选择倍率书，选择0加成
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "委托手册/0加成_图标.png"
+                ],
+                "roi": [
+                    165,
+                    110,
+                    950,
+                    480
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target_offset": [
+                    0,
+                    70,
+                    0,
+                    0
+                ]
+            }
+        },
         "next": [
-            "结束当前任务"
+            "弹窗确定",
+            "空"
         ]
     }
 }

@@ -1,14 +1,81 @@
 {
     "扼守": {},
-    "扼守50": {
+    "皎皎信物扼守50": {
         //皎皎币
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "扼守"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    650
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]委托完成次数",
+            "[JumpBack]皎皎信物扼守50-直跑70m跑图",
+            "[JumpBack]倍率选择0加成",
+            "[JumpBack]确认选择"
+        ]
     },
-    "扼守65": {
-        //夜航手册
+    "皎皎信物扼守50-直跑70m跑图": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "前往目标点"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    500
+                ]
+            }
+        },
+        //平台到达目标点
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 7.3,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "loop_count": 1
+                }
+            }
+        },
+        "next": [
+            "退出委托仅识别",
+            "[JumpBack]无尽行动抉择",
+            "[JumpBack]扼守战斗波次"
+        ]
     },
-    "扼守80": {
-        //皎皎币
-    },
+    "皎皎信物扼守80": {},
     "夜航手册65扼守": {
         //夜航手册65扼守
         //扼守副本页面
@@ -34,6 +101,7 @@
         ]
     },
     "夜航手册65扼守跑图": {
+        //向左2s，向前5.5s，向左12.5s，复位
         "recognition": {
             "type": "OCR",
             "param": {
@@ -109,6 +177,12 @@
                                     }
                                 ]
                             }
+                        },
+                        {
+                            "action": "run_node",
+                            "params": {
+                                "node": "局内复位"
+                            }
                         }
                     ],
                     "loop_count": 1
@@ -116,7 +190,7 @@
             }
         },
         "next": [
-            "扼守战斗"
+            "扼守战斗单次"
         ]
     },
     "夜航手册羽翼扼守-直跑50m": {
@@ -188,7 +262,7 @@
             }
         },
         "next": [
-            "扼守战斗无复位"
+            "扼守战斗单次"
         ]
     },
     "夜航手册羽翼扼守-直跑70m": {
@@ -260,7 +334,7 @@
             }
         },
         "next": [
-            "扼守战斗无复位"
+            "扼守战斗单次"
         ]
     },
     "夜航手册羽翼扼守-爆破.*?应天侍-猩红.*?萼蚀": {
@@ -366,7 +440,7 @@
             }
         },
         "next": [
-            "扼守战斗无复位"
+            "扼守战斗单次"
         ]
     },
     "扼守未抵达目的地": {
@@ -388,7 +462,7 @@
             "局内放弃委托"
         ]
     },
-    "扼守战斗": {
+    "扼守战斗单次": {
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -426,10 +500,6 @@
                     "Continue": [
                         "局内继续游戏",
                         {
-                            "name": "局内复位",
-                            "run": 1
-                        },
-                        {
                             "name": "释放技能E",
                             "interval": 3,
                             "delay": 2
@@ -445,7 +515,8 @@
             }
         }
     },
-    "扼守战斗无复位": {
+    "扼守战斗波次": {
+        //扼守波次战斗
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -467,6 +538,11 @@
                 "custom_action_param": {
                     "total_time": 120,
                     "Interrupt": [
+                        {
+                            "name": "无尽行动抉择",
+                            "run": false,
+                            "interval": 2
+                        },
                         {
                             "name": "确认选择",
                             "run": false,

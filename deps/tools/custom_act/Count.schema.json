@@ -15,7 +15,7 @@
         "properties": {
             "custom_action_param": {
                 "$ref": "#/definitions/CountParam",
-                "description": "Count 参数\n\n示例：\n{\n    \"count\": 0,\n    \"target_count\": 3,\n    \"next_node\": [\"node_name\"],\n    \"else_node\": [\"node_name\"],\n    \"reset_node\": [\"node_name\"],\n    \"logger_count\": false\n}\n\n字段说明：\n- count: 当前次数，默认 0，每次执行后自动更新\n- target_count: 目标次数，默认 0，为 0 时始终执行 else_node\n- next_node: 达到目标次数后执行的节点\n- else_node: 未达到目标次数时执行的节点\n- reset_node: 将指定节点的 count 重置为 0\n- logger_count: 运行次数输出模式，默认 false。false 不输出，true 每 10 次输出一次，整数 N 每 N 次输出一次"
+                "description": "Count 参数\n\n示例：\n{\n    \"count\": 0,\n    \"target_count\": 3,\n    \"next_node\": [\"node_name\"],\n    \"else_node\": [\"node_name\"],\n    \"reset_node\": [\"node_name\"],\n    \"logger_count\": false,\n    \"log_else\": \"当前运行次数为{count}, 目标次数为{target_count}\",\n    \"log_next\": \"{node_name}已达到目标次数{target_count}\"\n}\n\n字段说明：\n- count: 当前次数，默认 0，每次执行后自动更新\n- target_count: 目标次数，默认 0，为 0 时始终执行 else_node\n- next_node: 达到目标次数后执行的节点\n- else_node: 未达到目标次数时执行的节点\n- reset_node: 将指定节点的 count 重置为 0\n- logger_count: 运行次数输出模式，默认 false。false 不输出，true 每 10 次输出一次，整数 N 每 N 次输出一次\n- log_else: 未达标时的自定义日志模板，支持占位符 {count}, {target_count}, {node_name}, {next_node}, {else_node}\n- log_next: 已达标时的自定义日志模板，支持占位符 {count}, {target_count}, {node_name}, {next_node}, {else_node}"
             }
         },
         "required": [
@@ -92,6 +92,14 @@
                     ],
                     "default": false,
                     "description": "运行次数输出模式，默认 false\n\n- false: 不输出运行次数\n- true: 每 10 次输出一次（默认模式）\n- 整数 N: 每 N 次输出一次（第 1 次和第 N 次也会输出）"
+                },
+                "log_else": {
+                    "type": "string",
+                    "description": "未达标时的自定义日志模板，支持占位符\n\n可用占位符：\n- {count}: 当前运行次数\n- {target_count}: 目标次数\n- {node_name}: 当前节点名称\n- {next_node}: 达标后执行的节点\n- {else_node}: 未达标时执行的节点\n\n仅在 logger_count 为 True 时生效"
+                },
+                "log_next": {
+                    "type": "string",
+                    "description": "已达标时的自定义日志模板，支持占位符\n\n可用占位符：\n- {count}: 当前运行次数\n- {target_count}: 目标次数\n- {node_name}: 当前节点名称\n- {next_node}: 达标后执行的节点\n- {else_node}: 未达标时执行的节点\n\n仅在 logger_count 为 True 时生效"
                 }
             },
             "additionalProperties": false

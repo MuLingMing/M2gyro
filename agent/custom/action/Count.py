@@ -38,7 +38,9 @@ class Count(CustomAction):
         "next_node": ["node1", "node2"],
         "else_node": ["node3"],
         "reset_node": ["node4"],
-        "logger_count": False
+        "logger_count": False,
+        "log_else": "当前运行次数为{count}, 目标次数为{target_count}",
+        "log_next": "{node_name}已达到目标次数{target_count}"
     }
 
     字段说明：
@@ -56,6 +58,12 @@ class Count(CustomAction):
       - 支持多个节点
       - 可以为空
     - logger_count: 是否输出运行次数或按倍数输出运行次数，默认 False
+    - log_else: 未达标时的自定义日志模板，支持占位符
+      - 可用占位符：{count}, {target_count}, {node_name}, {next_node}, {else_node}
+      - 仅在 logger_count 为 True 时生效
+    - log_next: 已达标时的自定义日志模板，支持占位符
+      - 可用占位符：{count}, {target_count}, {node_name}, {next_node}, {else_node}
+      - 仅在 logger_count 为 True 时生效
 
     备注：
     - target_count=0 时，始终执行 else_node
@@ -114,6 +122,8 @@ class Count(CustomAction):
                     "else_node": (str, list),
                     "reset_node": (str, list),
                     "logger_count": (bool, int),
+                    "log_else": str,
+                    "log_next": str,
                 }
 
                 params = ParamMerger.merge(
@@ -128,6 +138,8 @@ class Count(CustomAction):
         else_node = params.get("else_node", [])
         reset_node = params.get("reset_node", [])
         logger_count = params.get("logger_count", False)
+        log_else = params.get("log_else", "")
+        log_next = params.get("log_next", "")
 
         # 重设reset_node的count为0
         if reset_node:
@@ -144,12 +156,27 @@ class Count(CustomAction):
             # 运行播报
             if logger_count:
                 if self._magnitude(count=current_count, logger_count=logger_count):
-                    if target_count == 0:
-                        logger.info(f"当前运行次数为{current_count}, 无限循环中...")
+                    if not log_else:
+
+                        if target_count == 0:
+                            logger.info(
+                                f'"{argv.node_name}"当前运行次数为{current_count}, 无限循环中...'
+                            )
+                        else:
+                            logger.info(
+                                f'"{argv.node_name}"当前运行次数为{current_count}, 目标次数为{target_count}'
+                            )
                     else:
-                        logger.info(
-                            f"当前运行次数为{current_count}, 目标次数为{target_count}"
+                        # 使用自定义模板格式化输出
+                        message = self._format_log_message(
+                            log_else,
+                            current_count,
+                            target_count,
+                            argv.node_name,
+                            next_node,
+                            else_node,
                         )
+                        logger.info(message)
 
             self._run_nodes(context, else_node)
 
@@ -158,7 +185,19 @@ class Count(CustomAction):
 
             # 运行播报
             if logger_count:
-                logger.info(f"{argv.node_name}已达到目标次数{target_count}")
+                if log_next:
+                    # 达标时使用自定义模板
+                    message = self._format_log_message(
+                        log_next,
+                        current_count,
+                        target_count,
+                        argv.node_name,
+                        next_node,
+                        else_node,
+                    )
+                    logger.info(message)
+                else:
+                    logger.info(f'"{argv.node_name}"已达到目标次数{target_count}')
             self._run_nodes(context, next_node)
 
         return CustomAction.RunResult(success=True)
@@ -226,6 +265,48 @@ class Count(CustomAction):
             #     .get("custom_action_param", {})
             # )
             # print(f"重设节点{node}内容检查为{node_custom_action_param_check}")
+
+    def _format_log_message(
+        self,
+        log_message: str,
+        count: int,
+        target_count: int,
+        node_name: str,
+        next_node: list,
+        else_node: list,
+    ) -> str:
+        """
+        格式化自定义日志消息
+
+        参数:
+        - log_message: 日志模板字符串
+        - count: 当前计数
+        - target_count: 目标计数
+        - node_name: 当前节点名称
+        - next_node: 达标后执行的节点列表
+        - else_node: 未达标时执行的节点列表
+
+        返回值:
+        - str: 格式化后的消息字符串
+
+        可用占位符:
+        - {count}: 当前运行次数
+        - {target_count}: 目标次数
+        - {node_name}: 当前节点名称
+        - {next_node}: 达标后执行的节点
+        - {else_node}: 未达标时执行的节点
+        """
+        try:
+            return log_message.format(
+                count=count,
+                target_count=target_count,
+                node_name=node_name,
+                next_node=next_node,
+                else_node=else_node,
+            )
+        except (KeyError, ValueError, IndexError) as e:
+            logger.warning(f"Count: 日志模板格式化失败: {e}，使用原始消息")
+            return log_message
 
     def _magnitude(self, count: int, logger_count: int = 10) -> bool:
         """

@@ -173,10 +173,29 @@
         "皎皎信物等级": {
             "type": "select",
             "label": "等级选择",
-            "description": "仅支持50级。",
+            "description": "仅支持50级和80级，使用波次倍率书时建议手动关闭自动波次。",
             "cases": [
                 {
-                    "name": "50"
+                    "name": "50",
+                    "pipeline_override": {
+                        "委托等级识别": {
+                            "expected": "50",
+                            "next": [
+                                "皎皎信物扼守50"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "80",
+                    "pipeline_override": {
+                        "委托等级识别": {
+                            "expected": "80",
+                            "next": [
+                                "皎皎信物扼守80"
+                            ]
+                        }
+                    }
                 }
             ]
         },

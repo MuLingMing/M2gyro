@@ -18,7 +18,7 @@
         },
         "next": [
             "[JumpBack]委托完成次数",
-            "[JumpBack]挂机战斗",
+            "[JumpBack]挂机战斗复位",
             "[JumpBack]确认选择",
             "[JumpBack]倍率选择"
         ]
@@ -42,7 +42,7 @@
             "委托已更新",
             "[JumpBack]确认选择",
             "[JumpBack]选择密函",
-            "[JumpBack]挂机战斗",
+            "[JumpBack]挂机战斗复位",
             "[JumpBack]委托报酬选择",
             "[JumpBack]弹窗关闭匹配识别"
         ]

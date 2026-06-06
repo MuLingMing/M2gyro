@@ -58,47 +58,42 @@
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 5,
+                                "duration": 6,
                                 "overlays": [
                                     {
-                                        "action": "dodge",
+                                        "action": "move",
+                                        "params": {
+                                            "direction": "left",
+                                            "duration": 3
+                                        },
                                         "at": 2
+                                    },
+                                    {
+                                        "action": "jump",
+                                        "at": 4
                                     }
                                 ]
                             }
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_OperationRecordAction_jump": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
+                        },
                         {
-                            "action": "jump",
-                            "params": {}
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_OperationRecordAction_dodge": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "dodge",
+                            "action": "move",
                             "params": {
-                                "direction": "forward"
+                                "direction": "forward",
+                                "duration": 6,
+                                "overlays": [
+                                    {
+                                        "action": "move",
+                                        "params": {
+                                            "direction": "left",
+                                            "duration": 7
+                                        },
+                                        "at": 2
+                                    },
+                                    {
+                                        "action": "jump",
+                                        "at": 4
+                                    }
+                                ]
                             }
                         }
                     ]

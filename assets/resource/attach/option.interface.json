@@ -18,22 +18,22 @@
             // 超时时间生效范围
             // 挂机战斗、扼守战斗、扼守战斗无复位、避险战斗无复位
             "pipeline_override": {
-                "挂机战斗": {
+                "挂机战斗复位": {
                     "attach": {
                         "total_time": "{total_time}"
                     }
                 },
-                "扼守战斗": {
+                "挂机战斗无复位": {
                     "attach": {
                         "total_time": "{total_time}"
                     }
                 },
-                "扼守战斗无复位": {
+                "扼守战斗单次": {
                     "attach": {
                         "total_time": "{total_time}"
                     }
                 },
-                "避险战斗无复位": {
+                "扼守战斗波次": {
                     "attach": {
                         "total_time": "{total_time}"
                     }
