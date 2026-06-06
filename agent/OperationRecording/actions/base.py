@@ -8,7 +8,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, ClassVar, Dict
+from typing import Any, ClassVar, Dict, Optional
 
 
 @dataclass
@@ -81,17 +81,20 @@ class ActionBase(ABC):
         """
         return self.execute(params)
 
-    def stop(self) -> bool:
+    def stop(self, direction: Optional[str] = None) -> bool:
         """
         时间线模式：释放
 
         默认通过 platform.release_action(release_method) 统一释放，持续动作子类可覆写。
 
+        参数：
+        - direction: 方向（可选，用于 move 动作的方向感知释放）
+
         返回值：
         - bool: 是否成功
         """
         if self.timeline_meta.release_method:
-            return self._platform.release_action(self.timeline_meta.release_method)
+            return self._platform.release_action(self.timeline_meta.release_method, direction=direction)
         return True
 
     def validate_params(self, params: Dict[str, Any]) -> bool:

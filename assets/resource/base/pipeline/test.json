@@ -78,7 +78,7 @@
                         {
                             "action": "move",
                             "params": {
-                                "direction": "forward",
+                                "direction": "backward",
                                 "duration": 6,
                                 "overlays": [
                                     {

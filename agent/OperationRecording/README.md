@@ -16,7 +16,7 @@
 
 ## 架构概览
 
-```
+```text
 OperationRecording/
 ├── __init__.py                    # 模块入口，统一导出
 ├── registry.py                    # ModuleRegistry[T] 泛型注册表基类
@@ -79,7 +79,7 @@ OperationRecording/
 
 三种模块类型完全对称，遵循同一模板：
 
-```
+```text
 模块类型/
 ├── __init__.py          # 导入 base + registry + 子包触发注册
 ├── base.py              # 基类定义
@@ -106,7 +106,7 @@ class ModuleRegistry(Generic[T]):
 ### 三种注册表完全对称
 
 | 注册表 | 基类 | 装饰器 | 实例 |
-|--------|------|--------|------|
+| :----- | :--- | :----- | :--- |
 | `ActionRegistry` | `ModuleRegistry[ActionBase]` | `@register_action("name")` | `action_registry` |
 | `EffectRegistry` | `ModuleRegistry[EffectBase]` | `@register_effect("name")` | `effect_registry` |
 | `PlatformRegistry` | `ModuleRegistry[PlatformBase]` | `@register_platform("name")` | `platform_registry` |
@@ -125,7 +125,7 @@ class TimelineMeta:
 ### 调度规则
 
 | 条件 | 调用方式 |
-|------|----------|
+| :--- | :------- |
 | `has_duration=True` + `duration > 0` | 调用 `start(params)` → 等待 → `release_action(release_method)` |
 | `has_duration=True` + `duration = 0` | 仅调用 `start(params)`（按下不释放） |
 | `has_duration=False` | 调用 `execute(params)`（瞬时完成） |
@@ -147,13 +147,13 @@ class JumpAction(ActionBase):
     def execute(self, params): return self._platform.jump()
 ```
 
-**不再需要修改**：`timeline.py`、`executor.py`、`parser.py`
+不再需要修改：`timeline.py`、`executor.py`、`parser.py`
 
 ## 平台家族继承体系
 
 平台层采用家族基类模式，子类仅需提供映射表即可获得完整实现：
 
-```
+```text
 PlatformBase (抽象基类)
 ├── KeyboardPlatform (键盘家族基类)
 │   └── DesktopPlatform (Windows 桌面)
@@ -164,6 +164,7 @@ PlatformBase (抽象基类)
 ### KeyboardPlatform
 
 子类需提供：
+
 - `_key_codes: Dict[str, int]` — 按键名到虚拟键码的映射
 - `_action_key_map: Dict[str, List[str]]` — 动作名到按键名列表的映射（用于 `release_action()`）
 
@@ -177,6 +178,7 @@ class DesktopPlatform(KeyboardPlatform):
 ### TouchPlatform
 
 子类需提供：
+
 - `_touch_positions: Dict[str, Dict]` — 按钮位置配置（格式：`{"button_name": {"x": int, "y": int, "contact": int, ...}}`）
 - `_generic_contact: int` — 通用触点 ID
 
@@ -194,28 +196,59 @@ class AdbPlatform(TouchPlatform):
 ### 状态跟踪
 
 | 平台家族 | 状态跟踪 | 类型 |
-|----------|----------|------|
+| :------- | :------- | :--- |
 | KeyboardPlatform | `_active_keys` | `set` — 当前按下的键码集合 |
 | TouchPlatform | `_active_contacts` | `Dict[str, int]` — contact_name → contact_id 映射 |
+| TouchPlatform | `_active_directions` | `set` — 当前活跃的移动方向集合 |
 
 ### 释放机制
 
-- **`release_action(action_name)`**：根据动作名释放对应按键/触点
-  - KeyboardPlatform：通过 `_action_key_map` 查找按键列表，发送 `post_key_up`
-  - TouchPlatform：`"move"` 调用 `_joystick_center()` 归位摇杆，其他从 `_active_contacts` 查找并 `post_touch_up`
+- **`release_action(action_name, direction=None)`**：根据动作名释放对应按键/触点
+  - KeyboardPlatform：
+    - `move` + `direction`：只释放指定方向的键（方向感知释放）
+    - 其他：通过 `_action_key_map` 查找按键列表，发送 `post_key_up`
+  - TouchPlatform：
+    - `move` + `direction`：从活跃方向集合移除指定方向，重新计算摇杆位置
+    - `move` 无方向：归位摇杆
+    - 其他：从 `_active_contacts` 查找并 `post_touch_up`
 - **`release_all()`**：释放所有活跃按键/触点，清空状态跟踪
+
+### 方向感知释放
+
+并行动作场景下，释放某个方向的移动不会影响其他方向：
+
+```json
+{
+    "operations": [
+        {
+            "action": "move",
+            "params": {"direction": "forward", "duration": 6},
+            "overlays": [
+                {"action": "move", "params": {"direction": "left"}, "at": 2}
+            ]
+        }
+    ]
+}
+```
+
+执行流程：
+
+1. `t=0`：按下 W 键（forward）
+2. `t=2`：按下 A 键（left）→ W+A 同时按下
+3. `t=5`：释放 A 键（left）→ 仅 W 键保持
+4. `t=6`：释放 W 键（forward）
 
 ## ActionState 状态机
 
 时间线模式下每个动作经历以下状态：
 
-```
+```text
 SCHEDULED → RUNNING → COMPLETED
                    ↘ CANCELLED（释放失败时）
 ```
 
 | 状态 | 值 | 说明 |
-|------|---|------|
+| :--- | :- | :--- |
 | `SCHEDULED` | 1 | 已计划，等待开始时间 |
 | `RUNNING` | 2 | 运行中 |
 | `PAUSED` | 3 | 已暂停（预留） |
@@ -227,8 +260,8 @@ SCHEDULED → RUNNING → COMPLETED
 ### 基础动作
 
 | 动作名 | 类型 | 参数 | 说明 |
-|--------|------|------|------|
-| `move` | 持续 | `direction`: forward/backward/left/right, `duration`: 秒 | 移动，`release_method="move"` |
+| :----- | :--- | :--- | :--- |
+| `move` | 持续 | `direction`: forward/backward/left/right/forward_left/forward_right/backward_left/backward_right, `duration`: 秒 | 移动，`release_method="move"` |
 | `crouch` | 持续 | `duration`: 秒 | 下蹲，`release_method="crouch"` |
 | `charge_attack` | 持续 | `duration`: 秒, `x`/`y`: 可选坐标 | 蓄力攻击，`release_method="charge_attack"` |
 | `jump` | 瞬时 | — | 跳跃 |
@@ -244,13 +277,13 @@ SCHEDULED → RUNNING → COMPLETED
 ### 高级动作
 
 | 动作名 | 类型 | 参数 | 说明 |
-|--------|------|------|------|
+| :----- | :--- | :--- | :--- |
 | `spiral_leap` | 瞬时 | — | 螺旋飞跃 |
 
 ### 通用时间线参数
 
 | 参数 | 类型 | 说明 |
-|------|------|------|
+| :--- | :--- | :--- |
 | `duration` | float | 动作持续时间（秒），顶层参数 |
 | `overlays` | list | 叠加动作列表，每个包含 `action`/`params`/`at` |
 
@@ -280,7 +313,7 @@ class MyAction(ActionBase):
         return self._platform.my_action(params.get("target"))
 ```
 
-**不再需要修改**：`timeline.py`、`executor.py`、`parser.py`
+不再需要修改：`timeline.py`、`executor.py`、`parser.py`
 
 ### 新增 Effect
 
@@ -306,7 +339,7 @@ class MyEffect(EffectBase):
         return params
 ```
 
-**不再需要修改**：任何核心文件
+不再需要修改：任何核心文件
 
 ### 新增 Platform
 
@@ -337,7 +370,7 @@ class MyPlatform(PlatformBase):
     def release_all(self) -> bool: ...
 ```
 
-**不再需要修改**：`factory.py`、`executor.py`、任何核心文件
+不再需要修改：`factory.py`、`executor.py`、任何核心文件
 
 ## 效果插件系统
 
@@ -346,7 +379,7 @@ class MyPlatform(PlatformBase):
 ### 内置插件
 
 | 插件 | 功能 | 默认状态 | Config 字段 |
-|------|------|----------|-------------|
+| :--- | :--- | :------- | :---------- |
 | `acceleration` | 加减速效果 | 启用 | `actions`, `factor` |
 | `random_delay` | 随机延迟 | 启用 | `actions`, `min_ms`, `max_ms`, `gap_min_ms`, `gap_max_ms` |
 | `human_timing` | 时序微变 | 启用 | `duration_variance`, `wait_variance`, `min_duration_ms` |
@@ -356,7 +389,7 @@ class MyPlatform(PlatformBase):
 ### 效果钩子
 
 | 方法 | 调用时机 | 用途 |
-|------|----------|------|
+| :--- | :------- | :--- |
 | `pre_action()` | 动作执行前 | 添加延迟（如反应时间、疲劳） |
 | `apply()` | 参数处理时 | 修改参数（如加减速标记、随机延迟值） |
 | `post_action()` | 动作执行后 | 后处理（预留） |
@@ -427,6 +460,7 @@ class MyPlatform(PlatformBase):
 ### 停止响应
 
 时间线执行过程中检查 `context.tasker.stopping`，收到停止信号时：
+
 1. 调用 `platform.release_all()` 释放所有按键/触点
 2. 调用 `timeline.stop()` 停止时间线
 3. 返回 `False`
@@ -462,6 +496,43 @@ cm.get("nonexistent.key", "default")  # "default"
 cm.set("effects.enabled", False)
 cm.save("path/to/config.json")
 ```
+
+## 方向自动合并
+
+`OperationParser.merge_move_directions()` 方法可自动合并重叠的移动方向：
+
+### 输入
+
+```json
+{
+    "operations": [
+        {"action": "move", "params": {"direction": "forward", "duration": 6}},
+        {"action": "move", "params": {"direction": "left", "duration": 3}, "at": 2}
+    ]
+}
+```
+
+### 输出
+
+```json
+{
+    "operations": [
+        {"action": "move", "params": {"direction": "forward", "duration": 2}},
+        {"action": "move", "params": {"direction": "forward_left", "duration": 3}},
+        {"action": "move", "params": {"direction": "forward", "duration": 1}}
+    ]
+}
+```
+
+### 合并规则
+
+| 输入方向 | 合并结果 |
+| :------- | :------- |
+| forward + left | forward_left |
+| forward + right | forward_right |
+| backward + left | backward_left |
+| backward + right | backward_right |
+| forward + backward | forward（按优先级） |
 
 ## 使用示例
 

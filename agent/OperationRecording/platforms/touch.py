@@ -19,6 +19,7 @@
         _generic_contact = 8
 """
 
+import math
 import time
 from typing import Dict, Any, Optional, Tuple
 from maa.controller import Controller
@@ -55,6 +56,7 @@ class TouchPlatform(PlatformBase):
     def __init__(self, platform_controller: Controller):
         super().__init__(platform_controller)
         self._active_contacts: Dict[str, int] = {}
+        self._active_directions: set = set()  # 跟踪活跃的移动方向
 
     # ===== 内部工具方法 =====
 
@@ -69,19 +71,40 @@ class TouchPlatform(PlatformBase):
         return position_config.get("contact", self._generic_contact)
 
     def _get_joystick_directions(self) -> Dict[str, Tuple[int, int]]:
+        """
+        获取摇杆方向坐标映射
+
+        返回值：
+        - Dict[str, Tuple[int, int]]: 方向名称到坐标的映射
+
+        说明：
+        - 支持 8 个方向：4 基本 + 4 组合
+        - 组合方向使用 45° 对角线计算
+        """
         cx, cy = self._get_position("joystick_center", 198, 552)
         config = self._touch_positions.get("joystick_center", {})
         run_offset = config.get("joystick_run_offset", -72)
 
+        # 计算 45° 对角线偏移量（0.707 ≈ cos(45°) = sin(45°)）
+        diagonal_offset_x = int(self._joystick_offset * 0.707)
+        diagonal_offset_y = int(abs(run_offset) * 0.707)
+
         return {
-            "W": (cx, cy + run_offset),
-            "A": (cx - self._joystick_offset, cy),
-            "S": (cx, cy - run_offset),
-            "D": (cx + self._joystick_offset, cy),
+            # 基本方向
             "forward": (cx, cy + run_offset),
             "backward": (cx, cy - run_offset),
             "left": (cx - self._joystick_offset, cy),
             "right": (cx + self._joystick_offset, cy),
+            # 组合方向（45° 对角线）
+            "forward_left": (cx - diagonal_offset_x, cy + diagonal_offset_y),
+            "forward_right": (cx + diagonal_offset_x, cy + diagonal_offset_y),
+            "backward_left": (cx - diagonal_offset_x, cy - diagonal_offset_y),
+            "backward_right": (cx + diagonal_offset_x, cy - diagonal_offset_y),
+            # 兼容旧的按键映射
+            "W": (cx, cy + run_offset),
+            "A": (cx - self._joystick_offset, cy),
+            "S": (cx, cy - run_offset),
+            "D": (cx + self._joystick_offset, cy),
         }
 
     def _hold_button(self, position_name: str, contact_name: str, duration: float,
@@ -158,6 +181,51 @@ class TouchPlatform(PlatformBase):
         except Exception:
             return False
 
+    def _calculate_joystick_position(self, active_directions: set) -> Tuple[int, int]:
+        """
+        根据活跃方向计算摇杆位置（向量和）
+
+        参数：
+        - active_directions: 当前活跃的方向集合
+
+        返回值：
+        - Tuple[int, int]: 摇杆目标坐标 (x, y)
+
+        算法：
+        1. 将每个方向转换为单位向量
+        2. 求向量和
+        3. 归一化后乘以摇杆半径
+        4. 加上摇杆中心坐标
+        """
+        # 方向向量映射
+        direction_vectors = {
+            "forward": (0, 1),      # 上
+            "backward": (0, -1),    # 下
+            "left": (-1, 0),        # 左
+            "right": (1, 0),        # 右
+        }
+
+        cx, cy = self._get_position("joystick_center", 198, 552)
+        config = self._touch_positions.get("joystick_center", {})
+        run_offset = abs(config.get("joystick_run_offset", -72))
+
+        # 计算向量和
+        sum_x = 0.0
+        sum_y = 0.0
+        for direction in active_directions:
+            vec = direction_vectors.get(direction)
+            if vec is not None:
+                sum_x += vec[0]
+                sum_y += vec[1]
+
+        # 归一化
+        norm = math.sqrt(sum_x ** 2 + sum_y ** 2)
+        if norm > 0:
+            sum_x = sum_x / norm * run_offset
+            sum_y = sum_y / norm * run_offset
+
+        return (int(cx + sum_x), int(cy + sum_y))
+
     # ===== 原子操作实现 =====
 
     def press_key(self, key: str, duration: float) -> bool:
@@ -223,7 +291,22 @@ class TouchPlatform(PlatformBase):
     # ===== 业务方法默认实现（触控语义） =====
 
     def move(self, direction: str, duration: float) -> bool:
+        """
+        移动操作
+
+        参数：
+        - direction: 移动方向（forward/backward/left/right/center）
+        - duration: 持续时间（秒），0 表示只按下不松开
+
+        返回值：
+        - bool: 是否成功
+
+        说明：
+        - 维护 _active_directions 集合跟踪活跃方向
+        - center 方向会清空所有活跃方向并归位摇杆
+        """
         if direction == "center":
+            self._active_directions.clear()
             return self._joystick_center()
 
         directions = self._get_joystick_directions()
@@ -233,6 +316,9 @@ class TouchPlatform(PlatformBase):
 
         if self._controller is None:
             return False
+
+        # 添加方向到活跃方向集合
+        self._active_directions.add(direction)
 
         x = max(0, min(target[0], 1279))
         y = max(0, min(target[1], 719))
@@ -313,12 +399,41 @@ class TouchPlatform(PlatformBase):
 
     # ===== 释放方法 =====
 
-    def release_action(self, action_name: str) -> bool:
+    def release_action(self, action_name: str, direction: Optional[str] = None) -> bool:
+        """
+        释放动作
+
+        参数：
+        - action_name: 动作名称
+        - direction: 方向（可选，用于 move 动作的方向感知释放）
+
+        返回值：
+        - bool: 是否成功释放
+
+        说明：
+        - move 动作 + direction：移除指定方向，重新计算摇杆位置
+        - move 动作 + 无 direction：归位摇杆
+        - 其他动作：释放对应触点
+        """
         if self._controller is None:
             return False
         try:
             if action_name == "move":
-                return self._joystick_center()
+                if direction and hasattr(self, '_active_directions'):
+                    # 方向感知释放：移除指定方向，重新计算摇杆位置
+                    self._active_directions.discard(direction)
+                    if self._active_directions:
+                        # 还有其他方向，重新计算摇杆位置
+                        position = self._calculate_joystick_position(self._active_directions)
+                        contact = self._get_contact("joystick_center")
+                        self._controller.post_touch_move(position[0], position[1], contact, 1).wait()
+                    else:
+                        # 没有方向了，归位摇杆
+                        self._joystick_center()
+                    return True
+                else:
+                    # 无方向参数或无 _active_directions：归位摇杆
+                    return self._joystick_center()
             if action_name in self._active_contacts:
                 contact = self._active_contacts[action_name]
                 self._controller.post_touch_up(contact).wait()

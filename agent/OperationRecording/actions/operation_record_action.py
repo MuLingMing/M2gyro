@@ -47,7 +47,8 @@ class OperationRecordAction(CustomAction):
 
     1. move - 移动动作
        参数：
-       - direction: 方向 ("forward"/"backward"/"left"/"right")
+       - direction: 方向 ("forward"/"backward"/"left"/"right"/"forward_left"/"forward_right"/"backward_left"/"backward_right")
+       - duration: 持续时间（秒，时间线模式参数）
     2. jump - 跳跃动作
     3. dodge - 闪避动作
        参数：

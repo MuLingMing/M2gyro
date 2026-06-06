@@ -100,6 +100,20 @@ class KeyboardPlatform(PlatformBase):
     # ===== 业务方法默认实现（键盘语义） =====
 
     def move(self, direction: str, duration: float) -> bool:
+        """
+        移动操作
+
+        参数：
+        - direction: 移动方向（forward/backward/left/right）
+        - duration: 持续时间（秒），0 表示只按下不松开
+
+        返回值：
+        - bool: 是否成功
+
+        说明：
+        - 移除互斥逻辑，支持多键同时按下
+        - duration > 0 时会 sleep 等待
+        """
         if self._controller is None:
             return False
         key_map = {"forward": "W", "backward": "S", "left": "A", "right": "D"}
@@ -111,14 +125,7 @@ class KeyboardPlatform(PlatformBase):
         if key_code is None:
             return False
 
-        wasd_keys = {"W", "A", "S", "D"}
-        wasd_codes = {self._key_codes.get(k) for k in wasd_keys}
-        wasd_codes.discard(None)
-        for code in wasd_codes:
-            if code != key_code and code in self._active_keys:
-                self._controller.post_key_up(code).wait()
-                self._active_keys.discard(code)
-
+        # 直接按下目标键，不释放其他键
         if key_code not in self._active_keys:
             self._controller.post_key_down(key_code).wait()
             self._active_keys.add(key_code)
@@ -191,20 +198,48 @@ class KeyboardPlatform(PlatformBase):
 
     # ===== 释放方法 =====
 
-    def release_action(self, action_name: str) -> bool:
+    def release_action(self, action_name: str, direction: Optional[str] = None) -> bool:
+        """
+        释放动作
+
+        参数：
+        - action_name: 动作名称
+        - direction: 方向（可选，用于 move 动作的方向感知释放）
+
+        返回值：
+        - bool: 是否成功释放
+
+        说明：
+        - move 动作 + direction：只释放指定方向的键
+        - move 动作 + 无 direction：释放所有 WASD 键
+        - 其他动作：释放所有相关按键
+        """
         if self._controller is None:
             return False
         try:
-            keys = self._action_key_map.get(action_name)
-            if keys is None:
+            if action_name == "move" and direction:
+                # 方向感知释放：只释放指定方向的键
+                key_map = {"forward": "W", "backward": "S", "left": "A", "right": "D"}
+                key = key_map.get(direction)
+                if key:
+                    key_code = self._key_codes.get(key)
+                    if key_code is not None and key_code in self._active_keys:
+                        self._controller.post_key_up(key_code).wait()
+                        self._active_keys.discard(key_code)
+                        return True
                 return False
-            released = False
-            for key in keys:
-                key_code = self._key_codes.get(key)
-                if key_code is not None and key_code in self._active_keys:
-                    self._controller.post_key_up(key_code).wait()
-                    self._active_keys.discard(key_code)
-                    released = True
-            return released
+            else:
+                # 非 move 动作或无方向参数：释放所有相关按键
+                keys = self._action_key_map.get(action_name)
+                if keys is None:
+                    return False
+                released = False
+                for key in keys:
+                    key_code = self._key_codes.get(key)
+                    if key_code is not None and key_code in self._active_keys:
+                        self._controller.post_key_up(key_code).wait()
+                        self._active_keys.discard(key_code)
+                        released = True
+                return released
         except Exception:
             return False

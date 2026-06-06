@@ -98,5 +98,15 @@ class PlatformBase(ABC):
         time.sleep(duration)
         return True
 
-    def release_action(self, action_name: str) -> bool:
+    def release_action(self, action_name: str, direction: Optional[str] = None) -> bool:
+        """
+        释放动作
+
+        参数：
+        - action_name: 动作名称
+        - direction: 方向（可选，用于 move 动作的方向感知释放）
+
+        返回值：
+        - bool: 是否成功释放
+        """
         return False

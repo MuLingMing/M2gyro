@@ -1305,8 +1305,8 @@
                 },
                 {
                     "name": "4",
-                    "label": "设计稿：暗羽翼追袭",
-                    "description": "复仇 萼蚀秽兽；\n掉落物为：设计稿：暗羽翼追袭",
+                    "label": "设计稿：暗羽翼盛怒",
+                    "description": "复仇 萼蚀秽兽；\n掉落物为：设计稿：暗羽翼盛怒",
                     "pipeline_override": {
                         "夜航手册目标副本": {
                             "expected": [

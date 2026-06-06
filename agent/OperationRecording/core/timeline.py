@@ -422,12 +422,15 @@ class ActionTimeline:
 
         执行流程：
         1. 直接通过 action_cls 获取 release_method，调用平台释放方法
-        2. 标记状态为已完成
-        3. 调用结束回调
+        2. 获取方向参数（用于 move 动作的方向感知释放）
+        3. 标记状态为已完成
+        4. 调用结束回调
         """
         action_cls = action_registry.get(action.action_name)
         if action_cls and action_cls.timeline_meta.has_duration and action_cls.timeline_meta.release_method:
-            success = self._platform.release_action(action_cls.timeline_meta.release_method)
+            # 获取方向参数（用于 move 动作的方向感知释放）
+            direction = action.params.get("direction")
+            success = self._platform.release_action(action_cls.timeline_meta.release_method, direction=direction)
             if not success:
                 logger.warning(f"[TimelineManager] release_action('{action_cls.timeline_meta.release_method}') failed for action '{action.action_name}'")
                 action.state = ActionState.CANCELLED
@@ -471,7 +474,9 @@ class ActionTimeline:
                         action_obj.execute(params)
                 else:
                     if action_obj.timeline_meta.has_duration:
-                        action_obj.stop()
+                        # 获取方向参数（用于 move 动作的方向感知释放）
+                        direction = params.get("direction")
+                        action_obj.stop(direction=direction)
             else:
                 if not is_start:
                     return

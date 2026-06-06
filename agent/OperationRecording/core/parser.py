@@ -258,3 +258,192 @@ class OperationParser:
         else:
             operation_param = OperationParser.parse_param(param)
             return ("normal", operation_param)
+
+    @staticmethod
+    def merge_move_directions(operations: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        合并 move 动作的方向
+
+        参数：
+        - operations: 原始操作列表
+
+        返回值：
+        - List[Dict[str, Any]]: 合并后的操作列表
+
+        说明：
+        - 检测所有 move 动作的时间重叠
+        - 计算每个时间段的合并方向
+        - 生成新的操作序列
+
+        示例：
+        输入：
+        [
+            {"action": "move", "params": {"direction": "forward", "duration": 6}},
+            {"action": "move", "params": {"direction": "left", "duration": 3}, "at": 2}
+        ]
+
+        输出：
+        [
+            {"action": "move", "params": {"direction": "forward", "duration": 2}},
+            {"action": "move", "params": {"direction": "forward_left", "duration": 3}},
+            {"action": "move", "params": {"direction": "forward", "duration": 1}}
+        ]
+        """
+        # 1. 收集所有 move 动作的时间段
+        segments = OperationParser._collect_move_segments(operations)
+
+        # 2. 合并重叠的时间段
+        merged_segments = OperationParser._merge_overlapping_segments(segments)
+
+        # 3. 生成新的操作序列
+        return OperationParser._generate_merged_operations(merged_segments, operations)
+
+    @staticmethod
+    def _collect_move_segments(operations: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """收集所有 move 动作的时间段"""
+        segments = []
+        current_time = 0.0
+
+        for op in operations:
+            action = op.get("action")
+            params = op.get("params", {}) or {}
+
+            if action == "wait":
+                duration = params.get("duration", op.get("duration", 1.0))
+                current_time += duration
+                continue
+
+            if action == "move":
+                direction = params.get("direction", "forward")
+                duration = params.get("duration", 0)
+                overlays = params.get("overlays", op.get("overlays", [])) or []
+
+                # 主动作
+                segments.append({
+                    "start": current_time,
+                    "end": current_time + duration,
+                    "directions": {direction}
+                })
+
+                # 处理 overlays 中的 move 动作
+                for overlay in overlays:
+                    overlay_action = overlay.get("action")
+                    if overlay_action == "move":
+                        overlay_params = overlay.get("params", {}) or {}
+                        overlay_direction = overlay_params.get("direction", "forward")
+                        overlay_at = float(overlay.get("at", 0))
+                        overlay_duration = float(overlay_params.get("duration", overlay.get("duration", 0)))
+
+                        segments.append({
+                            "start": current_time + overlay_at,
+                            "end": current_time + overlay_at + overlay_duration,
+                            "directions": {overlay_direction}
+                        })
+
+                current_time += duration
+            else:
+                duration = params.get("duration", op.get("duration", 0))
+                current_time += duration
+
+        return segments
+
+    @staticmethod
+    def _merge_overlapping_segments(segments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """合并重叠的时间段"""
+        if not segments:
+            return []
+
+        # 按开始时间排序
+        segments.sort(key=lambda s: s["start"])
+
+        # 收集所有时间点
+        time_points = set()
+        for seg in segments:
+            time_points.add(seg["start"])
+            time_points.add(seg["end"])
+        time_points = sorted(time_points)
+
+        # 为每个时间段计算活跃方向
+        merged = []
+        for i in range(len(time_points) - 1):
+            start = time_points[i]
+            end = time_points[i + 1]
+
+            # 找出在这个时间段内活跃的所有方向
+            active_directions = set()
+            for seg in segments:
+                if seg["start"] <= start and seg["end"] >= end:
+                    active_directions.update(seg["directions"])
+
+            if active_directions:
+                # 合并方向
+                merged_direction = OperationParser._combine_directions(active_directions)
+                merged.append({
+                    "start": start,
+                    "end": end,
+                    "directions": {merged_direction}
+                })
+
+        return merged
+
+    @staticmethod
+    def _combine_directions(directions: set) -> str:
+        """
+        合并多个方向为单个方向
+
+        参数：
+        - directions: 方向集合
+
+        返回值：
+        - str: 合并后的方向
+
+        合并规则：
+        - 单个方向：直接返回
+        - forward + left -> forward_left
+        - forward + right -> forward_right
+        - backward + left -> backward_left
+        - backward + right -> backward_right
+        - 其他组合：按优先级选择
+        """
+        if len(directions) == 1:
+            return directions.pop()
+
+        # 组合方向映射
+        combinations = {
+            frozenset({"forward", "left"}): "forward_left",
+            frozenset({"forward", "right"}): "forward_right",
+            frozenset({"backward", "left"}): "backward_left",
+            frozenset({"backward", "right"}): "backward_right",
+        }
+
+        # 检查是否是有效的组合
+        frozen = frozenset(directions)
+        if frozen in combinations:
+            return combinations[frozen]
+
+        # 无法合并的组合（如 forward + backward），按优先级选择
+        priority = {"forward": 4, "backward": 3, "left": 2, "right": 1}
+        return max(directions, key=lambda d: priority.get(d, 0))
+
+    @staticmethod
+    def _generate_merged_operations(
+        merged_segments: List[Dict[str, Any]],
+        original_operations: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """生成合并后的操作序列"""
+        result = []
+
+        for seg in merged_segments:
+            direction = seg["directions"].pop()
+            duration = seg["end"] - seg["start"]
+
+            if duration > 0:
+                result.append({
+                    "action": "move",
+                    "params": {
+                        "direction": direction,
+                        "duration": duration
+                    }
+                })
+
+        return result
