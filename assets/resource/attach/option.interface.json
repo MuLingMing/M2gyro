@@ -4,6 +4,21 @@
     "controller": [],
     "resource": [],
     "option": {
+        "通用设置": {
+            "type": "select",
+            "default_case": "通用设置",
+            "cases": [
+                {
+                    "name": "通用设置",
+                    "option": [
+                        "倍率书副本次数",
+                        "倍率书副本次数播报",
+                        "单次倍率",
+                        "超时时间"
+                    ]
+                }
+            ]
+        },
         "超时时间": {
             "type": "input",
             "inputs": [
@@ -125,17 +140,6 @@
                             ]
                         }
                     }
-                }
-            ]
-        },
-        "波次选择": {
-            "type": "select",
-            "cases": [
-                {
-                    "name": "15波"
-                },
-                {
-                    "name": "12波"
                 }
             ]
         }

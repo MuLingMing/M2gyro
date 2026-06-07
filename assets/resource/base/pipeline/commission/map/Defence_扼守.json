@@ -542,7 +542,7 @@
                     "total_time": 120,
                     "Interrupt": [
                         {
-                            "name": "无尽行动抉择",
+                            "name": "挑战更多轮次可获得",
                             "run": false,
                             "interval": 2
                         },

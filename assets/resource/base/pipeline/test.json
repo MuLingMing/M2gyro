@@ -1,34 +1,4 @@
 {
-    "test": {
-        "recognition": {
-            "type": "Custom",
-            "param": {
-                "custom_recognition": "RewardSelector"
-            }
-        },
-        "action": "Click"
-    },
-    "test_CovertStages": {
-        "recognition": {
-            "type": "Custom",
-            "param": {
-                "custom_recognition": "CovertStage",
-                "custom_recognition_param": {
-                    "region_types": [
-                        "角色",
-                        "武器",
-                        "魔之楔"
-                    ],
-                    "stage_list": [
-                        "驱离",
-                        "探险",
-                        "扼守"
-                    ]
-                }
-            }
-        },
-        "action": "Click"
-    },
     "test_OperationRecordAction_turn": {
         "action": {
             "type": "Custom",
@@ -97,6 +67,21 @@
                             }
                         }
                     ]
+                }
+            }
+        }
+    },
+    "test_Count": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "Count",
+                "custom_action_param": {
+                    "count": 1,
+                    "target_count": 2,
+                    "logger_count": true,
+                    "log_else": "else{node_name},{count}",
+                    "log_next": "next{node_name},{count}"
                 }
             }
         }

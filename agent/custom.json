@@ -44,6 +44,11 @@
         "class": "CovertStage",
         "file_path": "custom/recognition/CovertStage.py"
     },
+    "IfElseReco": {
+        "type": "recognition",
+        "class": "IfElseReco",
+        "file_path": "custom/recognition/IfElseReco.py"
+    },
     "AutoPathAction": {
         "type": "action",
         "class": "AutoPathAction",

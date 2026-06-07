@@ -193,19 +193,9 @@ class Countdown(CustomAction):
                 if not config.name:
                     continue
                 try:
-                    result = context.run_recognition(config.name, image=image)
-                    if not result or not result.hit:
+                    result = self._recognize(context, config, image)
+                    if not result:
                         continue
-                    if config.delay > 0:
-                        time.sleep(config.delay)
-                        confirm_image = (
-                            context.tasker.controller.post_screencap().wait().get()
-                        )
-                        result = context.run_recognition(
-                            config.name, image=confirm_image
-                        )
-                        if not result or not result.hit:
-                            continue
                     if config.run:
                         self._run_task(context, config.name)
                     return CustomAction.RunResult(success=True)
@@ -284,6 +274,48 @@ class Countdown(CustomAction):
 
         return max(sleep_time, 0)
 
+    def _should_confirm(self, config: "NodeConfig") -> bool:
+        """判断是否需要二次确认：仅在 run 为 True 或正整数时才进行二次确认"""
+        if isinstance(config.run, bool):
+            return config.run
+        if isinstance(config.run, int):
+            return config.run > 0
+        return False
+
+    def _recognize(
+        self, context: Context, config: "NodeConfig", image
+    ) -> RecognitionDetail | None:
+        """
+        通用识别 + 二次确认
+
+        流程：
+        1. 执行识别
+        2. 命中后，仅在 run 为 True 或正整数时进行二次确认
+
+        返回值：
+        - 识别成功返回 RecognitionDetail
+        - 未命中或二次确认失败返回 None
+        """
+        if not config.name:
+            return None
+        try:
+            result = context.run_recognition(config.name, image=image)
+            if not result or not result.hit:
+                return None
+
+            # 仅在需要执行任务时才进行二次确认
+            if config.delay > 0 and self._should_confirm(config):
+                time.sleep(config.delay)
+                confirm_image = context.tasker.controller.post_screencap().wait().get()
+                result = context.run_recognition(config.name, image=confirm_image)
+                if not result or not result.hit:
+                    return None
+
+            return result
+        except Exception as e:
+            logger.error(f"Countdown: 识别节点 {config.name} 失败: {e}")
+        return None
+
     def _recog_and_confirm(
         self, context: Context, tracker: "_NodeTracker", image
     ) -> RecognitionDetail | None:
@@ -291,49 +323,25 @@ class Countdown(CustomAction):
         识别 + 二次确认 + 执行任务
 
         流程：
-        1. 执行识别
-        2. 命中后，如有 delay 则等待后二次确认
-        3. 确认通过后，根据 run 配置决定是否执行节点任务
+        1. 调用 _recognize 执行识别和二次确认
+        2. 确认通过后，根据 run 配置决定是否执行节点任务
         """
         config = tracker.config
-        if not config.name:
+        result = self._recognize(context, config, image)
+        if not result:
             return None
-        try:
-            result = context.run_recognition(config.name, image=image)
-            if not result or not result.hit:
-                # logger.debug(f"[Countdown] [{config.name}] 未识别到")
-                return None
 
-            # logger.info(f"[Countdown] [{config.name}] 识别命中 (score={result.hit})")
+        if isinstance(config.run, bool) and config.run:
+            self._run_task(context, config.name)
+        elif (
+            isinstance(config.run, int)
+            and tracker.run_remaining is not None
+            and tracker.run_remaining > 0
+        ):
+            self._run_task(context, config.name)
+            tracker.run_remaining -= 1
 
-            if config.delay > 0:
-                # logger.info(f"[Countdown] [{config.name}] 二次确认等待 {config.delay}s")
-                time.sleep(config.delay)
-                confirm_image = context.tasker.controller.post_screencap().wait().get()
-                result = context.run_recognition(config.name, image=confirm_image)
-                if not result or not result.hit:
-                    # logger.info(f"[Countdown] [{config.name}] 二次确认失败")
-                    return None
-                # logger.info(f"[Countdown] [{config.name}] 二次确认成功 (score={result.hit})")
-
-            if isinstance(config.run, bool) and config.run:
-                # logger.info(f"[Countdown] [{config.name}] 执行任务 (run=True)")
-                self._run_task(context, config.name)
-            elif (
-                isinstance(config.run, int)
-                and tracker.run_remaining is not None
-                and tracker.run_remaining > 0
-            ):
-                # logger.info(f"[Countdown] [{config.name}] 执行任务 (run_remaining={tracker.run_remaining})")
-                self._run_task(context, config.name)
-                tracker.run_remaining -= 1
-            # else:
-            #     logger.info(f"[Countdown] [{config.name}] 跳过执行 (run={config.run}, run_remaining={tracker.run_remaining})")
-
-            return result
-        except Exception as e:
-            logger.error(f"Countdown: 执行节点 {config.name} 失败: {e}")
-        return None
+        return result
 
     def _run_task(self, context: Context, node_name: str) -> None:
         """执行节点任务"""

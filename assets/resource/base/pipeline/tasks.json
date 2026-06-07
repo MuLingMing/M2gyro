@@ -40,7 +40,24 @@
             }
         }
     },
-    "波次选择": {},
+    "波次选择": {
+        // option重写expected，选择波次
+        // 左半部分识别到波次数
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "15"
+                ],
+                "roi": [
+                    150,
+                    150,
+                    150,
+                    400
+                ]
+            }
+        }
+    },
     "委托等级识别": {
         //option重写expected
         "recognition": {
@@ -90,5 +107,27 @@
             "弹窗确定",
             "空"
         ]
+    },
+    "无尽波次倍率选择": {
+        // attach添加target_count，指定波次选择倍率书
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "Count",
+                "custom_action_param": {
+                    "count": 1,
+                    "target_count": 0,
+                    "else_node": [
+                        "无尽继续挑战倍率选择0加成"
+                    ],
+                    "next_node": [
+                        "无尽继续挑战倍率选择"
+                    ],
+                    "logger_count": false,
+                    "log_else": "当前次数为{count}",
+                    "log_next": "已达到使用倍率书的波次，每{target_count}次使用倍率书"
+                }
+            }
+        }
     }
 }

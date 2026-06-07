@@ -1,0 +1,41 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "./custom_reco/IfElseReco.schema.json",
+    "if": {
+        "properties": {
+            "custom_recognition": {
+                "const": "IfElseReco"
+            }
+        },
+        "required": [
+            "custom_recognition"
+        ]
+    },
+    "then": {
+        "properties": {
+            "custom_recognition_param": {
+                "$ref": "#/definitions/IfElseRecoParam",
+                "description": "IfElseReco 参数\n\n条件分支识别器，按优先级依次识别两个节点：\n- if_node 识别成功 → hit=True\n- else_node 识别成功 → hit=False\n- 均未命中 → 节点未命中\n\n示例：\n{\n    \"if_node\": \"无尽达到波次后撤离\",\n    \"else_node\": \"挑战更多轮次可获得\"\n}\n\n字段说明：\n- if_node: 优先识别的节点名，识别成功返回 hit=True，box 为该节点的识别框\n- else_node: 次优先识别的节点名，识别成功返回 hit=False，box 为该节点的识别框\n\n与 IfElse 动作器配合：\n- hit=True → 执行 IfElse 的 true 分支\n- hit=False → 执行 IfElse 的 false 分支"
+            }
+        },
+        "required": [
+            "custom_recognition_param"
+        ]
+    },
+    "definitions": {
+        "IfElseRecoParam": {
+            "type": "object",
+            "properties": {
+                "if_node": {
+                    "type": "string",
+                    "description": "优先识别的节点名，识别成功返回 hit=True，box 为该节点的识别框"
+                },
+                "else_node": {
+                    "type": "string",
+                    "description": "次优先识别的节点名，识别成功返回 hit=False，box 为该节点的识别框"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

@@ -277,6 +277,32 @@
     //无尽行动抉择
     "无尽行动抉择": {
         "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "IfElseReco",
+                "custom_recognition_param": {
+                    "if_node": "无尽达到波次后撤离",
+                    "else_node": "挑战更多轮次可获得"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "IfElse",
+                "custom_action_param": {
+                    "true": [
+                        "无尽撤离或局内放弃委托"
+                    ],
+                    "false": [
+                        "无尽波次倍率选择"
+                    ]
+                }
+            }
+        }
+    },
+    "挑战更多轮次可获得": {
+        "recognition": {
             "type": "OCR",
             "param": {
                 "expected": [
@@ -289,27 +315,7 @@
                     600
                 ]
             }
-        },
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Count",
-                "custom_action_param": {
-                    "count": 1,
-                    "target_count": 0,
-                    "else_node": [
-                        "无尽继续挑战",
-                        "倍率选择0加成"
-                    ],
-                    "next_node": [],
-                    "logger_count": 10
-                }
-            }
-        },
-        "next": [
-            "无尽波次撤离",
-            "无尽继续挑战"
-        ]
+        }
     },
     "无尽继续挑战": {
         "recognition": {
@@ -328,26 +334,21 @@
         },
         "action": "Click"
     },
-    "无尽波次撤离": {
+    "无尽达到波次后撤离": {
+        // 识别到无尽撤离按钮，且波次选择为15
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "expected": [
-                    "15"
-                ],
-                "roi": [
-                    150,
-                    60,
-                    150,
-                    600
+                "box_index": 0,
+                "all_of": [
+                    "无尽撤离",
+                    "波次选择"
                 ]
             }
-        },
-        "next": [
-            "无尽撤离"
-        ]
+        }
     },
     "无尽撤离": {
+        //识别到无尽撤离按钮
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -395,6 +396,25 @@
         "next": [
             "弹窗确定",
             "空"
+        ]
+    },
+    //组合节点
+    "无尽撤离或局内放弃委托": {
+        "next": [
+            "无尽撤离",
+            "局内放弃委托"
+        ]
+    },
+    "无尽继续挑战倍率选择0加成": {
+        "next": [
+            "倍率选择0加成",
+            "[JumpBack]无尽继续挑战"
+        ]
+    },
+    "无尽继续挑战倍率选择": {
+        "next": [
+            "倍率选择",
+            "[JumpBack]无尽继续挑战"
         ]
     }
 }

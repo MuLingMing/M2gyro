@@ -58,12 +58,15 @@ class Count(CustomAction):
       - 支持多个节点
       - 可以为空
     - logger_count: 是否输出运行次数或按倍数输出运行次数，默认 False
+      - False: 不输出运行次数
+      - True: 不输出运行次数到达目标次数前的次数，仅输出达到目标次数时的次数
+      - 正整数: 每 logger_count 次输出一次
     - log_else: 未达标时的自定义日志模板，支持占位符
       - 可用占位符：{count}, {target_count}, {node_name}, {next_node}, {else_node}
-      - 仅在 logger_count 为 True 时生效
+      - 在 logger_count 为任意非 False 值时且 log_else 为 True 时，生效
     - log_next: 已达标时的自定义日志模板，支持占位符
       - 可用占位符：{count}, {target_count}, {node_name}, {next_node}, {else_node}
-      - 仅在 logger_count 为 True 时生效
+      - 在 logger_count 为任意非 False 值时且 log_next 为 True 时，生效
 
     备注：
     - target_count=0 时，始终执行 else_node
@@ -155,18 +158,9 @@ class Count(CustomAction):
 
             # 运行播报
             if logger_count:
+                # 检查是否达到输出倍数
                 if self._magnitude(count=current_count, logger_count=logger_count):
-                    if not log_else:
-
-                        if target_count == 0:
-                            logger.info(
-                                f'"{argv.node_name}"当前运行次数为{current_count}, 无限循环中...'
-                            )
-                        else:
-                            logger.info(
-                                f'"{argv.node_name}"当前运行次数为{current_count}, 目标次数为{target_count}'
-                            )
-                    else:
+                    if log_else:
                         # 使用自定义模板格式化输出
                         message = self._format_log_message(
                             log_else,
@@ -177,6 +171,14 @@ class Count(CustomAction):
                             else_node,
                         )
                         logger.info(message)
+                    elif target_count == 0:
+                        logger.info(
+                            f'"{argv.node_name}"当前运行次数为{current_count}, 无限循环中...'
+                        )
+                    else:
+                        logger.info(
+                            f'"{argv.node_name}"当前运行次数为{current_count}, 目标次数为{target_count}'
+                        )
 
             self._run_nodes(context, else_node)
 
@@ -308,39 +310,24 @@ class Count(CustomAction):
             logger.warning(f"Count: 日志模板格式化失败: {e}，使用原始消息")
             return log_message
 
-    def _magnitude(self, count: int, logger_count: int = 10) -> bool:
+    def _magnitude(self, count: int, logger_count: int | bool = False) -> bool:
         """
         判断是否需要输出运行次数
 
         参数:
         - count: 当前计数
-        - logger_count: 目标计数，False表示不输出，其他值表示按该次数的倍数输出
+        - logger_count: 输出频率控制参数
+          - False/True: 不输出
+          - 正整数: 每 logger_count 次输出一次（含第 1 次和第 logger_count 次）
+          - 非正整数或其他类型: 使用默认行为（每 10 次输出一次）
 
         返回值:
         - bool: 是否需要输出
-
-        输出规则:
-        - 如果 logger_count 为 False，不输出
-        - 如果 logger_count 为整数，每 logger_count 次计数输出一次
-        - 第 1 次和第 logger_count 次也会输出
         """
-        if count <= 0:  # 非正整数不输出
+        if count <= 0:
             return False
-        if logger_count <= 0 or logger_count == False:  # 无限循环不输出
-            return False
-        elif isinstance(logger_count, bool) and logger_count:  # True表示默认输出10次
+        if logger_count is False or logger_count is True:
+            return False  # False/True 都不输出（True 的输出由 log_next 处理）
+        if not isinstance(logger_count, int) or logger_count <= 0:
             return count % 10 == 0 or count == 1 or count == 10
-        elif isinstance(logger_count, int):  # 每logger_count次输出一次
-            return count % logger_count == 0 or count == 1 or count == logger_count
-        return count % 10 == 0 or count == 1 or count == 10
-
-        # # 计算count的数量级（科学计数法10^n）：如count=5→1，count=50→10，count=500→100
-        # count_str = str(count)
-        # magnitude = 10 ** (len(count_str) - 1)  # 当前数量级（0~9*10^n）
-
-        # # 1-9的特殊逻辑：第1次或第5次
-        # if magnitude == 1:
-        #     return count == 1 or count == 5
-        # # 两位数及以上的通用逻辑：是当前数量级的倍数
-        # else:
-        #     return count % magnitude == 0
+        return count % logger_count == 0 or count == 1 or count == logger_count

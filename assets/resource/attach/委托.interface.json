@@ -18,12 +18,12 @@
         {
             "name": "角色突破",
             "entry": "角色突破",
-            "description": "角色突破本，探险/无尽。仅支持每一五波使用倍率书",
+            "description": "角色突破本，探险/无尽。",
             "option": [
                 "角色突破等级",
                 "属性选择",
                 "波次选择",
-                "角色突破倍率波次",
+                "使用倍率书的波次",
                 "单次倍率",
                 "超时时间"
             ]
@@ -42,7 +42,7 @@
         {
             "name": "武器突破",
             "entry": "武器突破",
-            "description": "武器突破本，调停。仅支持每一五波使用倍率书",
+            "description": "武器突破本，调停。",
             "option": [
                 "武器突破等级",
                 "单次倍率",
@@ -78,8 +78,10 @@
             "description": "皎皎信物本，扼守/无尽。仅支持50级副本。",
             "option": [
                 "皎皎信物等级",
+                "倍率书副本次数",
+                "倍率书副本次数播报",
                 "波次选择",
-                "皎皎信物倍率波次",
+                "使用倍率书的波次",
                 "单次倍率",
                 "超时时间"
             ]
@@ -173,7 +175,7 @@
         "皎皎信物等级": {
             "type": "select",
             "label": "等级选择",
-            "description": "仅支持50级和80级，使用波次倍率书时建议手动关闭自动波次。",
+            "description": "仅支持50级和80级。",
             "cases": [
                 {
                     "name": "50",
@@ -210,33 +212,40 @@
                 }
             ]
         },
-        "角色突破倍率波次": {
-            "type": "select",
-            "label": "波次选择",
-            "cases": [
+        "波次选择": {
+            "type": "input",
+            "description": "输入每次委托最大波次数，默认为99。（暂未生效）",
+            "inputs": [
                 {
-                    "name": "每一波",
-                    "description": "选择每一波使用倍率书"
-                },
-                {
-                    "name": "每五波",
-                    "description": "选择每五波使用倍率书"
+                    "name": "ocr_expected",
+                    "pipeline_type": "string",
+                    "default": "99"
                 }
-            ]
+            ],
+            "pipeline_override": {
+                "波次选择": {
+                    "expected": "{ocr_expected}"
+                }
+            }
         },
-        "皎皎信物倍率波次": {
-            "type": "select",
-            "label": "波次选择",
-            "cases": [
+        "使用倍率书的波次": {
+            "label": "倍率波次",
+            "type": "input",
+            "description": "输入倍率书的波次，默认为0，即不使用倍率书。\n选择指定波次使用倍率书时建议手动关闭自动波次。（暂未生效）",
+            "inputs": [
                 {
-                    "name": "每一波",
-                    "description": "选择每一波使用倍率书"
-                },
-                {
-                    "name": "每三波",
-                    "description": "选择每三波使用倍率书"
+                    "name": "target_count",
+                    "pipeline_type": "int",
+                    "default": "0"
                 }
-            ]
+            ],
+            "pipeline_override": {
+                "无尽波次倍率选择": {
+                    "attach": {
+                        "target_count": "{target_count}"
+                    }
+                }
+            }
         }
     }
 }
