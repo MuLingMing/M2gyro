@@ -28,19 +28,11 @@
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 6,
+                                "duration": 4.5,
                                 "overlays": [
                                     {
-                                        "action": "move",
-                                        "params": {
-                                            "direction": "left",
-                                            "duration": 3
-                                        },
-                                        "at": 2
-                                    },
-                                    {
-                                        "action": "jump",
-                                        "at": 4
+                                        "action": "dodge",
+                                        "at": 0.5
                                     }
                                 ]
                             }
@@ -48,20 +40,39 @@
                         {
                             "action": "move",
                             "params": {
-                                "direction": "backward",
-                                "duration": 6,
+                                "direction": "right",
+                                "duration": 0.8
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 2.5,
                                 "overlays": [
                                     {
-                                        "action": "move",
-                                        "params": {
-                                            "direction": "left",
-                                            "duration": 7
-                                        },
-                                        "at": 2
-                                    },
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 0.8
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 8,
+                                "overlays": [
                                     {
-                                        "action": "jump",
-                                        "at": 4
+                                        "action": "dodge",
+                                        "at": 0.5
                                     }
                                 ]
                             }
@@ -71,17 +82,27 @@
             }
         }
     },
-    "test_Count": {
+    "test_跑图": {
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "Count",
+                "custom_action": "OperationRecordAction",
                 "custom_action_param": {
-                    "count": 1,
-                    "target_count": 2,
-                    "logger_count": true,
-                    "log_else": "else{node_name},{count}",
-                    "log_next": "next{node_name},{count}"
+                    "operations": [
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 8,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        }
+                    ]
                 }
             }
         }

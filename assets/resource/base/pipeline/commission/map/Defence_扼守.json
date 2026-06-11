@@ -1,7 +1,8 @@
 {
+    //波次扼守
     "扼守": {},
+    //皎皎币
     "皎皎信物扼守50": {
-        //皎皎币
         "recognition": {
             "type": "OCR",
             "param": {
@@ -76,6 +77,7 @@
         ]
     },
     "皎皎信物扼守80": {},
+    //夜航手册单次扼守
     "夜航手册65扼守": {
         //夜航手册65扼守
         //扼守副本页面
@@ -193,8 +195,181 @@
             "扼守战斗单次"
         ]
     },
+    //囚狼之劫掠
+    "夜航手册50扼守-舍身.*?野蜂": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "扼守"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    650
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]委托完成次数",
+            "[JumpBack]夜航手册50扼守-舍身.*?野蜂跑图",
+            "[JumpBack]倍率选择",
+            "[JumpBack]确认选择"
+        ]
+    },
+    "夜航手册50扼守-舍身.*?野蜂跑图": {
+        //四张地图，204m、176m、142m、和地图右下角
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "前往目标点"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    500
+                ]
+            }
+        },
+        "next": [
+            "扼守战斗单次"
+        ]
+    },
+    "夜航手册50扼守-舍身.*?野蜂204m跑图": {
+        //204m地图
+        "action": {
+            "action": {
+                "type": "Custom",
+                "param": {
+                    "custom_action": "OperationRecordAction",
+                    "custom_action_param": {
+                        "operations": [
+                            {
+                                "action": "wait",
+                                "params": {
+                                    "duration": 1.5
+                                }
+                            },
+                            {
+                                "action": "move",
+                                "params": {
+                                    "direction": "forward",
+                                    "duration": 5.0,
+                                    "overlays": [
+                                        {
+                                            "action": "dodge",
+                                            "at": 0.5
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "action": "move",
+                                "params": {
+                                    "direction": "right",
+                                    "duration": 0.8
+                                }
+                            },
+                            {
+                                "action": "move",
+                                "params": {
+                                    "direction": "forward",
+                                    "duration": 1,
+                                    "overlays": [
+                                        {
+                                            "action": "dodge",
+                                            "at": 0.5
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "action": "move",
+                                "params": {
+                                    "direction": "left",
+                                    "duration": 0.8
+                                }
+                            },
+                            {
+                                "action": "move",
+                                "params": {
+                                    "direction": "forward",
+                                    "duration": 1,
+                                    "overlays": [
+                                        {
+                                            "action": "dodge",
+                                            "at": 0.5
+                                        }
+                                    ]
+                                }
+                            }
+                        ],
+                        "loop_count": 1
+                    }
+                }
+            }
+        }
+    },
+    "夜航手册50扼守-舍身.*?野蜂142m跑图": {
+        //142m地图
+        "action": {
+            "action": {
+                "type": "Custom",
+                "param": {
+                    "custom_action": "OperationRecordAction",
+                    "custom_action_param": {
+                        "operations": [
+                            {
+                                "action": "wait",
+                                "params": {
+                                    "duration": 1.5
+                                }
+                            },
+                            {
+                                "action": "move",
+                                "params": {
+                                    "direction": "forward",
+                                    "duration": 4.5,
+                                    "overlays": [
+                                        {
+                                            "action": "dodge",
+                                            "at": 0.5
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "action": "move",
+                                "params": {
+                                    "direction": "right",
+                                    "duration": 0.8
+                                }
+                            },
+                            {
+                                "action": "move",
+                                "params": {
+                                    "direction": "forward",
+                                    "duration": 2.5,
+                                    "overlays": [
+                                        {
+                                            "action": "dodge",
+                                            "at": 0.5
+                                        }
+                                    ]
+                                }
+                            }
+                        ],
+                        "loop_count": 1
+                    }
+                }
+            }
+        }
+    },
+    //光羽翼专注、光羽翼昂扬、暗羽翼盛怒、暗盛怒
     "夜航手册羽翼扼守-直跑50m": {
-        //光羽翼专注、光羽翼昂扬、暗羽翼盛怒、暗盛怒
         "recognition": {
             "type": "OCR",
             "param": {
@@ -266,8 +441,8 @@
             "扼守战斗单次"
         ]
     },
+    //风羽翼决断、雷羽翼决断
     "夜航手册羽翼扼守-直跑70m": {
-        //风羽翼决断、雷羽翼决断
         "recognition": {
             "type": "OCR",
             "param": {
@@ -339,8 +514,8 @@
             "扼守战斗单次"
         ]
     },
+    //风羽翼背水、雷羽翼昂扬
     "夜航手册羽翼扼守-爆破.*?应天侍-猩红.*?萼蚀": {
-        //风羽翼背水、雷羽翼昂扬
         "recognition": {
             "type": "OCR",
             "param": {
@@ -446,6 +621,7 @@
             "扼守战斗单次"
         ]
     },
+    //扼守战斗
     "扼守未抵达目的地": {
         "recognition": {
             "type": "OCR",

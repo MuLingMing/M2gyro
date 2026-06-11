@@ -281,20 +281,21 @@
             "param": {
                 "custom_recognition": "IfElseReco",
                 "custom_recognition_param": {
-                    "if_node": "无尽达到波次后撤离",
-                    "else_node": "挑战更多轮次可获得"
+                    "entry": "挑战更多轮次可获得",
+                    "if": "无尽达到波次后撤离",
+                    "else": true
                 }
             }
         },
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "IfElse",
+                "custom_action": "IfElseAction",
                 "custom_action_param": {
-                    "true": [
+                    "if": [
                         "无尽撤离或局内放弃委托"
                     ],
-                    "false": [
+                    "else": [
                         "无尽波次倍率选择"
                     ]
                 }

@@ -3,25 +3,26 @@
 条件分支识别器
 
 功能说明：
-1. 按优先级依次识别两个节点（A、B）
-2. 节点A识别成功 → 返回 box=A.box, hit=True
-3. 节点A未识别到，节点B识别成功 → 返回 box=B.box, hit=False
-4. A、B均未识别到 → 返回 box=None，节点未命中
-5. 识别成功但 box=None 时，将 box 设为 [0,0,0,0]
+1. 按优先级依次识别节点：entry → if → elif → else
+2. entry 识别成功 → 继续执行条件分支识别
+3. if 识别成功 → 返回 box=if.box, hit=True, hit_node="if"
+4. elif 识别成功 → 返回 box=elif.box, hit=True, hit_node="elif[index]"
+5. else 识别成功 → 返回 box=else.box, hit=True, hit_node="else"
+6. 均未识别到 → 返回 box=None, hit=False
+7. 识别成功但 box=None 时，将 box 设为 [0,0,0,0]
 
-与 IfElse 动作器配合使用：
-- hit=True  → IfElse 执行 true 分支
-- hit=False → IfElse 执行 false 分支
+与 IfElseAction 动作器配合使用：
+- hit=True  → IfElseAction 根据 hit_node 执行对应分支
 - box=None  → 节点未命中，Pipeline 重试/走 exceeded_next
 """
 
 import json
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 import numpy
 from maa.context import Context
 from maa.custom_recognition import CustomRecognition
-from maa.define import RectType
+from maa.define import Rect, RectType
 from utils.logger import logger
 
 
@@ -33,36 +34,58 @@ class IfElseReco(CustomRecognition):
 
     参数格式（custom_recognition_param）：
     {
-        "if_node": "NodeA",
-        "else_node": "NodeB"
+        "entry": "Node_entry",
+        "if": "NodeA",
+        "elif": ["NodeB", "NodeC"],
+        "else": "NodeD"
     }
 
     字段说明：
-    - if_node: 优先识别的节点名，识别成功返回 hit=True
-    - else_node: 次优先识别的节点名，识别成功返回 hit=False
+    - entry: 入口节点名（可选），识别成功则继续执行条件分支识别，否则返回 box=None, hit=False
+    - if: 优先识别的节点名，识别成功返回 hit=True, detail.hit_node=if
+    - elif: 次优先识别的节点名列表，识别成功返回 hit=True, detail.hit_node=elif[index]
+    - else: 兜底分支（可选）
+      - 省略: 不执行 else 分支，均未命中返回 hit=False
+      - 字符串: 节点名，执行识别，识别成功返回 hit=True, hit_node="else"
+      - true: 与 entry 共用识别结果，直接返回 box=entry.box, hit=True, hit_node="else"
 
     返回值逻辑：
-    1. if_node 识别成功 → AnalyzeResult(box=if_node.box, detail={hit=True})
-    2. if_node 未命中，else_node 识别成功 → AnalyzeResult(box=else_node.box, detail={hit=False})
-    3. 两者均未命中 → AnalyzeResult(box=None, detail={hit=False})
-    4. 识别成功但 box=None 时 → box 设为 [0,0,0,0]
+    1. entry 未识别到 → AnalyzeResult(box=None, detail={hit=False})
+    2. entry 识别成功 → 继续执行条件分支识别
+    3. if 识别成功 → AnalyzeResult(box=if.box, detail={hit=True, hit_node="if"})
+    4. if 未命中，elif 识别成功 → AnalyzeResult(box=elif.box, detail={hit=True, hit_node="elif[index]"})
+    5. if 未命中，elif 未命中，else 识别成功 → AnalyzeResult(box=else.box, detail={hit=True, hit_node="else"})
+    6. else=true → 跳过识别，直接返回 AnalyzeResult(box=entry.box, detail={hit=True, hit_node="else"})
+    7. if、elif、else 均未识别到 → AnalyzeResult(box=None, detail={hit=False})
+    8. 特殊情况：识别成功但 box=None 时 → box 设为 [0,0,0,0]
+    9. 逻辑类似于 if-elif-else 语句
 
     Pipeline 使用示例：
     {
         "ConditionCheck": {
             "recognition": "IfElseReco",
             "custom_recognition_param": {
-                "if_node": "TargetA",
-                "else_node": "TargetB"
+                "entry": "Node_entry",
+                "if": "RecoA",
+                "elif": ["RecoB", "RecoC"],
+                "else": "RecoD"
             },
             "action": "Custom",
-            "custom_action": "IfElse",
+            "custom_action": "IfElseAction",
             "custom_action_param": {
-                "true": [{"action": "Click", "param": {"target": true}}],
-                "false": ["HandleFalse"]
+                "if": [{"action": "Click", "param": {"target": true}}],
+                "elif": ["ActionB", "ActionC"],
+                "else": ["ActionD"]
             }
         }
     }
+
+    Reco 和 Action 配合使用且一一对应：
+    - detail.hit_node="if"       → IfElseAction 执行 if 分支
+    - detail.hit_node="elif[0]"  → IfElseAction 执行 elif[0] 分支
+    - detail.hit_node="elif[1]"  → IfElseAction 执行 elif[1] 分支
+    - detail.hit_node="else"     → IfElseAction 执行 else 分支
+    - box=None                   → 节点未命中
     """
 
     def analyze(
@@ -78,10 +101,7 @@ class IfElseReco(CustomRecognition):
         - argv: 识别参数，包含输入图像和 custom_recognition_param
 
         返回值:
-        - CustomRecognition.AnalyzeResult:
-            if_node 命中: box=if_node.box, detail={hit=True}
-            else_node 命中: box=else_node.box, detail={hit=False}
-            均未命中: box=None, detail={hit=False}
+        - CustomRecognition.AnalyzeResult
         """
         image = argv.image
 
@@ -97,33 +117,68 @@ class IfElseReco(CustomRecognition):
             )
 
         params = self._parse_params(argv.custom_recognition_param)
-        if_node = params.get("if_node")
-        else_node = params.get("else_node")
+        entry_node = params.get("entry")
+        if_node = params.get("if")
+        elif_nodes = params.get("elif", [])
+        else_node = params.get("else")
 
-        if not if_node and not else_node:
-            logger.error("IfElseReco: if_node 和 else_node 均未指定")
+        # 确保 elif 是列表
+        if isinstance(elif_nodes, str):
+            elif_nodes = [elif_nodes]
+
+        # 检查是否有节点配置
+        if not if_node and not elif_nodes and not else_node:
+            logger.error("IfElseReco: 未配置任何识别节点")
             return CustomRecognition.AnalyzeResult(
                 box=None, detail={"hit": False, "reason": "no_nodes_specified"}
             )
 
-        # 识别 if_node
+        # 识别 entry 节点（如果配置了）
+        entry_box = None
+        if entry_node:
+            entry_result = context.run_recognition(entry_node, image)
+            if not entry_result or not entry_result.hit:
+                return CustomRecognition.AnalyzeResult(
+                    box=None, detail={"hit": False, "hit_node": "entry_failed"}
+                )
+            entry_box = self._normalize_box(entry_result.box)
+
+        # 识别 if 节点
         if if_node:
-            result_a = context.run_recognition(if_node, image)
-            if result_a and result_a.hit:
-                box = self._normalize_box(result_a.box)
+            result = context.run_recognition(if_node, image)
+            if result and result.hit:
+                box = self._normalize_box(result.box)
                 return CustomRecognition.AnalyzeResult(
                     box=box,
-                    detail={"hit": True, "matched_node": if_node}
+                    detail={"hit": True, "hit_node": "if"}
                 )
 
-        # 识别 else_node
-        if else_node:
-            result_b = context.run_recognition(else_node, image)
-            if result_b and result_b.hit:
-                box = self._normalize_box(result_b.box)
+        # 依次识别 elif 节点列表
+        for index, elif_node in enumerate(elif_nodes):
+            if not elif_node:
+                continue
+            result = context.run_recognition(elif_node, image)
+            if result and result.hit:
+                box = self._normalize_box(result.box)
                 return CustomRecognition.AnalyzeResult(
                     box=box,
-                    detail={"hit": False, "matched_node": else_node}
+                    detail={"hit": True, "hit_node": f"elif[{index}]"}
+                )
+
+        # 识别 else 节点
+        if else_node is True:
+            # else=true 兜底，直接视为识别成功，返回 entry 的识别框
+            return CustomRecognition.AnalyzeResult(
+                box=entry_box if entry_box is not None else Rect(0, 0, 0, 0),
+                detail={"hit": True, "hit_node": "else"}
+            )
+        elif else_node:
+            result = context.run_recognition(else_node, image)
+            if result and result.hit:
+                box = self._normalize_box(result.box)
+                return CustomRecognition.AnalyzeResult(
+                    box=box,
+                    detail={"hit": True, "hit_node": "else"}
                 )
 
         # 均未命中
@@ -133,7 +188,7 @@ class IfElseReco(CustomRecognition):
         )
 
     @staticmethod
-    def _parse_params(raw_param: str | dict | None) -> Dict[str, Any]:
+    def _parse_params(raw_param: Union[str, Dict[str, Any], None]) -> Dict[str, Any]:
         """
         解析 custom_recognition_param 参数
 
@@ -141,7 +196,7 @@ class IfElseReco(CustomRecognition):
         - raw_param: 原始参数，可能为 str（JSON）或 dict
 
         返回值:
-        - dict: 包含 "if_node" 和 "else_node" 的字典
+        - dict: 包含 entry, if, elif, else 的字典
         """
         if isinstance(raw_param, str):
             try:
@@ -156,7 +211,7 @@ class IfElseReco(CustomRecognition):
     @staticmethod
     def _normalize_box(box: Optional[RectType]) -> RectType:
         """
-        标准化 box，None 转换为 [0,0,0,0]
+        标准化 box，None 转换为 Rect(0,0,0,0)
 
         参数:
         - box: 原始 box 值
@@ -165,5 +220,5 @@ class IfElseReco(CustomRecognition):
         - RectType: 标准化后的 box
         """
         if box is None:
-            return [0, 0, 0, 0]
+            return Rect(0, 0, 0, 0)
         return box

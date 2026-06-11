@@ -29,10 +29,10 @@
         "class": "Countdown",
         "file_path": "custom/action/Countdown.py"
     },
-    "IfElse": {
+    "IfElseAction": {
         "type": "action",
-        "class": "IfElse",
-        "file_path": "custom/action/IfElse.py"
+        "class": "IfElseAction",
+        "file_path": "custom/action/IfElseAction.py"
     },
     "RewardSelector": {
         "type": "recognition",

@@ -1,0 +1,54 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "./custom_reco/CovertStage.schema.json",
+    "if": {
+        "properties": {
+            "custom_recognition": {
+                "const": "CovertStage"
+            }
+        },
+        "required": [
+            "custom_recognition"
+        ]
+    },
+    "then": {
+        "properties": {
+            "custom_recognition_param": {
+                "$ref": "#/definitions/CovertStageParam",
+                "description": "CovertStage 委托密函关卡选择识别器参数\n\n按区域优先级遍历 角色/武器/魔之楔 三个区域，识别关卡并返回最优结果。\n兼容 IfElseAction：返回 hit_node=\"if\"（命中）或 hit_node=\"else\"（无命中）\n\n返回值逻辑：\n1. 页面正确 + 命中关卡 → box=关卡ROI, hit=True, hit_node=\"if\"\n2. 页面正确 + 无目标区域 → box=[0,0,0,0], hit=True, hit_node=\"else\"\n3. 页面不正确 → box=None, hit=False\n\n示例：\n{\n    \"region_types\": [\"角色\", \"武器\"],\n    \"stage_list\": [\"驱离\", \"探险\"]\n}\n\n字段说明：\n- region_types: 要检查的区域列表，默认 [\"角色\", \"武器\", \"魔之楔\"]\n- stage_list: 自定义关卡名称列表，为空时终止任务链"
+            }
+        }
+    },
+    "definitions": {
+        "CovertStageParam": {
+            "type": "object",
+            "properties": {
+                "region_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "角色",
+                            "武器",
+                            "魔之楔"
+                        ]
+                    },
+                    "default": [
+                        "角色",
+                        "武器",
+                        "魔之楔"
+                    ],
+                    "description": "要检查的区域列表（1~3 个）。若为空或全非法，默认使用全部区域"
+                },
+                "stage_list": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "自定义关卡名称列表，仅匹配这些关卡（子串匹配）。注意：列表中的名称不应存在包含关系，否则可能导致误匹配。为空时直接终止任务链"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

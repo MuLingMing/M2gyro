@@ -5,7 +5,7 @@
     "properties": {
         "custom_recognition": {
             "type": "string",
-            "description": "识别名\n\n支持的自定义识别：\n\n1. RewardSelector - 奖励选择识别，识别并选择指定的奖励选项\n\n2. CovertStage - 委托密函关卡选择识别，按区域和优先级选取最优关卡\n\n3. PathTargetReco - 寻路目标识别，识别目的地标志并执行选择策略返回最优目标\n\n4. IfElseReco - 条件分支识别，按优先级识别两个节点，配合 IfElse 动作器使用"
+            "description": "识别名\n\n支持的自定义识别：\n\n1. RewardSelector - 奖励选择识别，识别并选择指定的奖励选项\n\n2. CovertStage - 委托密函关卡选择识别，按区域和优先级选取最优关卡，兼容 IfElseAction\n\n3. IfElseReco - 条件分支识别，按优先级依次识别节点：entry → if → elif → else，返回首个命中的节点信息，配合 IfElseAction 使用"
         },
         "custom_recognition_param": {
             "type": "object"
@@ -16,10 +16,10 @@
             "$ref": "./custom_reco/RewardSelector.schema.json"
         },
         {
-            "$ref": "./custom_reco/PathTargetReco.schema.json"
+            "$ref": "./custom_reco/IfElseReco.schema.json"
         },
         {
-            "$ref": "./custom_reco/IfElseReco.schema.json"
+            "$ref": "./custom_reco/CovertStage.schema.json"
         }
     ]
 }

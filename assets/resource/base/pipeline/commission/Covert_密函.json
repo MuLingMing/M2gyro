@@ -28,10 +28,10 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "IfElse",
+                "custom_action": "IfElseAction",
                 "custom_action_param": {
-                    "true": {
-                        "items": [
+                    "if": {
+                        "Act_or_node": [
                             {
                                 "action": "Click",
                                 "param": {

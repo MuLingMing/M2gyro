@@ -29,10 +29,10 @@
 - UNIFIED_ROI: 统一 OCR 搜索区域（720p 基准），所有识别均在此范围内
 - FALLBACK_TAB_X: 动态布局降级时使用的硬编码 Tab 中心 X 坐标
 
-返回值：
-- 类型1 命中关卡: AnalyzeResult(box=关卡ROI, detail={hit=True, region, stage, ...})
-- 类型2 页面正确但无命中: AnalyzeResult(box=[0,0,0,0], detail={hit=False, tabs_found_count=3, ...})
-- 类型3 未识别到页面: AnalyzeResult(box=None, detail={hit=False, tabs_found_count<3, ...})
+返回值（兼容 IfElseAction）：
+- 类型1 命中关卡: AnalyzeResult(box=关卡ROI, detail={hit=True, hit_node="if", region, stage, ...})
+- 类型2 页面正确但无命中: AnalyzeResult(box=[0,0,0,0], detail={hit=True, hit_node="else", ...})
+- 类型3 未识别到页面: AnalyzeResult(box=None, detail={hit=False, ...})
 """
 
 import json
@@ -134,11 +134,11 @@ class CovertStage(CustomRecognition):
         - context: MaaFramework 上下文对象，用于调用 OCR 和控制任务链
         - argv: 识别参数，包含输入图像和 custom_recognition_param
 
-        返回值:
+        返回值（兼容 IfElseAction）:
         - CustomRecognition.AnalyzeResult:
-            类型1 命中关卡: box=选中关卡的 ROI，detail 包含 hit=True/区域/关卡/持有数等信息
-            类型2 页面正确但无命中: box=[0,0,0,0]，detail 包含 hit=False/tabs_found_count=3
-            类型3 未识别到页面: box=None，detail 包含 hit=False/tabs_found_count<3
+            类型1 命中关卡: box=选中关卡的 ROI，detail 包含 hit=True/hit_node="if"/区域/关卡/持有数等信息
+            类型2 页面正确但无命中: box=[0,0,0,0]，detail 包含 hit=True/hit_node="else"
+            类型3 未识别到页面: box=None，detail 包含 hit=False
 
         执行流程:
         1. 校验输入图像有效性（非空、numpy 数组、size > 0）
@@ -242,6 +242,7 @@ class CovertStage(CustomRecognition):
                 box=best_stage["box"],
                 detail={
                     "hit": True,
+                    "hit_node": "if",
                     "region": region,
                     "stage": best_stage["name"],
                     "held_count": held_count,
@@ -258,7 +259,8 @@ class CovertStage(CustomRecognition):
             return CustomRecognition.AnalyzeResult(
                 box=[0, 0, 0, 0],
                 detail={
-                    "hit": False,
+                    "hit": True,
+                    "hit_node": "else",
                     "reason": "all_regions_exhausted",
                     "checked_regions": checked_regions,
                     "tabs_found_count": tabs_found_count,

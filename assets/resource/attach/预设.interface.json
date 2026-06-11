@@ -16,11 +16,11 @@
                             "target_count": "0"
                         },
                         "倍率书副本次数播报": {
-                            "logger_count": "0"
+                            "logger_count": "1"
                         },
                         "单次倍率": "无加成",
                         "超时时间": {
-                            "total_time": "180"
+                            "total_time": "1800"
                         },
                         "波次选择": {
                             "ocr_expected": "99"

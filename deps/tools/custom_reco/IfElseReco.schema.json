@@ -15,7 +15,7 @@
         "properties": {
             "custom_recognition_param": {
                 "$ref": "#/definitions/IfElseRecoParam",
-                "description": "IfElseReco 参数\n\n条件分支识别器，按优先级依次识别两个节点：\n- if_node 识别成功 → hit=True\n- else_node 识别成功 → hit=False\n- 均未命中 → 节点未命中\n\n示例：\n{\n    \"if_node\": \"无尽达到波次后撤离\",\n    \"else_node\": \"挑战更多轮次可获得\"\n}\n\n字段说明：\n- if_node: 优先识别的节点名，识别成功返回 hit=True，box 为该节点的识别框\n- else_node: 次优先识别的节点名，识别成功返回 hit=False，box 为该节点的识别框\n\n与 IfElse 动作器配合：\n- hit=True → 执行 IfElse 的 true 分支\n- hit=False → 执行 IfElse 的 false 分支"
+                "description": "IfElseReco 条件分支识别器参数\n\n按优先级依次识别节点：entry → if → elif → else，返回首个命中的节点信息\n\n返回值逻辑：\n1. entry 未识别到 → box=None, hit=False\n2. entry 识别成功 → 继续执行条件分支识别\n3. if 识别成功 → box=if.box, hit=True, hit_node=\"if\"\n4. elif 识别成功 → box=elif.box, hit=True, hit_node=\"elif[index]\"\n5. else 识别成功 → box=else.box, hit=True, hit_node=\"else\"\n6. else=true → 与 entry 共用识别结果，返回 box=entry.box, hit=True, hit_node=\"else\"\n7. 均未识别到 → box=None, hit=False\n8. 识别成功但 box=None 时 → box 设为 Rect(0,0,0,0)\n\n与 IfElse 动作器配合：\n- hit_node=\"if\"       → IfElse 执行 if 分支\n- hit_node=\"elif[0]\"  → IfElse 执行 elif[0] 分支\n- hit_node=\"else\"     → IfElse 执行 else 分支\n- box=None            → 节点未命中\n\n示例：\n{\n    \"entry\": \"Node_entry\",\n    \"if\": \"RecoA\",\n    \"elif\": [\"RecoB\", \"RecoC\"],\n    \"else\": \"RecoD\"\n}\n\n字段说明：\n- entry: 入口节点名（可选），识别成功才继续执行条件分支\n- if: 优先识别的节点名，识别成功返回 hit_node=\"if\"\n- elif: 次优先识别的节点名列表，识别成功返回 hit_node=\"elif[index]\"\n- else: 兜底分支（可选）。省略则不执行 else 分支；字符串则执行识别；true 则与 entry 共用识别结果"
             }
         },
         "required": [
@@ -26,13 +26,40 @@
         "IfElseRecoParam": {
             "type": "object",
             "properties": {
-                "if_node": {
+                "entry": {
                     "type": "string",
-                    "description": "优先识别的节点名，识别成功返回 hit=True，box 为该节点的识别框"
+                    "description": "入口节点名（可选）。配置后会先识别该节点，识别成功才继续执行条件分支识别，否则返回 hit=False"
                 },
-                "else_node": {
+                "if": {
                     "type": "string",
-                    "description": "次优先识别的节点名，识别成功返回 hit=False，box 为该节点的识别框"
+                    "description": "优先识别的节点名。识别成功返回 hit=True, hit_node=\"if\", box 为该节点的识别框"
+                },
+                "elif": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "description": "次优先识别的节点名列表。按顺序依次识别，首个命中的返回 hit=True, hit_node=\"elif[index]\""
+                },
+                "else": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "兜底节点名。if 和 elif 均未命中时识别，识别成功返回 hit=True, hit_node=\"else\""
+                        },
+                        {
+                            "type": "boolean",
+                            "const": true,
+                            "description": "与 entry 共用识别结果，直接返回 box=entry.box, hit=True, hit_node=\"else\""
+                        }
+                    ]
                 }
             },
             "additionalProperties": false

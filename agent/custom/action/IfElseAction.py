@@ -3,19 +3,17 @@
 条件分支动作器
 
 功能说明：
-1. 根据前序识别结果的自定义 detail.hit 字段分支执行
-   - hit=True  → 执行 true 分支
-   - hit=False → 执行 false 分支
+1. 根据前序识别结果的 detail.hit_node 字段分支执行
 2. 分支项支持两种执行模式：
    - 字符串 → context.run_task() 执行 Pipeline 节点
    - 字典   → context.run_action_direct() 直接执行操作
 3. 每个分支可携带独立的 next 节点列表，分支执行完毕后依次执行
 
-与 CovertStage 识别器配合使用：
-- 类型1（命中关卡，box=关卡坐标，hit=True）→ true 分支
-- 类型2（页面正确但无命中，box=[0,0,0,0]，hit=False）→ false 分支
-- 类型3（未识别到页面，box=None）→ 节点未命中，Pipeline 重试/走 exceeded_next，
-  IfElse 不会被执行
+与 IfElseReco 识别器配合使用：
+- hit_node="if"       → 执行 if 分支
+- hit_node="elif[0]"  → 执行 elif[0] 分支
+- hit_node="else"     → 执行 else 分支
+- box=None            → 节点未命中，Pipeline 重试/走 exceeded_next
 """
 
 import dataclasses
@@ -77,71 +75,75 @@ _ACTION_PARAM_MAP: Dict[str, type] = {
 BranchItem = Union[str, Dict[str, Any]]
 
 
-class IfElse(CustomAction):
+class IfElseAction(CustomAction):
     """
     条件分支动作器
 
-    根据前序识别结果的自定义 detail.hit 字段分支执行：
-    - hit=True  → 执行 true 分支
-    - hit=False → 执行 false 分支
+    根据前序识别结果的 detail.hit_node 字段分支执行
 
     分支项支持两种执行模式：
     1. 字符串 → context.run_task() 执行 Pipeline 节点
     2. 字典   → context.run_action_direct() 直接执行操作
 
-    分支格式（两种，向后兼容）：
+    分支格式（两种）：
     - 列表格式（无 next）：[item1, item2, ...]
-    - 对象格式（带 next）：{"items": [item1, ...], "next": ["NodeA", ...]}
+    - 对象格式（带 next）：{"Act_or_node": [item1, ...], "next": ["NodeA", ...]}
 
     参数格式：
     {
-        "true": {
-            "items": [{"action": "Click", "param": {"target": true}}],
+        "if": {
+            "Act_or_node": [{"action": "Click", "param": {"target": true}}],
             "next": ["NextStep1"]
         },
-        "false": {
-            "items": ["HandleNoMatch"],
-            "next": ["NextStep2"]
-        }
+        "elif": ["ActionB", "ActionC"],
+        "else": ["ActionD"]
     }
 
-    或简写格式（无 next，向后兼容）：
+    或简写格式（无 next）：
     {
-        "true": [{"action": "Click", "param": {"target": true}}],
-        "false": ["HandleNoMatch"]
+        "if": [{"action": "Click", "param": {"target": true}}],
+        "elif": ["ActionB", "ActionC"],
+        "else": ["ActionD"]
     }
 
     字段说明：
-    - true: hit=True 时执行的分支，可省略
-      - 列表格式: 分支项列表，无 next
-      - 对象格式:
-        - items: 分支项列表
-          - 字符串项: Pipeline 节点名，通过 context.run_task() 执行
-          - 字典项: {"action": "操作类型", "param": {操作参数}}
-            - action: JActionType 枚举值（Click/Swipe/ClickKey/Custom 等）
-            - param: 对应操作类型的参数字典，与 Pipeline JSON 中 action 参数格式一致
-        - next: 分支执行完毕后依次执行的 Pipeline 节点列表，可省略
-    - false: hit=False 时执行的分支，格式同 true，可省略
+    - if: hit_node="if" 时执行的分支，可省略
+    - elif: hit_node="elif[index]" 时执行的分支，可以是列表或嵌套列表，可省略
+    - else: hit_node="else" 时执行的分支，可省略
 
-    hit 判定逻辑：
-    - Custom Recognition: 从 best_result.detail 解析 hit 字段
-    - 内置 Recognition: 使用 reco_detail.hit
+    分支格式：
+    - 列表格式: 分支项列表，无 next
+    - 对象格式:
+      - Act_or_node: 分支项列表
+        - 字符串项: Pipeline 节点名，通过 context.run_task() 执行
+        - 字典项: {"action": "操作类型", "param": {操作参数}}
+      - next: 分支执行完毕后依次执行的 Pipeline 节点列表，可省略
+
+    hit_node 匹配逻辑：
+    - hit_node="if" → 执行 params["if"]
+    - hit_node="elif[0]" → 执行 params["elif"][0]
+    - hit_node="elif[1]" → 执行 params["elif"][1]
+    - hit_node="else" → 执行 params["else"]
 
     Pipeline 使用示例：
     {
-        "CovertStage_Select": {
-            "recognition": "CovertStage",
+        "ConditionCheck": {
+            "recognition": "IfElseReco",
+            "custom_recognition_param": {
+                "entry": "Node_entry",
+                "if": "RecoA",
+                "elif": ["RecoB", "RecoC"],
+                "else": "RecoD"
+            },
             "action": "Custom",
-            "custom_action": "IfElse",
+            "custom_action": "IfElseAction",
             "custom_action_param": {
-                "true": {
-                    "items": [{"action": "Click", "param": {"target": true}}],
-                    "next": ["CovertStage_Confirm"]
+                "if": {
+                    "Act_or_node": [{"action": "Click", "param": {"target": true}}],
+                    "next": ["ConfirmA"]
                 },
-                "false": {
-                    "items": ["CovertStage_NoMatch"],
-                    "next": ["CovertStage_Retry"]
-                }
+                "elif": ["ActionB", "ActionC"],
+                "else": ["ActionD"]
             }
         }
     }
@@ -161,11 +163,11 @@ class IfElse(CustomAction):
         - CustomAction.RunResult: 始终返回 success=True
 
         执行流程:
-        1. 解析 custom_action_param 获取 true/false 分支配置
-        2. 从 argv.reco_detail 提取 hit 值
-        3. 根据 hit 选择对应分支
-        4. 解析分支格式（列表或对象），提取 items 和 next
-        5. 遍历 items，依次执行
+        1. 解析 custom_action_param 获取 if/elif/else 分支配置
+        2. 从 argv.reco_detail 提取 hit_node 值
+        3. 根据 hit_node 选择对应分支
+        4. 解析分支格式（列表或对象），提取 Act_or_node 和 next
+        5. 遍历 Act_or_node，依次执行
         6. 执行分支的 next 节点列表
         7. 执行中检查 stopping 信号
         """
@@ -175,12 +177,14 @@ class IfElse(CustomAction):
             logger.error(f"IfElse: 参数解析失败: {e}")
             return CustomAction.RunResult(success=True)
 
-        true_raw = params.get("true", [])
-        false_raw = params.get("false", [])
+        hit_node = self._extract_hit_node(argv)
 
-        hit = self._extract_hit(argv)
+        # 根据 hit_node 选择分支
+        branch_raw = self._select_branch(params, hit_node)
+        if branch_raw is None:
+            logger.warning(f"IfElse: 未找到匹配的分支 hit_node={hit_node}")
+            return CustomAction.RunResult(success=True)
 
-        branch_raw = true_raw if hit else false_raw
         items, next_nodes = self._parse_branch(branch_raw)
 
         if not items and not next_nodes:
@@ -206,15 +210,53 @@ class IfElse(CustomAction):
         return CustomAction.RunResult(success=True)
 
     @staticmethod
+    def _select_branch(params: Dict[str, Any], hit_node: str) -> Any:
+        """
+        根据 hit_node 选择对应的分支配置
+
+        参数:
+        - params: 完整的参数字典
+        - hit_node: 识别结果中的 hit_node 值
+
+        返回值:
+        - 分支配置，未找到返回 None
+        """
+        if not hit_node:
+            return None
+
+        # 处理 if 分支
+        if hit_node == "if":
+            return params.get("if")
+
+        # 处理 elif 分支
+        if hit_node.startswith("elif[") and hit_node.endswith("]"):
+            try:
+                index = int(hit_node[5:-1])
+                elif_branches = params.get("elif", [])
+                if isinstance(elif_branches, str):
+                    elif_branches = [elif_branches]
+                if isinstance(elif_branches, list) and 0 <= index < len(elif_branches):
+                    return elif_branches[index]
+            except (ValueError, IndexError):
+                pass
+            return None
+
+        # 处理 else 分支
+        if hit_node == "else":
+            return params.get("else")
+
+        return None
+
+    @staticmethod
     def _parse_branch(
         branch_raw: Union[List[BranchItem], Dict[str, Any]],
     ) -> Tuple[List[BranchItem], List[str]]:
         """
-        解析分支配置，提取 items 和 next
+        解析分支配置，提取 Act_or_node 和 next
 
         支持两种格式：
         - 列表格式：[item1, item2, ...] → items=列表本身, next=[]
-        - 对象格式：{"items": [...], "next": [...]} → 按字段提取
+        - 对象格式：{"Act_or_node": [...], "next": [...]} → 按字段提取
 
         参数:
         - branch_raw: 原始分支配置
@@ -228,7 +270,7 @@ class IfElse(CustomAction):
             return branch_raw, []
 
         if isinstance(branch_raw, dict):
-            items = branch_raw.get("items", [])
+            items = branch_raw.get("Act_or_node", [])
             next_nodes = branch_raw.get("next", [])
             if isinstance(next_nodes, str):
                 next_nodes = [next_nodes]
@@ -238,23 +280,19 @@ class IfElse(CustomAction):
         return [], []
 
     @staticmethod
-    def _extract_hit(argv: CustomAction.RunArg) -> bool:
+    def _extract_hit_node(argv: CustomAction.RunArg) -> str:
         """
-        从识别结果中提取 hit 值
-
-        优先级：
-        1. Custom Recognition: 从 best_result.detail 解析 hit 字段
-        2. 内置 Recognition: 使用 reco_detail.hit
+        从识别结果中提取 hit_node 值
 
         参数:
         - argv: 运行参数
 
         返回值:
-        - bool: hit 值
+        - str: hit_node 值，未找到返回空字符串
         """
         reco_detail = argv.reco_detail
-        if not reco_detail or not reco_detail.hit:
-            return False
+        if not reco_detail:
+            return ""
 
         best = reco_detail.best_result
         if isinstance(best, CustomRecognitionResult):
@@ -263,11 +301,11 @@ class IfElse(CustomAction):
                 try:
                     detail = json.loads(detail)
                 except (json.JSONDecodeError, TypeError):
-                    return reco_detail.hit
+                    return ""
             if isinstance(detail, dict):
-                return bool(detail.get("hit", reco_detail.hit))
+                return detail.get("hit_node", "")
 
-        return reco_detail.hit
+        return ""
 
     @staticmethod
     def _run_task(context: Context, node_name: str) -> None:
@@ -281,11 +319,11 @@ class IfElse(CustomAction):
         try:
             context.run_task(node_name)
         except Exception as e:
-            logger.error(f"IfElse: 执行节点 {node_name} 失败: {e}")
+            logger.error(f"IfElseAction: 执行节点 {node_name} 失败: {e}")
 
     @staticmethod
     def _execute_action(
-        context: Context, action_def: Dict[str, Any], box: Rect
+        context: Context, action_def: Dict[str, Any], box: Optional[Rect]
     ) -> None:
         """
         通过 run_action_direct 直接执行操作
@@ -293,18 +331,17 @@ class IfElse(CustomAction):
         参数:
         - context: MaaFramework 上下文对象
         - action_def: 操作定义 {"action": "类型", "param": {参数}}
-        - box: 前序识别位置，传入 run_action_direct 的 box 参数
-
-        执行流程:
-        1. 从 action_def 提取 action 类型和 param 字典
-        2. 根据 action 类型构造 JActionParam dataclass
-        3. 调用 context.run_action_direct()
+        - box: 前序识别位置，传入 run_action_direct 的 box 参数，可能为 None
         """
         action_type = action_def.get("action", "")
         param_dict = action_def.get("param", {})
 
         if not action_type:
             logger.warning("IfElse: action 字段为空，跳过")
+            return
+
+        if box is None:
+            logger.warning(f"IfElse: box 为 None，跳过 action '{action_type}'")
             return
 
         param_cls = _ACTION_PARAM_MAP.get(action_type)
@@ -316,9 +353,9 @@ class IfElse(CustomAction):
             return
 
         try:
-            action_param = IfElse._create_action_param(param_cls, param_dict)
+            action_param = IfElseAction._create_action_param(param_cls, param_dict)
         except Exception as e:
-            logger.error(f"IfElse: 构造 {action_type} 参数失败: {e}")
+            logger.error(f"IfElseAction: 构造 {action_type} 参数失败: {e}")
             return
 
         try:
