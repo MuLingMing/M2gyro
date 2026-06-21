@@ -88,13 +88,13 @@ class OperationExecutor:
 
         执行流程：
         1. 获取控制器
-        2. 检测控制器类型
-        3. 创建平台对象
+        2. 使用 PlatformFactory.create_from_config 创建（带缓存）
+           - 首次调用：自动检测类型 + 创建 platform + 加入缓存
+           - 后续调用：命中缓存，复用同一 platform 实例
         """
         if self._context and hasattr(self._context, 'tasker'):
             controller = self._context.tasker.controller
-            controller_type = PlatformFactory.detect_platform(controller)
-            self._platform = PlatformFactory.create_platform(controller_type, controller)
+            self._platform = PlatformFactory.create_from_config({}, controller)
 
     def execute(self, param: OperationParam) -> bool:
         """

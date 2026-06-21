@@ -484,6 +484,17 @@ class MyPlatform(PlatformBase):
 
 `PlatformFactory.detect_platform()` 通过 `controller.name` 和 `controller.config` 自动判断平台类型，默认回退到 `"adb"`。
 
+### 平台实例缓存
+
+`PlatformFactory.create_from_config()` 内部使用 `WeakKeyDictionary` 缓存 platform 实例：
+
+- **同一 controller 多次调用**返回同一 platform 实例
+- **保留 platform 内部状态**（`_active_contacts`、`_active_directions`）跨调用保持
+- **避免高频调用**（如 PathFinderAction / OperationRecordAction 自循环）时的重复创建
+- **生命周期**：进程结束由 Python GC 统一清理；测试/重连场景调用 `PlatformFactory.clear_cache()` 显式清空
+
+`PlatformFactory.create_platform()` 仍保留"不走缓存"的行为，用于绕过缓存直接创建新实例的场景。
+
 ## 配置管理
 
 `ConfigManager` 支持点分隔键路径访问：

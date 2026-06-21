@@ -5,7 +5,7 @@
     "properties": {
         "custom_action": {
             "type": "string",
-            "description": "动作名\n\n支持的自定义动作：\n\n1. Count - 计数器动作，达到目标次数后执行指定节点\n\n2. Countdown - 倒计时动作，在限定时间内循环识别并执行节点\n\n3. OperationRecordAction - 操作录制动作，按顺序执行一系列操作\n\n4. IfElseAction - 条件分支动作，根据识别结果的 detail.hit_node 字段分支执行 if/elif/else 分支\n\n5. AutoPathAction - 自动寻路动作，控制角色移动到目标位置\n\n示例（当 custom_action 为各值时对应的 custom_action_param）：\n\nCount:\n{\n    \"count\": 0,\n    \"target_count\": 3,\n    \"next_node\": [\"node_name\"],\n    \"else_node\": [\"node_name\"],\n    \"reset_node\": [\"node_name\"],\n    \"logger_count\": false\n}\n\nCountdown:\n{\n    \"total_time\": 90,\n    \"Interrupt\": [\"A1\", {\"name\": \"A2\", \"run\": true, \"interval\": 2, \"max_reco\": 3}],\n    \"Continue\": [{\"name\": \"B\", \"run\": 1, \"interval\": 3, \"delay\": 2}],\n    \"Over\": \"C\"\n}\n\nOperationRecordAction:\n{\n    \"operations\": [\n        {\"action\": \"move\", \"params\": {\"direction\": \"forward\", \"duration\": 2.0}},\n        {\"action\": \"jump\", \"params\": {}},\n        {\"action\": \"turn\", \"params\": {\"angle\": 90.0}},\n        {\"action\": \"wait\", \"params\": {\"duration\": 1.0}}\n    ],\n    \"loop_count\": 1\n}\n\nIfElseAction:\n{\n    \"if\": {\n        \"Act_or_node\": [{\"action\": \"Click\", \"param\": {\"target\": true}}],\n        \"next\": [\"NextStep1\"]\n    },\n    \"elif\": [\"ActionB\", \"ActionC\"],\n    \"else\": [\"ActionD\"]\n}\n\nAutoPathAction:\n{\n    \"move_duration\": 500,\n    \"view_adjust_threshold\": 100,\n    \"joystick_center\": [760, 950]\n}"
+            "description": "动作名\n\n支持的自定义动作：\n\n1. Count - 计数器动作，达到目标次数后执行指定节点\n\n2. Countdown - 倒计时动作，在限定时间内循环识别并执行节点\n\n3. OperationRecordAction - 操作录制动作，按顺序执行一系列操作\n\n4. IfElseAction - 条件分支动作，根据识别结果的 detail.hit_node 字段分支执行 if/elif/else 分支\n\n5. PathFinderAction - 自动寻路执行器，根据识别结果执行移动操作，验证移动有效性，处理卡住情况"
         },
         "custom_action_param": {
             "type": "object"
@@ -25,7 +25,7 @@
             "$ref": "./custom_act/IfElseAction.schema.json"
         },
         {
-            "$ref": "./custom_act/AutoPathAction.schema.json"
+            "$ref": "./custom_act/PathFinderAction.schema.json"
         }
     ]
 }

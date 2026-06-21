@@ -1,0 +1,39 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "./custom_act/PathFinderAction.schema.json",
+    "if": {
+        "properties": {
+            "custom_action": {
+                "const": "PathFinderAction"
+            }
+        },
+        "required": [
+            "custom_action"
+        ]
+    },
+    "then": {
+        "properties": {
+            "custom_action_param": {
+                "$ref": "#/definitions/PathFinderActionParam",
+                "description": "PathFinderAction 自动寻路执行器参数\n\n功能：\n1. 根据识别结果执行 platform.move() 操作\n2. 复用 OperationRecording 的平台层（PlatformFactory 缓存）\n3. 卡住检测由 Pipeline self-loop 隐式完成\n\n使用方式（Pipeline JSON）：\n{\n    \"custom_action\": \"PathFinderAction\",\n    \"next\": [\"AutoPathFinding\"]\n}\n\n参数示例：\n{\n    \"move_duration\": 500\n}"
+            }
+        },
+        "required": [
+            "custom_action_param"
+        ]
+    },
+    "definitions": {
+        "PathFinderActionParam": {
+            "type": "object",
+            "properties": {
+                "move_duration": {
+                    "type": "integer",
+                    "default": 500,
+                    "minimum": 0,
+                    "description": "单次移动持续时间（毫秒），默认 500\n\n每次 platform.move() 的持续时间"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

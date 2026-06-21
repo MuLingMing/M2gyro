@@ -241,74 +241,72 @@
     "夜航手册50扼守-舍身.*?野蜂204m跑图": {
         //204m地图
         "action": {
-            "action": {
-                "type": "Custom",
-                "param": {
-                    "custom_action": "OperationRecordAction",
-                    "custom_action_param": {
-                        "operations": [
-                            {
-                                "action": "wait",
-                                "params": {
-                                    "duration": 1.5
-                                }
-                            },
-                            {
-                                "action": "move",
-                                "params": {
-                                    "direction": "forward",
-                                    "duration": 5.0,
-                                    "overlays": [
-                                        {
-                                            "action": "dodge",
-                                            "at": 0.5
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                "action": "move",
-                                "params": {
-                                    "direction": "right",
-                                    "duration": 0.8
-                                }
-                            },
-                            {
-                                "action": "move",
-                                "params": {
-                                    "direction": "forward",
-                                    "duration": 1,
-                                    "overlays": [
-                                        {
-                                            "action": "dodge",
-                                            "at": 0.5
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                "action": "move",
-                                "params": {
-                                    "direction": "left",
-                                    "duration": 0.8
-                                }
-                            },
-                            {
-                                "action": "move",
-                                "params": {
-                                    "direction": "forward",
-                                    "duration": 1,
-                                    "overlays": [
-                                        {
-                                            "action": "dodge",
-                                            "at": 0.5
-                                        }
-                                    ]
-                                }
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 1.5
                             }
-                        ],
-                        "loop_count": 1
-                    }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 5.0,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 0.8
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 1,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 0.8
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 1,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "loop_count": 1
                 }
             }
         }
@@ -316,54 +314,52 @@
     "夜航手册50扼守-舍身.*?野蜂142m跑图": {
         //142m地图
         "action": {
-            "action": {
-                "type": "Custom",
-                "param": {
-                    "custom_action": "OperationRecordAction",
-                    "custom_action_param": {
-                        "operations": [
-                            {
-                                "action": "wait",
-                                "params": {
-                                    "duration": 1.5
-                                }
-                            },
-                            {
-                                "action": "move",
-                                "params": {
-                                    "direction": "forward",
-                                    "duration": 4.5,
-                                    "overlays": [
-                                        {
-                                            "action": "dodge",
-                                            "at": 0.5
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                "action": "move",
-                                "params": {
-                                    "direction": "right",
-                                    "duration": 0.8
-                                }
-                            },
-                            {
-                                "action": "move",
-                                "params": {
-                                    "direction": "forward",
-                                    "duration": 2.5,
-                                    "overlays": [
-                                        {
-                                            "action": "dodge",
-                                            "at": 0.5
-                                        }
-                                    ]
-                                }
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 1.5
                             }
-                        ],
-                        "loop_count": 1
-                    }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 4.5,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 0.8
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 2.5,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "loop_count": 1
                 }
             }
         }

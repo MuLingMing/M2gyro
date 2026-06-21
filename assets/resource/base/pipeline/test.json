@@ -106,5 +106,34 @@
                 }
             }
         }
+    },
+    "AutoPathFinding": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "PathFindingReco",
+                "custom_recognition_param": {
+                    "expected_templates": [
+                        "副本/目标点"
+                    ],
+                    "selector_type": "priority",
+                    "selector_priority": [
+                        "副本/目标点"
+                    ]
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "PathFinderAction",
+                "custom_action_param": {
+                    "move_duration": 800
+                }
+            }
+        },
+        "next": [
+            "AutoPathFinding"
+        ]
     }
 }

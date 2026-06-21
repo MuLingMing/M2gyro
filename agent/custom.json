@@ -49,10 +49,15 @@
         "class": "IfElseReco",
         "file_path": "custom/recognition/IfElseReco.py"
     },
-    "AutoPathAction": {
+    "PathFindingReco": {
+        "type": "recognition",
+        "class": "PathFindingReco",
+        "file_path": "AutoPathFinding/recognition/path_finding_reco.py"
+    },
+    "PathFinderAction": {
         "type": "action",
-        "class": "AutoPathAction",
-        "file_path": "AutoPathFinding/action/AutoPathAction.py"
+        "class": "PathFinderAction",
+        "file_path": "AutoPathFinding/action/path_finder_action.py"
     },
     "OperationRecordAction": {
         "type": "action",

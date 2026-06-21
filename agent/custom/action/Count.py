@@ -6,6 +6,18 @@
    - 未达标走 else_node
 2. 重置目标节点的count
 3. 播报当前运行次数
+
+功能说明：
+1. 计数管理
+    - 记录当前运行次数
+    - 达到目标次数后执行 next_node
+    - 未达到目标次数时执行 else_node
+
+2. 节点重置
+    - 可将指定节点的 count 重置为 0
+
+3. 运行播报
+    - 可配置是否输出运行次数
 """
 
 from maa.context import Context
@@ -18,18 +30,6 @@ from param_merger import ParamMerger
 class Count(CustomAction):
     """
     计数执行动作器
-
-    功能说明：
-    1. 计数管理
-       - 记录当前运行次数
-       - 达到目标次数后执行 next_node
-       - 未达到目标次数时执行 else_node
-
-    2. 节点重置
-       - 可将指定节点的 count 重置为 0
-
-    3. 运行播报
-       - 可配置是否输出运行次数
 
     参数格式：
     {

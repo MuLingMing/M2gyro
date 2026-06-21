@@ -2,26 +2,37 @@
 """
 自动寻路模块
 
-功能说明：
-1. AutoPathAction: 自动寻路动作器（合并版）
-   - 识别场景中的目的地标志（门/菱形），执行选择策略，选出最优目标
-   - 根据目标位置调整视角、控制角色移动、处理障碍物
-   - 内部循环执行直到到达目标或收到停止信号
+架构说明：
+- PathFindingReco: 识别器，识别游戏画面中的目标图标，计算方向和距离
+- PathFinderAction: 动作器，根据识别结果执行移动操作，验证移动有效性
+- TargetSelector: 目标选择器接口，支持插件式扩展
 
-支持的目标类型：
-- 门类标志（互斥组A）: gold_door, blue_door, red_sword_door, red_door
-- 特殊标志（互斥组B）: gold_diamond
+支持的选择器：
+- PriorityTargetSelector: 按模板优先级选择目标
+- NearestTargetSelector: 按距离最近选择目标
+- CompositeTargetSelector: 按类型优先级+距离组合选择
 
-支持的选择策略：
-- priority: 按优先级排序，同优先级选最近的
-- nearest: 始终选择距离最近的目标
-- reverse_priority: 反向优先级排序，同优先级选最近的
-
-支持的平台：
+支持的平台（复用 OperationRecording 的平台层）：
 - ADB (Android): 虚拟摇杆 + 视角滑动
-- Win32 (PC): 方向键（预留）
+- Win32 (PC): 方向键
 """
 
-from .action.AutoPathAction import AutoPathAction
+from .action.path_finder_action import PathFinderAction
+from .recognition.path_finding_reco import PathFindingReco
+from .selector import (
+    CompositeTargetSelector,
+    NearestTargetSelector,
+    PriorityTargetSelector,
+    TargetInfo,
+    TargetSelector,
+)
 
-__all__ = ["AutoPathAction"]
+__all__ = [
+    "PathFindingReco",
+    "PathFinderAction",
+    "TargetSelector",
+    "TargetInfo",
+    "PriorityTargetSelector",
+    "NearestTargetSelector",
+    "CompositeTargetSelector",
+]

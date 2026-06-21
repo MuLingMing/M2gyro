@@ -1,398 +1,818 @@
-# AutoPathFinding 自动寻路模块设计方案
+# AutoPathFinding 自动寻路模块
 
-## 1. 概述
+## 1. 模块概述
 
-### 1.1 功能目标
+### 1.1 功能定义
 
-识别场景中的目的地标志（门/菱形），控制角色自动移动到目标位置，支持多种目标选择策略和到达判定条件。
+根据游戏截图识别指定目标图标，结合距离信息判断目标位置，自动执行移动操作到达目标点。
 
-### 1.2 适用平台
+### 1.2 核心能力
 
-| 平台 | 移动方式 | 视角调整 |
-|------|----------|----------|
-| ADB（Android） | 滑动虚拟摇杆 | 滑动屏幕让目标居中 |
-| Win32（PC） | 方向键（预留） | 鼠标视角（预留） |
+- 目标图标识别（模板匹配）
+- 距离信息读取（OCR）
+- 多目标选择（接口化，可扩展）
+- 自动移动（平台适配，复用 OperationRecording）
+- 卡住检测与处理（Pipeline self-loop）
 
-### 1.3 模块架构
+### 1.3 技术栈
+
+- **识别**：MaaFramework 内置 TemplateMatch + OCR
+- **平台**：复用 OperationRecording 的 PlatformFactory
+- **调度**：MaaFramework Pipeline
+- **分辨率基准**：720p (1280x720)
+
+---
+
+## 2. 架构设计
+
+### 2.1 组件架构
 
 ```
-agent/AutoPathFinding/
-├── __init__.py              # 模块导出
-├── recognition/
-│   └── PathTargetReco.py    # 目标识别器
-├── action/
-│   └── AutoPathAction.py    # 寻路动作器
-└── README.md                # 本文档
+┌─────────────────────────────────────────────────────────┐
+│                    Pipeline 协调层                       │
+│  (JSON 定义识别流程、分支逻辑、任务调度)                 │
+└─────────────────────────────────────────────────────────┘
+                          │
+        ┌─────────────────┴─────────────────┐
+        ▼                                   ▼
+┌─────────────────────┐           ┌─────────────────────┐
+│  PathFindingReco    │           │  PathFinderAction   │
+│  (Custom Recognition)│           │  (Custom Action)    │
+├─────────────────────┤           ├─────────────────────┤
+│ • 模板匹配识别目标   │           │ • 从 Reco 提取方向  │
+│ • OCR 提取距离       │    ───►   │ • 调用 platform.move│
+│ • 选择最优目标       │           │ • release_all 释放  │
+│ • 计算移动方向       │           │                     │
+└─────────────────────┘           └─────────────────────┘
+        │                                   │
+        └─────────────────┬─────────────────┘
+                          ▼
+                ┌─────────────────────┐
+                │   PlatformFactory   │
+                │ (OperationRecording) │
+                └─────────────────────┘
+                          │
+                          ▼
+                ┌─────────────────────┐
+                │     Selector/       │
+                │ (策略插件，可扩展)  │
+                └─────────────────────┘
 ```
 
-**职责分离**：
+### 2.2 设计原则
+
+- **Reco 职责**：根据截图返回信息（目标位置、距离、方向）
+- **Action 职责**：根据 Reco 返回的信息执行移动操作
+- **选择器**：通过 `selector/` 目录下的可插拔类实现多目标选择策略
+- **平台层**：复用 OperationRecording 的 PlatformFactory，不重复实现
+- **卡住检测**：由 Pipeline self-loop 隐式完成，Action 内不做检测
+
+### 2.3 组件清单
 
 | 组件 | 类型 | 职责 |
 |------|------|------|
-| `PathTargetReco` | Custom Recognition | 识别所有可见目标，执行选择策略，返回最优目标 |
-| `AutoPathAction` | Custom Action | 根据目标位置控制移动方向、调整视角、处理障碍物 |
+| **PathFindingReco** | Custom Recognition | 识别目标、提取距离、计算方向、选择目标 |
+| **PathFinderAction** | Custom Action | 执行移动、释放按键 |
+| **TargetSelector** | Python 接口 | 目标选择策略（抽象基类） |
+| **PriorityTargetSelector** | 预置实现 | 按模板优先级选择 |
+| **NearestTargetSelector** | 预置实现 | 按距离最近选择 |
+| **CompositeTargetSelector** | 预置实现 | 按类型优先级 + 距离组合选择 |
+| **PlatformFactory** | 复用 | 平台操作适配（OperationRecording） |
 
 ---
 
-## 2. 目的地标志定义
+## 3. 使用说明
 
-### 2.1 目标类型
+### 3.1 快速开始
 
-#### 组 A：门类标志（互斥，不会与组 B 同时出现）
+#### 3.1.1 注册组件
 
-| 类型 ID | 名称 | 视觉特征 | 优先级参考 |
-|---------|------|----------|-----------|
-| `gold_door` | 金色门 | 金色发光门框 | 高（策略1优先） |
-| `blue_door` | 蓝色门 | 蓝色发光门框 | 高（策略1优先） |
-| `red_sword_door` | 红色剑形门 | 红色剑形门框 | 中（策略3优先） |
-| `red_door` | 红色门 | 红色普通门框 | 中（策略3优先） |
+在 `agent/custom.json` 中注册组件（平铺格式）：
 
-#### 组 B：特殊标志（互斥，不会与组 A 同时出现）
-
-| 类型 ID | 名称 | 视觉特征 |
-|---------|------|----------|
-| `gold_diamond` | 金色菱形 | 金色菱形标记（小地图上） |
-
-### 2.2 可扩展性设计
-
-目标类型使用字符串枚举，新增类型只需：
-1. 在 `TARGET_TYPES` 字典中添加定义
-2. 准备对应的模板图片
-3. 在选择策略中配置优先级
-
-```python
-# 可扩展的目标类型定义
-TARGET_TYPES: dict[str, TargetTypeDef] = {
-    "gold_door":       {"group": "door", "template": "path_target/gold_door.png"},
-    "blue_door":       {"group": "door", "template": "path_target/blue_door.png"},
-    "red_sword_door":  {"group": "door", "template": "path_target/red_sword_door.png"},
-    "red_door":        {"group": "door", "template": "path_target/red_door.png"},
-    "gold_diamond":    {"group": "special", "template": "path_target/gold_diamond.png"},
-    # 新增类型在此添加...
-}
-```
-
----
-
-## 3. 目标选择策略
-
-### 3.1 策略类型
-
-| 策略值 | 名称 | 选择逻辑 |
-|--------|------|----------|
-| `"priority"` | 优先级策略 | 按 target_priority 排序，同优先级选最近的 |
-| `"nearest"` | 最近距离策略 | 始终选择距离最近的目标 |
-| `"reverse_priority"` | 反向优先级策略 | 按反向 priority 排序，同优先级选最近的 |
-
-### 3.2 默认优先级顺序
-
-```
-高 → gold_door, blue_door
-中 → red_sword_door, red_door
-低 → gold_diamond
-```
-
-### 3.3 参数格式
-
-```jsonc
+```json
 {
-    "target_types": ["gold_door", "blue_door", "red_sword_door", "red_door", "gold_diamond"],
-    "strategy": "priority",
-    "target_priority": {
-        "gold_door": 1,
-        "blue_door": 1,
-        "red_sword_door": 2,
-        "red_door": 2,
-        "gold_diamond": 3
-    }
-}
-```
-
----
-
-## 4. 到达判定
-
-### 4.1 判定方式（多条件 OR）
-
-| 条件 | 说明 | 触发阈值 |
-|------|------|----------|
-| **OCR 文字** | 目标旁出现特定文字 | 如"归来"、"进入"等 |
-| **距离数字** | 距离标识小于阈值 | 默认 < 3 米 |
-
-### 4.2 OCR 文字配置
-
-```jsonc
-{
-    "arrival_text": ["归来", "进入", "交互"]
-}
-```
-
----
-
-## 5. 寻路核心流程
-
-### 5.1 主循环
-
-```
-                    ┌─────────────────┐
-                    │   开始寻路       │
-                    └────────┬────────┘
-                             │
-                             ▼
-                    ┌─────────────────┐
-            ┌──────►│ PathTargetReco   │◄──────┐
-            │       │ (识别+选择目标)   │       │
-            │       └────────┬─────────┘       │
-            │                │                 │
-            │     ┌──────────┼──────────┐      │
-            │     ▼          ▼          ▼      │
-            │  [无目标]  [已到达]  [有目标]     │
-            │     │          │          │      │
-            │     ▼          ▼          ▼      │
-            │  返回失败   返回成功   AutoPath    │
-            │                       Action      │
-            │                       (移动+视角)  │
-            └───────────────────────────────────┘
-```
-
-### 5.2 单次循环步骤
-
-1. **识别阶段** (`PathTargetReco`)
-   - 截图识别所有可见目标类型
-   - 提取每个目标的屏幕坐标和距离数字
-   - 执行选择策略，选出最优目标
-   - 判断是否到达（OCR 文字 / 距离阈值）
-
-2. **移动阶段** (`AutoPathAction`)
-   - 计算目标相对于屏幕中心的偏移量
-   - 若偏移过大 → 滑动视角使目标居中
-   - 计算移动方向 → 滑动摇杆朝该方向移动
-   - 检测障碍物（卡住、战斗、弹窗）
-
----
-
-## 6. 组件详细设计
-
-### 6.1 PathTargetReco（目标识别器）
-
-**输入参数** (`custom_recognition_param`)：
-
-```jsonc
-{
-    "target_types": ["gold_door", "blue_door", "..."],
-    "strategy": "priority",
-    "target_priority": { "gold_door": 1, ... },
-    "arrival_text": ["归来", "进入"],
-    "arrival_distance": 3
-}
-```
-
-**输出结果** (`AnalyzeResult`)：
-
-```python
-# 未找到任何目标
-AnalyzeResult(box=None, detail={"status": "no_target"})
-
-# 找到目标但未到达
-AnalyzeResult(
-    box=(x, y, w, h),           # 最优目标的屏幕区域
-    detail={
-        "status": "navigating",
-        "target_type": "gold_door",      # 目标类型
-        "target_center": (cx, cy),       # 目标中心坐标
-        "distance": 21.5,                # 距离（米）
-        "direction": "right",            # 相对方向
-        "offset_x": 320,                 # 相对屏幕中心的 X 偏移
-        "offset_y": -180,                # 相对屏幕中心的 Y 偏移
-    }
-)
-
-# 已到达目标
-AnalyzeResult(
-    box=(x, y, w, h),
-    detail={
-        "status": "arrived",
-        "target_type": "red_door",
-        "arrival_reason": "ocr_text",     # "ocr_text" 或 "distance"
-        "detected_text": "归来"
-    }
-)
-```
-
-**识别逻辑**：
-
-1. 对每种 `target_type` 执行模板匹配（或颜色匹配）
-2. 对每个命中的目标，提取周围区域的距离数字（OCR）
-3. 对每个命中的目标，检查周围是否有 `arrival_text`（OCR）
-4. 执行选择策略，选出最优目标
-5. 构建返回结果
-
-### 6.2 AutoPathAction（寻路动作器）
-
-**输入参数** (`custom_action_param`)：
-
-```jsonc
-{
-    "move_duration": 500,
-    "view_adjust_threshold": 100,
-    "stuck_detection_frames": 30,
-    "stuck_retry_count": 3
-}
-```
-
-**执行逻辑**：
-
-```python
-def run(context, argv):
-    # 1. 从 reco_detail 获取目标信息
-    detail = argv.reco_detail
-    if detail.get("status") == "arrived":
-        return True  # 已到达，无需移动
-
-    # 2. 视角调整：让目标居中
-    offset_x = detail["offset_x"]
-    offset_y = detail["offset_y"]
-    if abs(offset_x) > view_adjust_threshold or abs(offset_y) > view_adjust_threshold:
-        _adjust_view(context, offset_x, offset_y)
-
-    # 3. 移动控制
-    direction = _calculate_direction(detail)
-    _move_toward(context, direction, move_duration)
-
-    return True
-```
-
-**障碍物处理**：
-
-| 障碍物 | 检测方法 | 处理方式 |
-|--------|----------|----------|
-| **卡住** | 连续 N 帧位置不变 | 微调方向后继续 |
-| **战斗** | 识别战斗 UI | 等待战斗结束 |
-| **弹窗** | 识别弹窗特征 | 关闭弹窗后继续 |
-| **目标丢失** | 连续 N 帧无目标 | 原地旋转搜索 |
-
----
-
-## 7. Pipeline 集成示例
-
-### 7.1 基本 Pipeline 节点
-
-```jsonc
-{
-    "AutoNavigate": {
-        "recognition": { "type": "Custom", "param": {
-            "custom_recognition": "PathTargetReco",
-            "custom_recognition_param": {
-                "target_types": ["gold_door", "blue_door", "red_sword_door", "red_door"],
-                "strategy": "priority",
-                "arrival_text": ["归来", "进入"],
-                "arrival_distance": 3
-            }
-        }},
-        "action": { "type": "Custom", "param": {
-            "custom_action": "AutoPathAction",
-            "custom_action_param": {
-                "move_duration": 500,
-                "view_adjust_threshold": 100
-            }
-        }},
-        "next": ["TaskComplete"],
-        "exceeded_next": ["NavigationFailed"]
-    }
-}
-```
-
-### 7.2 带重试的完整流程
-
-```jsonc
-{
-    "StartNavigation": {
-        "recognition": "DirectHit",
-        "action": { "type": "Custom", "param": {
-            "custom_action": "NodeOverride",
-            "custom_action_param": { "node_name": "AutoNavigate" }
-        }}
+    "PathFindingReco": {
+        "type": "recognition",
+        "class": "PathFindingReco",
+        "file_path": "AutoPathFinding/recognition/path_finding_reco.py"
     },
-    "AutoNavigate": {
-        "recognition": { "type": "Custom", "param": {
-            "custom_recognition": "PathTargetReco",
-            "custom_recognition_param": { ... }
-        }},
-        "action": { "type": "Custom", "param": {
-            "custom_action": "AutoPathAction"
-        }},
-        "next": ["TaskComplete"],
-        "exceeded_next": ["RetryNav"],
-        "times": 60,
-        "timeout": 60000
+    "PathFinderAction": {
+        "type": "action",
+        "class": "PathFinderAction",
+        "file_path": "AutoPathFinding/action/path_finder_action.py"
+    }
+}
+```
+
+> 说明：`selector/` 目录下的类（`TargetSelector` / `PriorityTargetSelector` / `NearestTargetSelector` / `CompositeTargetSelector`）是 `PathFindingReco` 内部使用的 Python 模块，**不需要**在 `custom.json` 中注册。
+
+#### 3.1.2 准备模板图片
+
+将目标图标模板放入 `assets/resource/image/` 目录：
+
+```
+assets/resource/image/
+├── quest_icon.png      # 任务图标
+├── npc_icon.png        # NPC 图标
+└── shop_icon.png       # 商店图标
+```
+
+### 3.2 PathFindingReco 参数
+
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `expected_templates` | `list[str]` | `[]` | 期望匹配的模板列表（必填） |
+| `roi` | `list[int]` | `[0, 0, 1280, 720]` | 识别区域 [x, y, w, h] |
+| `threshold` | `float` | `0.8` | 匹配阈值 (0-1) |
+| `selector_type` | `str` | `"priority"` | 选择器类型：`priority` / `nearest` / `composite` |
+| `selector_priority` | `list[int\|str]` | `[]` | 选择器优先级（支持索引或名称格式） |
+| `distance_pattern` | `str` | `"(\d+)米"` | 距离 OCR 正则表达式 |
+| `distance_offset` | `list[int]` | `[10, 10, 20, 20]` | 距离 OCR 区域偏移 [left, top, right, bottom] |
+| `distance_threshold` | `float` | `0.3` | OCR 置信度阈值 |
+| `dead_zone` | `int` | `50` | 方向判断死区（像素，欧氏距离） |
+
+#### 返回值格式
+
+```python
+# 命中目标
+{
+    "box": [x, y, w, h],           # 目标边界框
+    "detail": {
+        "hit": True,
+        "hit_node": "if",          # 用于 IfElseAction 分支
+        "target": {
+            "template": "quest_icon.png",
+            "center": [640.0, 360.0],  # 浮点坐标
+            "bbox": [600, 320, 80, 80],
+            "score": 0.95,
+            "distance": 150            # 可选
+        },
+        "direction": "forward",        # forward/backward/left/right
+    }
+}
+
+# 未命中目标
+{
+    "box": None,
+    "detail": {
+        "hit": False,
+        "hit_node": "else"
+    }
+}
+```
+
+### 3.3 PathFinderAction 参数
+
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `move_duration` | `int` | `500` | 单次移动持续时间（毫秒） |
+
+### 3.4 选择器类型
+
+#### 3.4.1 priority（按优先级选择）
+
+按优先级顺序逐个识别，命中即停（短路求值）。
+
+```json
+{
+    "selector_type": "priority",
+    "expected_templates": ["quest_icon.png", "npc_icon.png"]
+}
+```
+
+#### 3.4.2 nearest（按距离选择）
+
+全量识别所有模板，提取距离信息，选择距离最近的目标。
+
+```json
+{
+    "selector_type": "nearest",
+    "distance_pattern": "(\\d+)米",
+    "distance_offset": [10, 10, 20, 20]
+}
+```
+
+#### 3.4.3 composite（组合条件选择）
+
+按优先级顺序识别，同优先级内选择距离最近的目标。
+
+```json
+{
+    "selector_type": "composite",
+    "expected_templates": ["quest_icon.png", "npc_icon.png"],
+    "distance_pattern": "(\\d+)米"
+}
+```
+
+#### 3.4.4 selector_priority 参数
+
+支持**索引格式**和**名称格式**两种写法，用于调整 `expected_templates` 的优先级顺序。
+
+**索引格式**（0-based）：
+```json
+{
+    "expected_templates": ["A", "B", "C"],
+    "selector_priority": [1, 2]
+}
+```
+优先级：B > C > A
+
+**名称格式**：
+```json
+{
+    "expected_templates": ["A", "B", "C"],
+    "selector_priority": ["B", "C"]
+}
+```
+优先级：B > C > A
+
+---
+
+## 4. Pipeline 配置示例
+
+> **提示**：完整示例中的 `selector_priority` 字段可省略，未设置时使用 `expected_templates` 原始顺序。
+
+### 4.1 基础寻路
+
+```json
+{
+    "AutoPathFinding": {
+        "recognition": "Custom",
+        "custom_recognition": "PathFindingReco",
+        "custom_recognition_param": {
+            "expected_templates": ["quest_icon.png"],
+            "selector_type": "priority",
+            "selector_priority": ["quest_icon.png"]
+        },
+        "next": ["PathFinderAction"]
     },
-    "RetryNav": {
-        "recognition": "DirectHit",
-        "action": { "type": "Custom", "param": {
-            "custom_action": "DisableNode",
-            "custom_action_param": { "node_name": "AutoNavigate" }
-        }},
-        "next": ["StartNavigation"]
+    "PathFinderAction": {
+        "custom_action": "PathFinderAction",
+        "custom_action_param": {
+            "move_duration": 500
+        },
+        "next": ["AutoPathFinding"]
+    }
+}
+```
+
+### 4.2 带 IfElseAction 的条件分支
+
+```json
+{
+    "AutoPathFinding": {
+        "recognition": "Custom",
+        "custom_recognition": "PathFindingReco",
+        "custom_recognition_param": {
+            "expected_templates": ["quest_icon.png"],
+            "selector_type": "priority",
+            "selector_priority": ["quest_icon.png"]
+        },
+        "next": ["HandlePathFinding"]
+    },
+    "HandlePathFinding": {
+        "custom_action": "IfElseAction",
+        "if": ["PathFinderAction"],
+        "else": ["TaskComplete"]
+    },
+    "PathFinderAction": {
+        "custom_action": "PathFinderAction",
+        "next": ["AutoPathFinding"]
     },
     "TaskComplete": {
-        "recognition": "DirectHit",
-        "action": "DoNothing"
+        "next": []
+    }
+}
+```
+
+### 4.3 多目标选择
+
+```json
+{
+    "AutoPathFinding": {
+        "recognition": "Custom",
+        "custom_recognition": "PathFindingReco",
+        "custom_recognition_param": {
+            "expected_templates": ["quest_icon.png", "npc_icon.png", "shop_icon.png"],
+            "selector_type": "composite",
+            "selector_priority": ["quest_icon.png", "npc_icon.png", "shop_icon.png"]
+        },
+        "next": ["PathFinderAction"]
     },
-    "NavigationFailed": {
-        "recognition": "DirectHit",
-        "action": "DoNothing"
+    "PathFinderAction": {
+        "custom_action": "PathFinderAction",
+        "next": ["AutoPathFinding"]
     }
 }
 ```
 
 ---
 
-## 8. 平台适配
+## 5. 数据类型定义
 
-### 8.1 ADB 实现（当前）
+### 5.1 TargetInfo
 
-| 操作 | 实现方式 |
-|------|----------|
-| 移动 | `Swipe` 从摇杆中心向方向向量滑动 |
-| 视角 | `Swipe` 从屏幕中心向反方向滑动 |
-| 截图 | Controller 内置 screencap |
+```python
+@dataclass
+class TargetInfo:
+    """识别到的目标信息"""
+    template: str                      # 匹配的模板名称
+    center: tuple[float, float]        # 中心坐标 (x, y)，浮点精度
+    bbox: tuple[int, int, int, int]    # 边界框 (x, y, w, h)
+    score: float                       # 匹配置信度
+    distance: int | None = None        # 距离值（如果存在）
+```
 
-### 8.2 Win32 预留（未来）
+### 5.2 TargetSelector 接口
 
-| 操作 | 预留接口 |
-|------|----------|
-| 移动 | 按下方向键（WASD 或方向键） |
-| 视角 | 鼠标移动 |
+```python
+class TargetSelector(ABC):
+    """目标选择器接口"""
 
-通过 `PlatformFactory.detect_platform()` 自动选择实现。
+    @abstractmethod
+    def select(self, targets: list[TargetInfo]) -> TargetInfo | None:
+        """从目标列表中选择一个目标"""
+        ...
+```
 
 ---
 
-## 9. 资源文件需求
+## 6. 平台适配
 
-### 9.1 模板图片
+### 6.1 复用 OperationRecording
 
+直接使用 OperationRecording 的 PlatformFactory，无需重复实现。
+
+```python
+from OperationRecording.platforms import PlatformFactory
+# ↑ 必须用包级导入（确保 OperationRecording.platforms 包被加载，
+#   触发 @register_platform 装饰器执行，否则 platform_registry 为空）
+
+# 创建平台实例（带缓存）
+platform = PlatformFactory.create_from_config({}, context.tasker.controller)
+
+# 使用平台操作
+platform.move("forward", duration=0.5)  # 移动
+platform.turn(angle)                     # 调整视角
+platform.click(x, y)                     # 点击屏幕
+platform.release_all()                   # 释放所有操作
 ```
-assets/resource/base/image/path_target/
-├── gold_door.png         # 金色门模板
-├── blue_door.png         # 蓝色门模板
-├── red_sword_door.png    # 红色剑形门模板
-├── red_door.png          # 红色门模板
-└── gold_diamond.png      # 金色菱形模板
-```
 
-### 9.2 图片规格
+**平台缓存**：`create_from_config` 内部使用 `WeakKeyDictionary` 缓存 platform 实例，同一 controller 多次调用返回同一 platform，避免高频调用时的重复创建并保留 platform 内部状态（`_active_contacts`、`_active_directions`）。测试或重连场景可调用 `PlatformFactory.clear_cache()` 显式清空。
 
-- 分辨率基准：720p (1280x720)
-- 格式：PNG（支持透明通道）
-- 尺寸：根据实际目标大小裁剪，保留适当边距
+### 6.2 可用的平台操作
+
+| OperationRecording 方法 | AutoPathFinding 用途 |
+|------------------------|---------------------|
+| `platform.move(direction, duration)` | 移动角色（forward/backward/left/right） |
+| `platform.turn(angle)` | 调整视角使目标居中 |
+| `platform.click(x, y)` | 点击屏幕目标位置 |
+| `platform.swipe(...)` | 滑动操作 |
+| `platform.release_all()` | 释放所有操作 |
 
 ---
 
-## 10. 后续扩展考虑
+## 7. 识别流程详解
 
-1. **新目标类型**：在 `TARGET_TYPES` 字典添加即可
-2. **新选择策略**：扩展 `_select_target()` 方法
-3. **新到达条件**：扩展 `_check_arrival()` 方法
-4. **新平台支持**：在 Action 中添加平台分支
-5. **路径规划**：可集成 A* 或导航网格（如游戏提供 API）
+### 7.1 统一识别流程
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  1. 解析参数                                             │
+│     - expected_templates: 模板列表                       │
+│     - selector_priority: 计算最终优先级顺序               │
+│     - selector_type: 选择器类型                          │
+└─────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│  2. 按优先级顺序识别                                     │
+│     - priority: 短路识别（命中即停）                      │
+│     - nearest: 全量识别                                  │
+│     - composite: 全量识别（按优先级分组）                  │
+└─────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│  3. 距离提取（命中即提取）                                │
+│     - 对命中结果的 box 扩大 distance_offset              │
+│     - 识别 OCR，匹配 distance_pattern                    │
+│     - 绑定距离到 TargetInfo                              │
+└─────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│  4. 选择目标                                             │
+│     - 通过 selector/ 目录下的选择器类                    │
+│     - priority: 返回第一个命中的                         │
+│     - nearest: 返回距离最近的                            │
+│     - composite: 返回当前优先级中距离最近的               │
+└─────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│  5. 计算方向                                             │
+│     - 角度分箱 + 圆形死区                                 │
+│     - 返回 forward/backward/left/right                  │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 7.2 目标识别
+
+**方案**：使用 MaaFramework 内置 `run_recognition_direct` API。
+
+```python
+def _match_template(self, context, img, template_name, roi, threshold):
+    """单个模板匹配"""
+    reco_param = JTemplateMatch(
+        template=[template_name],
+        roi=roi,
+        threshold=[threshold],
+        green_mask=True,   # 过滤绿色高亮区域（任务追踪标记）
+    )
+    reco_detail = context.run_recognition_direct(
+        JRecognitionType.TemplateMatch,
+        reco_param,
+        img,
+    )
+
+    if reco_detail is not None and reco_detail.hit:
+        best_result = reco_detail.best_result
+        if isinstance(best_result, TemplateMatchResult):
+            box = best_result.box
+            if box is not None:
+                # 兼容 box 为 Rect 对象或 list [x, y, w, h]
+                if isinstance(box, (list, tuple)):
+                    x, y, w, h = box[0], box[1], box[2], box[3]
+                else:
+                    x, y, w, h = box.x, box.y, box.w, box.h
+                # 浮点除法，避免 1 像素抖动
+                center = (x + w / 2, y + h / 2)
+                return TargetInfo(
+                    template=template_name,
+                    center=center,
+                    bbox=(x, y, w, h),
+                    score=best_result.score,
+                )
+
+    return None
+```
+
+### 7.3 距离提取
+
+**方案**：使用可配置的正则表达式和偏移量。
+
+```python
+def _extract_distance(self, context, img, target, param):
+    """提取目标下方的距离信息"""
+    import re
+
+    distance_pattern = param.get("distance_pattern", r"(\d+)米")
+    distance_offset = param.get("distance_offset", [10, 10, 20, 20])
+    distance_threshold = param.get("distance_threshold", 0.3)
+
+    # 计算 OCR 识别区域（基于 box 扩展 offset）
+    x, y, w, h = target.bbox
+    left, top, right, bottom = distance_offset
+    roi = (
+        max(0, x - left),
+        max(0, y - top),
+        w + left + right,
+        h + top + bottom,
+    )
+
+    try:
+        reco_param = JOCR(
+            expected=[distance_pattern],
+            roi=roi,
+            threshold=distance_threshold,
+        )
+        reco_detail = context.run_recognition_direct(
+            JRecognitionType.OCR,
+            reco_param,
+            img,
+        )
+
+        if reco_detail is not None and reco_detail.hit:
+            best_result = reco_detail.best_result
+            if isinstance(best_result, OCRResult):
+                text = best_result.text
+                if text:
+                    match = re.search(distance_pattern, text)
+                    if match:
+                        distance_str = match.group(1)
+                        if distance_str.isdigit():
+                            return TargetInfo(
+                                template=target.template,
+                                center=target.center,
+                                bbox=target.bbox,
+                                score=target.score,
+                                distance=int(distance_str),
+                            )
+    except Exception:
+        pass
+
+    return target
+```
+
+### 7.4 方向计算
+
+**方案**：角度分箱（angular binning）+ 圆形死区（circular dead zone）
+
+相比轴向比较，角度分箱更稳定（避免 1 像素抖动）；圆形死区比矩形死区更自然（角落无鬼影区）。
+
+```python
+import math
+
+def _calculate_direction(self, target_center, dead_zone):
+    """计算移动方向（forward/backward/left/right）"""
+    tx, ty = target_center
+    cx, cy = SCREEN_CENTER  # (640, 360)
+
+    dx = tx - cx
+    dy = ty - cy
+
+    # 1. 圆形死区：欧氏距离（比矩形死区更自然）
+    if math.hypot(dx, dy) <= dead_zone:
+        return "forward"
+
+    # 2. 角度分箱：用 -dy 翻转以匹配游戏方向（屏幕上方 = forward）
+    angle = math.degrees(math.atan2(-dy, dx))
+
+    # 角度分箱规则：
+    #   -45° ≤ angle <   45° → right   （目标在右）
+    #    45° ≤ angle <  135° → forward （目标在上）
+    #   135° ≤ angle <  180° 或 -180° ≤ angle < -135° → left  （目标在左）
+    #  -135° ≤ angle <  -45° → backward（目标在下）
+    if -45 <= angle < 45:
+        return "right"
+    elif 45 <= angle < 135:
+        return "forward"
+    elif angle >= 135 or angle < -135:
+        return "left"
+    else:  # -135 <= angle < -45
+        return "backward"
+```
+
+### 7.5 卡住检测
+
+**方案**：Pipeline self-loop 隐式检测
+
+不在 Action 内部做卡住检测（`controller.post_screencap` 会阻塞 controller）。
+由 Pipeline 的 self-loop 隐式完成：
+
+```json
+{
+    "AutoPathFinding": {
+        "recognition": "Custom",
+        "custom_recognition": "PathFindingReco",
+        "action": "Custom",
+        "custom_action": "PathFinderAction",
+        "next": ["AutoPathFinding"]
+    }
+}
+```
+
+**原理**：
+- PathFindingReco 返回目标位置（含 OCR 距离）
+- PathFinderAction 移动一次
+- Pipeline self-loop 重新调用 PathFindingReco
+- 目标位置未变 → 继续移动（隐式重试）
+- 目标位置变化 → 移动有效，下次移动方向调整
+- 目标消失（出视野/到达）→ recognition hit=False，AutoPathFinding 节点失败，跳出循环
+
+### 7.6 卡住处理
+
+**移除内部卡住处理逻辑**（`_handle_stuck` 已被删除）。
+卡住处理完全交由 Pipeline 调度：
+- 多次调用 PathFinderAction 但目标位置不变
+- 上层任务（如副本/活动逻辑）通过其他识别节点判断是否超时或主动放弃
+
+---
+
+## 8. 文件结构
+
+```
+agent/AutoPathFinding/
+├── __init__.py                     # 模块初始化
+├── README.md                       # 本文档
+├── action/
+│   ├── __init__.py
+│   └── path_finder_action.py       # 自定义动作：执行移动
+├── recognition/
+│   ├── __init__.py
+│   └── path_finding_reco.py        # 自定义识别：识别目标
+└── selector/
+    ├── __init__.py
+    ├── base.py                     # TargetSelector 接口
+    ├── types.py                    # TargetInfo 数据类型
+    ├── priority_selector.py        # 按优先级选择
+    ├── nearest_selector.py         # 按距离选择
+    └── composite_selector.py       # 组合条件选择
+```
+
+---
+
+## 9. 扩展指南
+
+### 9.1 自定义选择器
+
+实现 `TargetSelector` 接口即可：
+
+```python
+from agent.AutoPathFinding.selector import TargetSelector, TargetInfo
+
+class MyCustomSelector(TargetSelector):
+    def select(self, targets: list[TargetInfo]) -> TargetInfo | None:
+        # 自定义选择逻辑
+        ...
+```
+
+### 9.2 集成 OCR
+
+在 `PathFindingReco._extract_distance` 方法中使用 MaaFramework 内置 OCR：
+
+```python
+def _extract_distance(self, context, img, target, param):
+    """使用 MaaFramework 内置 OCR 提取目标下方的距离信息"""
+    import re
+
+    x, y, w, h = target.bbox
+    left, top, right, bottom = param.get("distance_offset", [10, 10, 20, 20])
+    roi = (
+        max(0, x - left),
+        max(0, y - top),
+        w + left + right,
+        h + top + bottom,
+    )
+
+    try:
+        reco_param = JOCR(
+            expected=[param.get("distance_pattern", r"(\d+)米")],
+            roi=roi,
+            threshold=param.get("distance_threshold", 0.3),
+        )
+        reco_detail = context.run_recognition_direct(
+            JRecognitionType.OCR,
+            reco_param,
+            img,
+        )
+
+        if reco_detail is not None and reco_detail.hit:
+            best_result = reco_detail.best_result
+            if isinstance(best_result, OCRResult):
+                text = best_result.text
+                if text:
+                    match = re.search(param.get("distance_pattern", r"(\d+)米"), text)
+                    if match and match.group(1).isdigit():
+                        return TargetInfo(
+                            template=target.template,
+                            center=target.center,
+                            bbox=target.bbox,
+                            score=target.score,
+                            distance=int(match.group(1)),
+                        )
+    except Exception:
+        pass
+
+    return target
+```
+
+---
+
+## 10. API 接口规范
+
+### 10.1 Custom Recognition 接口规范
+
+**PathFindingReco** 遵循 MaaFramework Custom Recognition 规范：
+
+```python
+class PathFindingReco(CustomRecognition):
+    def analyze(
+        self,
+        context: Context,
+        argv: CustomRecognition.AnalyzeArg,
+    ) -> Union[CustomRecognition.AnalyzeResult, Optional[RectType]]:
+        """
+        参数:
+        - context: MaaFramework 上下文对象
+        - argv: 识别参数，包含 image、roi、custom_recognition_param 等
+
+        返回值:
+        - CustomRecognition.AnalyzeResult: 识别结果
+        - Optional[RectType]: 识别到的位置
+        - None: 识别失败
+        """
+```
+
+**关键 API 使用**：
+- `argv.image`: 获取输入图片
+- `argv.custom_recognition_param`: 获取自定义参数（JSON 字符串）
+- `context.run_recognition_direct()`: 调用 MaaFramework 内置识别器（TemplateMatch、OCR 等）
+- `CustomRecognition.AnalyzeResult(box=..., detail={...})`: 返回识别结果
+
+**RecognitionDetail 类型安全访问**：
+
+`context.run_recognition_direct()` 返回 `RecognitionDetail`，其 `best_result` 是联合类型，需要根据算法类型进行类型检查：
+
+```python
+from maa.define import TemplateMatchResult, OCRResult
+
+# TemplateMatch 结果
+reco_detail = context.run_recognition_direct(JRecognitionType.TemplateMatch, reco_param, img)
+if reco_detail is not None and reco_detail.hit:
+    best_result = reco_detail.best_result
+    if isinstance(best_result, TemplateMatchResult):
+        box = best_result.box   # Rect 或 list
+        score = best_result.score  # float
+
+# OCR 结果
+reco_detail = context.run_recognition_direct(JRecognitionType.OCR, reco_param, img)
+if reco_detail is not None and reco_detail.hit:
+    best_result = reco_detail.best_result
+    if isinstance(best_result, OCRResult):
+        text = best_result.text  # str
+        score = best_result.score  # float
+```
+
+**RecognitionResult 联合类型**：
+- `TemplateMatchResult`: box, score
+- `OCRResult`: box, score, text
+- `FeatureMatchResult`: box, count
+- `CustomRecognitionResult`: box, detail
+
+### 10.2 Custom Action 接口规范
+
+**PathFinderAction** 遵循 MaaFramework Custom Action 规范：
+
+```python
+class PathFinderAction(CustomAction):
+    def run(
+        self,
+        context: Context,
+        argv: CustomAction.RunArg,
+    ) -> CustomAction.RunResult:
+        """
+        参数:
+        - context: MaaFramework 上下文对象
+        - argv: 运行参数，包含 reco_detail 和 box
+
+        返回值:
+        - CustomAction.RunResult: 执行结果
+        """
+```
+
+**关键 API 使用**：
+- `argv.custom_action_param`: 获取自定义参数（JSON 字符串）
+- `argv.reco_detail.best_result.detail`: 获取前序识别器返回的 detail 字典
+- `context.tasker.stopping`: 检查是否收到停止信号
+- `context.tasker.controller`: 获取控制器（用于 platform 创建）
+- `CustomAction.RunResult(success=True/False)`: 返回执行结果
+
+### 10.3 与 IfElseAction 集成
+
+PathFindingReco 返回的 `detail` 字典包含 `hit_node` 字段，可与 IfElseAction 配合使用：
+
+```json
+{
+    "AutoPathFinding": {
+        "recognition": "Custom",
+        "custom_recognition": "PathFindingReco",
+        "custom_recognition_param": {
+            "expected_templates": ["quest_icon.png"],
+            "selector_type": "priority",
+            "selector_priority": ["quest_icon.png"]
+        },
+        "action": "Custom",
+        "custom_action": "IfElseAction",
+        "custom_action_param": {
+            "if": ["PathFinderAction"],
+            "else": ["TaskComplete"]
+        }
+    }
+}
+```
+
+**返回值映射**：
+- `hit=True, hit_node="if"` → IfElseAction 执行 `if` 分支
+- `hit=False, hit_node="else"` → IfElseAction 执行 `else` 分支
+
+---
+
+## 11. 风险评估
+
+| 风险 | 概率 | 影响 | 应对措施 |
+|------|------|------|----------|
+| 模板匹配误识别 | 中 | 中 | 动态阈值 + `green_mask` 过滤任务追踪标记 |
+| OCR 识别不准确 | 中 | 中 | 正则匹配 + `isdigit` 容错处理 |
+| 1 像素抖动导致方向频繁切换 | 低 | 中 | 角度分箱 + 圆形死区（`math.hypot`） |
+| 平台操作不兼容 | 低 | 高 | 复用 OperationRecording，已验证 |
+| 平台实例重复创建 | 低 | 中 | `PlatformFactory` 内部 `WeakKeyDictionary` 缓存 |
+
+---
+
+## 12. 参考资料
+
+- [MaaFramework Pipeline 协议](https://github.com/MaaXYZ/MaaFramework/blob/main/docs/en_us/3.1-PipelineProtocol.md)
+- [MaaFramework Custom Recognition/Action](https://github.com/MaaXYZ/MaaFramework/blob/main/docs/en_us/3.2-CustomAction.md)
+- [OperationRecording 模块](../OperationRecording/)

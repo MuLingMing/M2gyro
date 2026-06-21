@@ -1,0 +1,91 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "./custom_reco/PathFindingReco.schema.json",
+    "if": {
+        "properties": {
+            "custom_recognition": {
+                "const": "PathFindingReco"
+            }
+        },
+        "required": [
+            "custom_recognition"
+        ]
+    },
+    "then": {
+        "properties": {
+            "custom_recognition_param": {
+                "$ref": "#/definitions/PathFindingRecoParam",
+                "description": "PathFindingReco 自动寻路识别器参数\n\n功能：\n1. 识别游戏画面中的目标图标（模板匹配）\n2. 提取目标图标下方的距离信息（OCR）\n3. 计算目标相对于屏幕中心的方向\n4. 选择最优目标（支持插件式选择器）\n5. 检测是否到达目标\n\n返回值格式（兼容 IfElseAction）：\n- hit=True: 识别到目标，detail 包含目标信息和方向\n- hit=False: 未识别到目标\n\ndetail 字段：\n- hit_node: \"if\" 或 \"else\"，用于 IfElseAction 分支\n- target: 目标信息\n  - template: 命中的模板名\n  - center: 目标中心 [x, y]\n  - bbox: 目标边界 [x, y, w, h]\n  - score: 匹配分数\n  - distance: 距离值（可选）\n- direction: 方向角度（0-360，0=正上，90=正右）\n- arrived: 是否已到达目标\n\n示例：\n{\n    \"expected_templates\": [\"quest_icon.png\", \"shop_icon.png\"],\n    \"roi\": [0, 0, 1280, 720],\n    \"threshold\": 0.8,\n    \"selector_type\": \"priority\",\n    \"selector_priority\": [\"quest_icon.png\", \"shop_icon.png\"],\n    \"arrival_keywords\": [\"已到达\", \"到达\"],\n    \"dead_zone\": 50\n}"
+            }
+        },
+        "required": [
+            "custom_recognition_param"
+        ]
+    },
+    "definitions": {
+        "PathFindingRecoParam": {
+            "type": "object",
+            "properties": {
+                "expected_templates": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "期望匹配的模板列表（必填）\n\n模板文件位于 assets/resource/image 目录下\n示例：[\"quest_icon.png\", \"shop_icon.png\"]"
+                },
+                "roi": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "minItems": 4,
+                    "maxItems": 4,
+                    "default": [0, 0, 1280, 720],
+                    "description": "识别区域 [x, y, w, h]，默认 [0, 0, 1280, 720]（720p 基准）"
+                },
+                "threshold": {
+                    "type": "number",
+                    "default": 0.8,
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "匹配阈值，默认 0.8"
+                },
+                "selector_type": {
+                    "type": "string",
+                    "enum": [
+                        "priority",
+                        "nearest",
+                        "composite"
+                    ],
+                    "default": "priority",
+                    "description": "选择器类型：\n- priority: 按模板优先级排序（默认）\n- nearest: 选择距离屏幕中心最近的目标\n- composite: 先按优先级，同优先级选最近"
+                },
+                "selector_priority": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "选择器优先级列表（selector_type=priority 或 composite 时生效）\n\n模板名按顺序优先级递减\n示例：[\"quest_icon.png\", \"shop_icon.png\"]"
+                },
+                "arrival_keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": ["已到达", "到达", "arrived", "reach"],
+                    "description": "到达关键词列表（用于 OCR 检测）\n\n当识别到这些关键词时，判定为目标已到达"
+                },
+                "dead_zone": {
+                    "type": "integer",
+                    "default": 50,
+                    "minimum": 0,
+                    "description": "方向判断死区（像素），默认 50\n\n目标在屏幕中心 ±dead_zone 范围内时，判定为目标在屏幕中央"
+                }
+            },
+            "required": [
+                "expected_templates"
+            ],
+            "additionalProperties": false
+        }
+    }
+}
