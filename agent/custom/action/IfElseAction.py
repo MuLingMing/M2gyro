@@ -248,13 +248,43 @@ class IfElseAction(CustomAction):
         return None
 
     @staticmethod
+    def _normalize_branch_raw(
+        branch_raw: Union[str, List[BranchItem], Dict[str, Any]],
+    ) -> Union[List[BranchItem], Dict[str, Any]]:
+        """
+        将字符串简写的分支配置规范化为列表或对象格式
+
+        规范化规则：
+        - str  → [str]（单节点名简写）
+        - list → 原样返回
+        - dict → 若 Act_or_node 为 str，包装为 [str]
+
+        参数:
+        - branch_raw: 原始分支配置
+
+        返回值:
+        - 规范化后的 list 或 dict
+        """
+        if isinstance(branch_raw, str):
+            return [branch_raw]
+
+        if isinstance(branch_raw, dict):
+            act_or_node = branch_raw.get("Act_or_node")
+            if isinstance(act_or_node, str):
+                branch_raw = {**branch_raw, "Act_or_node": [act_or_node]}
+            return branch_raw
+
+        return branch_raw  # list 原样返回
+
+    @staticmethod
     def _parse_branch(
-        branch_raw: Union[List[BranchItem], Dict[str, Any]],
+        branch_raw: Union[str, List[BranchItem], Dict[str, Any]],
     ) -> Tuple[List[BranchItem], List[str]]:
         """
         解析分支配置，提取 Act_or_node 和 next
 
-        支持两种格式：
+        支持三种格式：
+        - 字符串简写："NodeA" → items=["NodeA"], next=[]
         - 列表格式：[item1, item2, ...] → items=列表本身, next=[]
         - 对象格式：{"Act_or_node": [...], "next": [...]} → 按字段提取
 
@@ -266,6 +296,8 @@ class IfElseAction(CustomAction):
             items: 分支项列表
             next_nodes: next 节点名列表
         """
+        branch_raw = IfElseAction._normalize_branch_raw(branch_raw)
+
         if isinstance(branch_raw, list):
             return branch_raw, []
 
