@@ -43,6 +43,7 @@ class MoveAction(ActionBase):
     timeline_meta = TimelineMeta(
         has_duration=True,
         release_method="move",
+        smooth_transition=True,
     )
 
     def execute(self, params: Dict[str, Any]) -> bool:
@@ -78,6 +79,13 @@ class MoveAction(ActionBase):
         direction = params.get("direction", "forward")
         return self._platform.move(direction, 0)
 
+    # 支持的移动方向：4 基本方向 + 4 组合方向（与 touch.py _get_joystick_directions 一致）
+    _ALLOWED_DIRECTIONS = frozenset({
+        "forward", "backward", "left", "right",
+        "forward_left", "forward_right",
+        "backward_left", "backward_right",
+    })
+
     def validate_params(self, params: Dict[str, Any]) -> bool:
         """
         验证参数
@@ -93,7 +101,7 @@ class MoveAction(ActionBase):
         2. duration 必须 >= 0
         """
         direction = params.get("direction", "forward")
-        if direction not in ["forward", "backward", "left", "right"]:
+        if direction not in self._ALLOWED_DIRECTIONS:
             return False
         duration = params.get("duration", 0)
         return isinstance(duration, (int, float)) and duration >= 0

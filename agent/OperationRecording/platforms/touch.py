@@ -26,6 +26,8 @@ from maa.controller import Controller
 from .base import PlatformBase
 
 TOUCH_SWIPE_DURATION_MS = 70
+# 摇杆首次按下后等待游戏引擎确认的帧数（60fps ≈ 16.7ms/帧，2 帧 = 33ms）
+JOYSTICK_TOUCHDOWN_DELAY = 0.033
 
 
 class TouchPlatform(PlatformBase):
@@ -155,6 +157,7 @@ class TouchPlatform(PlatformBase):
             y = max(0, min(y, 719))
 
             self._controller.post_touch_down(joystick_center_x, joystick_center_y, contact, 1).wait()
+            time.sleep(JOYSTICK_TOUCHDOWN_DELAY)
             self._controller.post_touch_move(x, y, contact, 1).wait()
 
             self._active_contacts["joystick"] = contact
@@ -197,10 +200,10 @@ class TouchPlatform(PlatformBase):
         3. 归一化后乘以摇杆半径
         4. 加上摇杆中心坐标
         """
-        # 方向向量映射
+        # 方向向量映射（屏幕坐标系：x 右正，y 下正）
         direction_vectors = {
-            "forward": (0, 1),      # 上
-            "backward": (0, -1),    # 下
+            "forward": (0, -1),     # 上
+            "backward": (0, 1),     # 下
             "left": (-1, 0),        # 左
             "right": (1, 0),        # 右
         }
@@ -320,8 +323,12 @@ class TouchPlatform(PlatformBase):
         # 添加方向到活跃方向集合
         self._active_directions.add(direction)
 
-        x = max(0, min(target[0], 1279))
-        y = max(0, min(target[1], 719))
+        # 多方向时合成摇杆位置（如 left + forward → forward_left）
+        if len(self._active_directions) > 1:
+            x, y = self._calculate_joystick_position(self._active_directions)
+        else:
+            x = max(0, min(target[0], 1279))
+            y = max(0, min(target[1], 719))
 
         if "joystick" in self._active_contacts:
             contact = self._active_contacts["joystick"]
@@ -330,6 +337,7 @@ class TouchPlatform(PlatformBase):
             contact = self._get_contact("joystick_center")
             joystick_center_x, joystick_center_y = self._get_position("joystick_center", 198, 552)
             self._controller.post_touch_down(joystick_center_x, joystick_center_y, contact, 1).wait()
+            time.sleep(JOYSTICK_TOUCHDOWN_DELAY)
             self._controller.post_touch_move(x, y, contact, 1).wait()
             self._active_contacts["joystick"] = contact
 
@@ -398,6 +406,32 @@ class TouchPlatform(PlatformBase):
         return self._hold_button("charge_attack_button", "charge_attack", duration, x, y)
 
     # ===== 释放方法 =====
+
+    def cleanup_direction(self, action_name: str, old_direction: str, new_direction: Optional[str] = None) -> bool:
+        """
+        清理动作方向状态（用于连续 move 的平滑过渡）
+
+        与 release_action 的区别：保留触点，只切换方向跟踪状态。
+        先移除旧方向，再添加新方向，然后 post_touch_move 到合成位置。
+
+        参数：
+        - action_name: 动作名称
+        - old_direction: 旧方向
+        - new_direction: 新方向
+
+        返回值：
+        - bool: 是否成功
+        """
+        if action_name == "move" and hasattr(self, '_active_directions'):
+            self._active_directions.discard(old_direction)
+            if new_direction:
+                self._active_directions.add(new_direction)
+            if "joystick" in self._active_contacts and self._active_directions:
+                x, y = self._calculate_joystick_position(self._active_directions)
+                contact = self._active_contacts["joystick"]
+                self._controller.post_touch_move(x, y, contact, 1).wait()
+            return True
+        return False
 
     def release_action(self, action_name: str, direction: Optional[str] = None) -> bool:
         """

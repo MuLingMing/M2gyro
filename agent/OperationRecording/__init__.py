@@ -11,15 +11,28 @@ OperationRecording 模块
 - 统一模块注册体系：ModuleRegistry 泛型基类
 """
 
+import os
+import sys
+
+# 确保 agent/ 目录在 sys.path 中，使得 `from utils.logger import logger` 等
+# 相对项目根的导入语句可正常解析（与 agent/main.py 行为一致）
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_agent_dir = os.path.dirname(_current_dir)
+if _agent_dir not in sys.path:
+    sys.path.insert(0, _agent_dir)
+
 from .registry import ModuleRegistry
 
 from .core import (
     OperationExecutor,
     OperationParser,
-    ActionTimeline,
-    TimedAction,
-    ActionPriority,
-    ActionState,
+    EventScheduler,
+    ActionEvent,
+    ActionNode,
+    PrimitiveAction,
+    Sequence,
+    Parallel,
+    AtOffset,
     Operation,
     OperationParam,
     ConfigManager,
@@ -57,10 +70,13 @@ __all__ = [
     "ConfigManager",
     "OperationExecutor",
     "OperationParser",
-    "ActionTimeline",
-    "TimedAction",
-    "ActionPriority",
-    "ActionState",
+    "EventScheduler",
+    "ActionEvent",
+    "ActionNode",
+    "PrimitiveAction",
+    "Sequence",
+    "Parallel",
+    "AtOffset",
     "ActionBase",
     "TimelineMeta",
     "ActionRegistry",
@@ -83,4 +99,4 @@ __all__ = [
 from .actions.operation_record_action import OperationRecordAction  # noqa: E402
 __all__.append("OperationRecordAction")
 
-__version__ = "3.0.0"
+__version__ = "4.0.0"

@@ -27,10 +27,29 @@ class KeyboardPlatform(PlatformBase):
     子类需提供：
     - _key_codes: Dict[str, int] — 按键名到虚拟键码的映射
     - _action_key_map: Dict[str, List[str]] — 动作名到按键名列表的映射（用于 release_action）
+
+    内置方向→按键列表映射（_DIRECTION_KEYS）：
+    支持 4 基本方向 + 4 对角方向（45°），与 TouchPlatform 一致。
+    子类可按需覆写以重定向按键（如 Mac 平台）。
     """
 
     _key_codes: Dict[str, int] = {}
     _action_key_map: Dict[str, List[str]] = {}
+
+    # 方向 → 按键列表映射
+    # 4 基本方向（单键）+ 4 对角方向（双键组合），与 touch.py _get_joystick_directions 对齐
+    _DIRECTION_KEYS: Dict[str, List[str]] = {
+        # 4 基本方向
+        "forward": ["W"],
+        "backward": ["S"],
+        "left": ["A"],
+        "right": ["D"],
+        # 4 对角方向（45°）
+        "forward_left": ["W", "A"],
+        "forward_right": ["W", "D"],
+        "backward_left": ["S", "A"],
+        "backward_right": ["S", "D"],
+    }
 
     def __init__(self, platform_controller: Controller):
         super().__init__(platform_controller)
@@ -104,31 +123,33 @@ class KeyboardPlatform(PlatformBase):
         移动操作
 
         参数：
-        - direction: 移动方向（forward/backward/left/right）
+        - direction: 移动方向（forward/backward/left/right
+                     + forward_left/forward_right/backward_left/backward_right）
         - duration: 持续时间（秒），0 表示只按下不松开
 
         返回值：
         - bool: 是否成功
 
         说明：
+        - 支持 8 个方向：4 基本方向（单键）+ 4 对角方向（双键同时按下）
         - 移除互斥逻辑，支持多键同时按下
         - duration > 0 时会 sleep 等待
+        - 未知方向返回 False
         """
         if self._controller is None:
             return False
-        key_map = {"forward": "W", "backward": "S", "left": "A", "right": "D"}
-        key = key_map.get(direction)
-        if not key:
+        keys = self._DIRECTION_KEYS.get(direction)
+        if not keys:
             return False
 
-        key_code = self._key_codes.get(key)
-        if key_code is None:
-            return False
-
-        # 直接按下目标键，不释放其他键
-        if key_code not in self._active_keys:
-            self._controller.post_key_down(key_code).wait()
-            self._active_keys.add(key_code)
+        # 依次按下方向对应的所有按键（对角方向需要同时按住两个键）
+        for key in keys:
+            key_code = self._key_codes.get(key)
+            if key_code is None:
+                return False
+            if key_code not in self._active_keys:
+                self._controller.post_key_down(key_code).wait()
+                self._active_keys.add(key_code)
 
         if duration > 0:
             time.sleep(duration)
@@ -196,6 +217,45 @@ class KeyboardPlatform(PlatformBase):
     def charge_attack(self, duration: float, x: Optional[int] = None, y: Optional[int] = None) -> bool:
         return self.press_key("MouseLeft", duration)
 
+    def cleanup_direction(self, action_name: str, old_direction: str, new_direction: Optional[str] = None) -> bool:
+        """
+        清理动作方向状态（用于连续 move 的平滑过渡）
+
+        先按下新方向按键，再释放旧方向按键，确保始终有按键保持，
+        避免角色在方向切换时短暂停止。
+
+        参数：
+        - action_name: 动作名称
+        - old_direction: 旧方向
+        - new_direction: 新方向（用于先按新键再松旧键）
+
+        返回值：
+        - bool: 是否成功
+        """
+        if self._controller is None:
+            return False
+        if action_name != "move":
+            return False
+
+        # 1. 先按下新方向按键（如果在旧方向释放前按下，可保证无缝衔接）
+        if new_direction:
+            new_keys = self._DIRECTION_KEYS.get(new_direction, [])
+            for key in new_keys:
+                key_code = self._key_codes.get(key)
+                if key_code is not None and key_code not in self._active_keys:
+                    self._controller.post_key_down(key_code).wait()
+                    self._active_keys.add(key_code)
+
+        # 2. 再释放旧方向按键
+        old_keys = self._DIRECTION_KEYS.get(old_direction, [])
+        for key in old_keys:
+            key_code = self._key_codes.get(key)
+            if key_code is not None and key_code in self._active_keys:
+                self._controller.post_key_up(key_code).wait()
+                self._active_keys.discard(key_code)
+
+        return True
+
     # ===== 释放方法 =====
 
     def release_action(self, action_name: str, direction: Optional[str] = None) -> bool:
@@ -210,7 +270,7 @@ class KeyboardPlatform(PlatformBase):
         - bool: 是否成功释放
 
         说明：
-        - move 动作 + direction：只释放指定方向的键
+        - move 动作 + direction：只释放指定方向的键（支持 8 方向，对角方向释放所有相关键）
         - move 动作 + 无 direction：释放所有 WASD 键
         - 其他动作：释放所有相关按键
         """
@@ -218,16 +278,18 @@ class KeyboardPlatform(PlatformBase):
             return False
         try:
             if action_name == "move" and direction:
-                # 方向感知释放：只释放指定方向的键
-                key_map = {"forward": "W", "backward": "S", "left": "A", "right": "D"}
-                key = key_map.get(direction)
-                if key:
+                # 方向感知释放：只释放指定方向的键（对角方向同时释放多个键）
+                keys = self._DIRECTION_KEYS.get(direction)
+                if not keys:
+                    return False
+                released = False
+                for key in keys:
                     key_code = self._key_codes.get(key)
                     if key_code is not None and key_code in self._active_keys:
                         self._controller.post_key_up(key_code).wait()
                         self._active_keys.discard(key_code)
-                        return True
-                return False
+                        released = True
+                return released
             else:
                 # 非 move 动作或无方向参数：释放所有相关按键
                 keys = self._action_key_map.get(action_name)

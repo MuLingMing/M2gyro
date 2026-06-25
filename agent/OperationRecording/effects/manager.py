@@ -63,12 +63,19 @@ class EffectManager:
                 result = effect.apply(action_name, result, context)
         return result
 
-    def pre_action(self, action_name: str, context: Dict[str, Any]) -> None:
+    def pre_action(self, action_name: str, context: Dict[str, Any]) -> float:
+        """动作执行前回调，汇总所有效果插件的预延迟。
+
+        Returns:
+            总预延迟时间（秒），0.0 表示无需延迟
+        """
         if not self._enabled:
-            return
+            return 0.0
+        total_delay = 0.0
         for effect in self._effects:
             if effect.enabled:
-                effect.pre_action(action_name, context)
+                total_delay += effect.pre_action(action_name, context)
+        return total_delay
 
     def post_action(self, action_name: str, context: Dict[str, Any]) -> None:
         if not self._enabled:

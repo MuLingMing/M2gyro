@@ -7,7 +7,6 @@
 2. 超过阈值后反应时间线性增长
 """
 import random
-import time
 from typing import Any, ClassVar, Dict, Optional, Tuple
 
 from ..base import EffectBase
@@ -50,15 +49,14 @@ class FatigueEffect(EffectBase):
     ) -> Dict[str, Any]:
         return params
 
-    def pre_action(self, action_name: str, context: Dict[str, Any]) -> None:
+    def pre_action(self, action_name: str, context: Dict[str, Any]) -> float:
         is_instant = context.get("is_instant", True)
         if is_instant:
-            return
+            return 0.0
         self._action_count += 1
         if self._action_count > self._threshold:
             self._update_reaction_time()
-        delay_ms = self._random_delay_ms(*self._current_range)
-        time.sleep(delay_ms / 1000.0)
+        return self._random_delay_ms(*self._current_range) / 1000.0
 
     def reset(self) -> None:
         self._action_count = 0

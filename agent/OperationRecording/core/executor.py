@@ -1,24 +1,29 @@
 # -*- coding: utf-8 -*-
 """
-操作执行器，具有以下功能：
-1. 普通模式执行操作列表
-2. 时间线模式执行复杂序列
-3. 支持停止响应，释放按键
-4. 平台自动检测和初始化
+操作执行器（基于事件队列调度）
+
+所有执行模式（timeline / normal）统一通过 EventScheduler 调度，
+消除了原有的双轨执行模型。
+
+功能：
+1. 平台初始化与复用
+2. 效果管理器初始化
+3. 统一执行入口 → JsonAdapter → ActionNode → EventScheduler
 """
 
-from typing import List, Optional, Dict, Any
-import time
-import traceback
+from typing import Any, Dict, List, Optional
+
 from maa.context import Context
-from .types import Operation, OperationParam
-from ..platforms import PlatformFactory
-from ..actions import action_registry
-from .config import ConfigManager
-from ..effects import EffectManager
-from .timeline import ActionTimeline
+
+from .types import OperationParam
+from .scheduler import EventScheduler
 from .parser import OperationParser
+from .config import ConfigManager
+from ..platforms import PlatformFactory
+from ..effects import EffectManager
+from ..json_adapter import JsonAdapter
 from utils.logger import logger
+import traceback
 
 
 class OperationExecutor:
@@ -30,22 +35,10 @@ class OperationExecutor:
        - _init_platform: 初始化平台
        - _init_effect_manager: 初始化效果管理器
 
-    2. 执行
-       - execute: 普通模式执行
-       - execute_timeline: 时间线模式执行
-       - execute_unified: 统一执行入口
-
-    3. 工具
-       - get_execution_status: 获取执行状态
-       - get_platform: 获取平台对象
-
-    参数格式（时间线模式）：
-    {
-        "operations": [
-            {"action": "move", "params": {"direction": "left"}, "duration": 2.0}
-        ],
-        "loop_count": 1
-    }
+    2. 执行（统一入口）
+       - execute_unified: 自动识别模式，统一由 EventScheduler 调度
+       - execute: 普通模式
+       - execute_timeline: 时间线模式
     """
 
     def __init__(self, context: Context):
@@ -54,28 +47,17 @@ class OperationExecutor:
 
         参数：
         - context: MAA 上下文对象
-
-        执行流程：
-        1. 保存上下文
-        2. 初始化平台
-        3. 初始化效果管理器
         """
         self._context = context
         self._platform = None
         self._config_manager = ConfigManager()
-        self._timeline = None
+        self._scheduler: Optional[EventScheduler] = None
         self._effect_manager: Optional[EffectManager] = None
         self._init_platform()
         self._init_effect_manager()
 
     def _init_effect_manager(self):
-        """
-        初始化效果管理器
-
-        执行流程：
-        1. 读取 effects 配置
-        2. 通过 EffectManager.from_config 创建实例
-        """
+        """初始化效果管理器"""
         effects_config = self._config_manager.get_effects_config()
         if effects_config:
             self._effect_manager = EffectManager.from_config(effects_config)
@@ -83,45 +65,30 @@ class OperationExecutor:
             self._effect_manager = EffectManager()
 
     def _init_platform(self):
-        """
-        初始化平台
-
-        执行流程：
-        1. 获取控制器
-        2. 使用 PlatformFactory.create_from_config 创建（带缓存）
-           - 首次调用：自动检测类型 + 创建 platform + 加入缓存
-           - 后续调用：命中缓存，复用同一 platform 实例
-        """
+        """初始化平台（PlatformFactory 自带缓存）"""
         if self._context and hasattr(self._context, 'tasker'):
             controller = self._context.tasker.controller
             self._platform = PlatformFactory.create_from_config({}, controller)
 
     def execute(self, param: OperationParam) -> bool:
         """
-        执行操作列表（普通模式）
+        执行操作列表（普通模式，统一走调度器）
 
         参数：
         - param: 操作参数对象
 
         返回：
         - bool: 是否成功
-
-        执行流程：
-        1. 检查平台是否初始化
-        2. 循环执行次数
-        3. 依次执行每个操作（检查停止信号）
         """
         if not self._platform:
             return False
 
         try:
             for _ in range(param.loop_count):
-                for operation in param.operations:
-                    if self._context is not None and getattr(self._context.tasker, 'stopping', False):
-                        self._platform.release_all()
-                        return False
-                    if not self._execute_operation(operation):
-                        return False
+                operations_data = [{"action": op.action, "params": op.params} for op in param.operations]
+                node = JsonAdapter.from_operations(operations_data)
+                if not self._run_scheduler(node):
+                    return False
             return True
         except Exception as e:
             logger.error(f"[OperationExecutor] execute 异常: {type(e).__name__}: {e}")
@@ -138,9 +105,9 @@ class OperationExecutor:
         - bool: 是否成功
 
         执行流程：
-        1. 检查平台是否初始化
-        2. 解析参数并识别模式
-        3. 根据模式执行
+        1. 解析参数并识别模式
+        2. 根据模式转换 JSON → ActionNode
+        3. 统一由 EventScheduler 调度执行
         """
         if not self._platform:
             return False
@@ -158,160 +125,109 @@ class OperationExecutor:
             logger.error(f"[OperationExecutor] execute_unified 异常: {type(e).__name__}: {e}")
             return False
 
-    def execute_timeline(self, sequence: List[Dict[str, Any]], loop_count: int = 1, test_mode: bool = False) -> bool:
+    def execute_timeline(
+        self, sequence: List[Dict[str, Any]], loop_count: int = 1
+    ) -> bool:
         """
-        执行时间线序列
+        执行时间线序列（统一走调度器）
 
         参数：
         - sequence: 时间线序列
-        - loop_count: 循环次数，默认 1
-        - test_mode: 测试模式，默认 False
+        - loop_count: 循环次数
 
         返回：
         - bool: 是否成功
-
-        执行流程：
-        1. 检查平台是否初始化
-        2. 循环执行次数
-        3. 创建并启动时间线
-        4. 循环更新时间线，检查停止
-        5. 收到停止时释放按键
         """
         if not self._platform:
             return False
 
         try:
             for _ in range(loop_count):
-                self._timeline = ActionTimeline(self._platform, self._context, self._effect_manager)
-
-                if test_mode:
-                    self._timeline.set_test_mode(True)
-
-                self._timeline.from_sequence(sequence)
-                self._timeline.start()
-
-                while self._timeline.get_status()['is_running']:
-                    if self._context is not None and getattr(self._context.tasker, 'stopping', False):
-                        self._platform.release_all()
-                        self._timeline.stop()
-                        return False
-                    self._timeline.update()
-                    if not test_mode:
-                        time.sleep(0.01)
-
+                node = JsonAdapter.from_sequence(sequence)
+                if not self._run_scheduler(node):
+                    return False
             return True
         except Exception as e:
             logger.error(f"[OperationExecutor] execute_timeline 异常: {type(e).__name__}: {e}")
             logger.error(f"[OperationExecutor] 堆栈信息:\n{traceback.format_exc()}")
             return False
 
-    def get_execution_status(self):
+    def _run_scheduler(self, node) -> bool:
         """
-        获取执行状态
+        创建并运行事件调度器
+
+        参数：
+        - node: ActionNode 根节点
 
         返回：
-        - Dict[str, Any]: 执行状态
-
-        执行流程：
-        1. 收集平台信息
-        2. 收集时间线信息
-        3. 收集效果管理器信息
-        4. 返回完整状态
+        - bool: 是否成功
         """
+        self._scheduler = EventScheduler(
+            self._platform, self._context, self._effect_manager
+        )
+        self._scheduler.load(node)
+        return self._scheduler.run()
+
+    def get_execution_status(self):
+        """获取执行状态"""
         platform_type = "unknown"
         if self._platform is not None:
             platform_type = self._platform.controller_type
 
-        timeline_status = None
-        if self._timeline is not None:
-            timeline_status = self._timeline.get_status()
-
-        effects_enabled = False
-        if self._effect_manager is not None:
-            effects_enabled = self._effect_manager.enabled
-
         return {
             "platform_type": platform_type,
             "platform_initialized": self._platform is not None,
-            "effects_enabled": effects_enabled,
-            "timeline_status": timeline_status
+            "effects_enabled": (
+                self._effect_manager.enabled
+                if self._effect_manager is not None
+                else False
+            ),
+            "is_running": (
+                self._scheduler.is_running
+                if self._scheduler is not None
+                else False
+            ),
         }
 
-    def _execute_operation(self, operation: Operation) -> bool:
+    def _execute_operation(self, operation) -> bool:
         """
-        执行单个操作
+        执行单个操作（向后兼容，统一走调度器）
 
         参数：
         - operation: 操作对象
 
         返回：
         - bool: 是否成功
-
-        执行流程：
-        1. 检查平台是否初始化
-        2. 从注册表创建动作（传递 context）
-        3. 通过 EffectManager 应用效果（延迟 + 参数修改）
-        4. 执行动作
         """
         if not self._platform:
             return False
 
         try:
-            action = action_registry.create_action(operation.action, self._platform, self._context)
-            if not action:
-                return False
-
-            if not action.validate_params(operation.params):
-                logger.warning(f"[OperationExecutor] 参数验证失败: {operation.action}")
-                return False
-
-            context = {"duration": operation.params.get("duration", 0), "is_instant": True, "is_timeline": False}
-            if self._effect_manager is not None:
-                self._effect_manager.pre_action(operation.action, context)
-                params = self._effect_manager.apply_effects(operation.action, operation.params, context)
-            else:
-                params = operation.params
-
-            result = action.execute(params)
-
-            if self._effect_manager is not None:
-                self._effect_manager.post_action(operation.action, context)
-
-            return result
+            node = JsonAdapter.from_operations(
+                [{"action": operation.action, "params": operation.params}]
+            )
+            return self._run_scheduler(node)
         except Exception as e:
-            logger.error(f"[OperationExecutor] 执行异常: {type(e).__name__}: {e}")
-            logger.error(f"[OperationExecutor] 堆栈信息:\n{traceback.format_exc()}")
+            logger.error(f"[OperationExecutor] _execute_operation 异常: {type(e).__name__}: {e}")
             return False
 
     def get_platform(self):
-        """
-        获取平台对象
-
-        返回：
-        - PlatformBase | None: 平台对象
-        """
+        """获取平台对象"""
         return self._platform
 
-    def get_timeline(self) -> Optional[ActionTimeline]:
-        """
-        获取时间线对象
+    def get_scheduler(self) -> Optional[EventScheduler]:
+        """获取事件调度器"""
+        return self._scheduler
 
-        返回：
-        - ActionTimeline | None: 时间线对象
-        """
-        return self._timeline
+    def pause(self):
+        """暂停（不支持，事件调度器无暂停机制）"""
+        logger.warning("[OperationExecutor] EventScheduler 不支持暂停")
 
-    def pause_timeline(self):
-        """暂停时间线"""
-        if self._timeline:
-            self._timeline.pause()
+    def resume(self):
+        """恢复（不支持，事件调度器无暂停机制）"""
+        logger.warning("[OperationExecutor] EventScheduler 不支持恢复")
 
-    def resume_timeline(self):
-        """恢复时间线"""
-        if self._timeline:
-            self._timeline.resume()
-
-    def stop_timeline(self):
-        """停止时间线"""
-        if self._timeline:
-            self._timeline.stop()
+    def stop(self):
+        """停止调度器"""
+        if self._scheduler is not None:
+            self._scheduler.stop()

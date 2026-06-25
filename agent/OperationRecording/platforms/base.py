@@ -110,3 +110,20 @@ class PlatformBase(ABC):
         - bool: 是否成功释放
         """
         return False
+
+    def cleanup_direction(self, action_name: str, old_direction: str, new_direction: Optional[str] = None) -> bool:
+        """
+        清理动作方向状态（用于连续同类型动作的平滑过渡）
+
+        与 release_action 的区别：不释放底层触点/按键，仅清理方向跟踪状态，
+        让后续动作的 start() 可以直接通过 post_touch_move / key 切换实现平滑过渡。
+
+        参数：
+        - action_name: 动作名称
+        - old_direction: 旧方向
+        - new_direction: 新方向（可选，键盘平台可利用此参数先按新键再松旧键）
+
+        返回值：
+        - bool: 是否成功
+        """
+        return True

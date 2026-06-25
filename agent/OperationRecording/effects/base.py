@@ -56,9 +56,20 @@ class EffectBase(ABC):
         """
         pass
 
-    def pre_action(self, action_name: str, context: Dict[str, Any]) -> None:
-        """动作执行前回调（如添加延迟）。"""
-        pass
+    def pre_action(self, action_name: str, context: Dict[str, Any]) -> float:
+        """动作执行前回调。
+
+        返回预延迟时间（秒），由调用方负责应用延迟，
+        而非在回调内部 time.sleep() 阻塞调用线程。
+
+        Args:
+            action_name: 动作名称
+            context: 上下文信息
+
+        Returns:
+            预延迟时间（秒），0.0 表示无需延迟
+        """
+        return 0.0
 
     def post_action(self, action_name: str, context: Dict[str, Any]) -> None:
         """动作执行后回调。"""

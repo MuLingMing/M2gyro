@@ -19,9 +19,11 @@ class TimelineMeta:
     字段说明：
     - has_duration: 是否支持持续按住（按下-保持-释放），如 move/crouch/charge_attack
     - release_method: stop 时调用 platform.release_action() 的动作名称（如 "move"），仅 has_duration=True 时有效
+    - smooth_transition: 是否支持连续同类型动作的平滑过渡（如 move→move 不释放触点/按键），仅 has_duration=True 时有效
     """
     has_duration: bool = False
     release_method: str | None = None
+    smooth_transition: bool = False
 
 
 class ActionBase(ABC):

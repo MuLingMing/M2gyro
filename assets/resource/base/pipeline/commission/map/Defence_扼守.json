@@ -196,7 +196,7 @@
         ]
     },
     //囚狼之劫掠
-    "夜航手册50扼守-舍身.*?野蜂": {
+    "夜航手册50扼守": {
         "recognition": {
             "type": "OCR",
             "param": {
@@ -213,12 +213,12 @@
         },
         "next": [
             "[JumpBack]委托完成次数",
-            "[JumpBack]夜航手册50扼守-舍身.*?野蜂跑图",
+            "[JumpBack]夜航手册50扼守-跑图",
             "[JumpBack]倍率选择",
             "[JumpBack]确认选择"
         ]
     },
-    "夜航手册50扼守-舍身.*?野蜂跑图": {
+    "夜航手册50扼守-跑图": {
         //四张地图，204m、176m、142m、和地图右下角
         "recognition": {
             "type": "OCR",
@@ -238,8 +238,142 @@
             "扼守战斗单次"
         ]
     },
-    "夜航手册50扼守-舍身.*?野蜂204m跑图": {
-        //204m地图
+    //142m地图
+    "夜航手册50扼守-142m跑图": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 4.4,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 0.7
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 2.4
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 0.7
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 8.7
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    //176m地图
+    "夜航手册50扼守-176m跑图": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 5,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 1.3
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 0.8
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 0.8
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 11.5
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    //204m地图
+    "夜航手册50扼守-204m跑图": {
         "action": {
             "type": "Custom",
             "param": {
@@ -311,59 +445,8 @@
             }
         }
     },
-    "夜航手册50扼守-舍身.*?野蜂142m跑图": {
-        //142m地图
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "wait",
-                            "params": {
-                                "duration": 1.5
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 4.5,
-                                "overlays": [
-                                    {
-                                        "action": "dodge",
-                                        "at": 0.5
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "right",
-                                "duration": 0.8
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 2.5,
-                                "overlays": [
-                                    {
-                                        "action": "dodge",
-                                        "at": 0.5
-                                    }
-                                ]
-                            }
-                        }
-                    ],
-                    "loop_count": 1
-                }
-            }
-        }
-    },
+    //右下角地图
+    "夜航手册50扼守-右下角跑图": {},
     //光羽翼专注、光羽翼昂扬、暗羽翼盛怒、暗盛怒
     "夜航手册羽翼扼守-直跑50m": {
         "recognition": {

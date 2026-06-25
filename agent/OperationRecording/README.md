@@ -9,10 +9,12 @@
 - **自动模式检测**：根据输入格式自动选择执行模式
 - **统一模块化模板平台**：ModuleRegistry 泛型基类，Action/Effect/Platform 三种模块类型完全对称
 - **平台家族继承**：KeyboardPlatform/TouchPlatform 家族基类，子类仅需提供映射表
+- **可组合动作模型**：Sequence / Parallel / AtOffset 组合子，overlay 映射为 `Parallel + AtOffset`
+- **事件队列调度**：EventScheduler 按时间顺序消费事件，替代轮询式 Timeline
 
 ## 版本
 
-当前版本：**v3.0.0**
+当前版本：**v4.0.0**（可组合动作模型 + 事件队列调度）
 
 ## 架构概览
 
@@ -20,9 +22,10 @@
 OperationRecording/
 ├── __init__.py                    # 模块入口，统一导出
 ├── registry.py                    # ModuleRegistry[T] 泛型注册表基类
-├── actions/                       # 动作模块（模板实例 A）
+├── json_adapter.py                # JSON → ActionNode 树转换器
+├── actions/                       # 动作模块
 │   ├── __init__.py                # base + registry + basic/advanced
-│   ├── base.py                    # ActionBase + TimelineMeta
+│   ├── base.py                    # ActionBase + TimelineMeta（含 smooth_transition）
 │   ├── registry.py                # ActionRegistry + @register_action + action_registry
 │   ├── operation_record_action.py # MaaFW CustomAction 入口
 │   ├── basic/                     # 基础动作
@@ -40,7 +43,7 @@ OperationRecording/
 │   │   └── press_key_action.py
 │   └── advanced/                  # 高级动作
 │       └── spiral_leap_action.py
-├── effects/                       # 效果插件模块（模板实例 B）
+├── effects/                       # 效果插件模块
 │   ├── __init__.py                # base + registry + builtin
 │   ├── base.py                    # EffectBase 抽象基类
 │   ├── registry.py                # EffectRegistry + @register_effect + effect_registry
@@ -51,9 +54,9 @@ OperationRecording/
 │       ├── human_timing.py
 │       ├── reaction_delay.py
 │       └── fatigue.py
-├── platforms/                     # 平台模块（模板实例 C）
+├── platforms/                     # 平台模块
 │   ├── __init__.py                # base + registry + desktop/adb
-│   ├── base.py                    # PlatformBase 抽象基类
+│   ├── base.py                    # PlatformBase（含 release_action / cleanup_direction）
 │   ├── keyboard.py                # KeyboardPlatform 键盘平台家族基类
 │   ├── touch.py                   # TouchPlatform 触控平台家族基类
 │   ├── registry.py                # PlatformRegistry + @register_platform + platform_registry
@@ -64,15 +67,23 @@ OperationRecording/
 │   └── adb/                       # ADB 平台
 │       ├── __init__.py
 │       └── adb_platform.py
-├── core/                          # 核心调度层（不随模块扩展修改）
+├── core/                          # 核心调度层
 │   ├── __init__.py
-│   ├── executor.py                # OperationExecutor 执行器
+│   ├── executor.py                # OperationExecutor（薄封装）
 │   ├── parser.py                  # OperationParser 解析器
-│   ├── timeline.py                # ActionTimeline + TimedAction + ActionPriority + ActionState
+│   ├── scheduler.py               # EventScheduler 事件队列调度器
+│   ├── event.py                   # ActionEvent 调度事件数据类
+│   ├── node.py                    # ActionNode + Sequence/Parallel/AtOffset 组合子
 │   ├── types.py                   # Operation + OperationParam 数据结构
 │   └── config.py                  # ConfigManager 配置管理器
 └── config/
     └── default.json               # 默认配置
+```
+
+### 执行流程
+
+```
+Pipeline JSON → OperationParser → JsonAdapter → ActionNode 树 → flatten() → 事件列表 → EventScheduler.run() → Action → Platform
 ```
 
 ## 统一模块化模板平台
@@ -111,18 +122,89 @@ class ModuleRegistry(Generic[T]):
 | `EffectRegistry` | `ModuleRegistry[EffectBase]` | `@register_effect("name")` | `effect_registry` |
 | `PlatformRegistry` | `ModuleRegistry[PlatformBase]` | `@register_platform("name")` | `platform_registry` |
 
-## TimelineMeta 声明式调度
+## 可组合动作模型
 
-每个 Action 类通过 `timeline_meta` 类属性声明其时间线行为，时间线调度逻辑自动根据此元数据决定调用方式：
+动作脚本被建模为节点树，通过 `flatten()` 展平为事件列表，再由 `EventScheduler` 按时间顺序消费。
+
+### 组合子类型
+
+| 组合子 | 含义 | 说明 |
+| :----- | :--- | :--- |
+| `PrimitiveAction` | 原子动作 | 叶子节点，表示一个具体动作 |
+| `Sequence` | 串行 | 子节点按顺序依次执行 |
+| `Parallel` | 并行 | 所有子节点同时开始，总时长 = max(子节点时长) |
+| `AtOffset` | 偏移 | 延迟指定时间后执行子节点 |
+
+### 示例
+
+```python
+from OperationRecording.core.node import Sequence, Parallel, AtOffset, PrimitiveAction
+
+node = Sequence(
+    Parallel(
+        PrimitiveAction("move", {"direction": "left", "duration": 4.2},
+                        has_duration=True, smooth_transition=True),
+        AtOffset(2.0, PrimitiveAction("move", {"direction": "forward", "duration": 0.65},
+                                      has_duration=True)),
+    ),
+    PrimitiveAction("jump", {"duration": 0.3}),
+    PrimitiveAction("crouch", {"duration": 1.0}, has_duration=True),
+)
+```
+
+### JSON 映射（JsonAdapter）
+
+现有 Pipeline JSON 的 `overlay` 被自动映射为组合子，无需修改 JSON 格式：
+
+```
+JSON overlay → Parallel(main, AtOffset(offset, overlay_action))
+JSON 顶层列表 → Sequence(children)
+```
+
+### 展平结果
+
+上例展平后的事件列表（调度器实际消费的数据）：
+
+```text
+(0.00, START,  move, left,    duration=4.2)
+(2.00, START,  move, forward,  duration=0.65)
+(2.65, END,    move, forward)
+(4.20, END,    move, left)
+(4.20, EXECUTE,jump)
+(4.20, START,  crouch,         duration=1.0)
+(5.20, END,    crouch)
+```
+
+事件按 `(time, phase_order)` 排序，`END(0) < START(1) < EXECUTE(2)`，保证同时间点「先释放旧，再启动新」。
+
+## EventScheduler 事件队列调度
+
+替代原有的轮询式 `ActionTimeline`：
+
+| 对比维度 | 旧（ActionTimeline） | 新（EventScheduler） |
+| :------- | :------------------- | :------------------- |
+| 调度模型 | 每 tick 扫描活跃/待执行动作 O(n) | 事件优先队列，O(1) 取下一事件 |
+| 时序精度 | 固定 sleep(10ms~50ms) | sleep 到下一事件精确时间 |
+| 平滑过渡 | 硬编码检测 `action_name == "move"` | `smooth_transition` 协议，任意动作可声明 |
+| 执行模型 | 双轨（timeline / normal） | 统一入口，全部走事件调度 |
+
+### smooth_transition 协议
+
+持续动作声明 `smooth_transition=True` 后，连续同类型动作不释放底层触点/按键，平滑切换方向：
 
 ```python
 @dataclass
 class TimelineMeta:
     has_duration: bool = False
     release_method: str | None = None
+    smooth_transition: bool = False    # 新增
 ```
 
-### 调度规则
+`_handle_end` 中检测到同时间点有同 `action_name` 的 `START` 事件时，调用 `platform.cleanup_direction()` 而非 `release_action()`。
+
+当前仅 `MoveAction` 声明 `smooth_transition=True`，新增持续动作可在 `timeline_meta` 中声明即可获得此能力。
+
+## TimelineMeta 声明式调度
 
 | 条件 | 调用方式 |
 | :--- | :------- |
@@ -135,7 +217,11 @@ class TimelineMeta:
 ```python
 @register_action("move")
 class MoveAction(ActionBase):
-    timeline_meta = TimelineMeta(has_duration=True, release_method="move")
+    timeline_meta = TimelineMeta(
+        has_duration=True,
+        release_method="move",
+        smooth_transition=True,
+    )
 
     def execute(self, params): return self._platform.move(params.get("direction", "forward"), params.get("duration", 1.0))
     def start(self, params): return self._platform.move(params.get("direction", "forward"), 0)
@@ -146,8 +232,6 @@ class JumpAction(ActionBase):
 
     def execute(self, params): return self._platform.jump()
 ```
-
-不再需要修改：`timeline.py`、`executor.py`、`parser.py`
 
 ## 平台家族继承体系
 
@@ -204,56 +288,8 @@ class AdbPlatform(TouchPlatform):
 ### 释放机制
 
 - **`release_action(action_name, direction=None)`**：根据动作名释放对应按键/触点
-  - KeyboardPlatform：
-    - `move` + `direction`：只释放指定方向的键（方向感知释放）
-    - 其他：通过 `_action_key_map` 查找按键列表，发送 `post_key_up`
-  - TouchPlatform：
-    - `move` + `direction`：从活跃方向集合移除指定方向，重新计算摇杆位置
-    - `move` 无方向：归位摇杆
-    - 其他：从 `_active_contacts` 查找并 `post_touch_up`
+- **`cleanup_direction(action_name, old_direction, new_direction=None)`**：仅清理方向跟踪状态，不释放底层触点/按键（用于连续同类型动作平滑过渡）
 - **`release_all()`**：释放所有活跃按键/触点，清空状态跟踪
-
-### 方向感知释放
-
-并行动作场景下，释放某个方向的移动不会影响其他方向：
-
-```json
-{
-    "operations": [
-        {
-            "action": "move",
-            "params": {"direction": "forward", "duration": 6},
-            "overlays": [
-                {"action": "move", "params": {"direction": "left"}, "at": 2}
-            ]
-        }
-    ]
-}
-```
-
-执行流程：
-
-1. `t=0`：按下 W 键（forward）
-2. `t=2`：按下 A 键（left）→ W+A 同时按下
-3. `t=5`：释放 A 键（left）→ 仅 W 键保持
-4. `t=6`：释放 W 键（forward）
-
-## ActionState 状态机
-
-时间线模式下每个动作经历以下状态：
-
-```text
-SCHEDULED → RUNNING → COMPLETED
-                   ↘ CANCELLED（释放失败时）
-```
-
-| 状态 | 值 | 说明 |
-| :--- | :- | :--- |
-| `SCHEDULED` | 1 | 已计划，等待开始时间 |
-| `RUNNING` | 2 | 运行中 |
-| `PAUSED` | 3 | 已暂停（预留） |
-| `COMPLETED` | 4 | 已完成 |
-| `CANCELLED` | 5 | 已取消（`release_action()` 失败时标记） |
 
 ## 动作参考
 
@@ -261,7 +297,7 @@ SCHEDULED → RUNNING → COMPLETED
 
 | 动作名 | 类型 | 参数 | 说明 |
 | :----- | :--- | :--- | :--- |
-| `move` | 持续 | `direction`: forward/backward/left/right/forward_left/forward_right/backward_left/backward_right, `duration`: 秒 | 移动，`release_method="move"` |
+| `move` | 持续 | `direction`: forward/backward/left/right/forward_left/forward_right/backward_left/backward_right, `duration`: 秒 | 移动，`smooth_transition=True` |
 | `crouch` | 持续 | `duration`: 秒 | 下蹲，`release_method="crouch"` |
 | `charge_attack` | 持续 | `duration`: 秒, `x`/`y`: 可选坐标 | 蓄力攻击，`release_method="charge_attack"` |
 | `jump` | 瞬时 | — | 跳跃 |
@@ -271,7 +307,7 @@ SCHEDULED → RUNNING → COMPLETED
 | `swipe` | 瞬时 | `start_x/y`, `end_x/y`, `duration` | 滑动 |
 | `click` | 瞬时 | `x`, `y` | 点击 |
 | `press_key` | 瞬时 | `key`: 按键名, `duration`: 秒 | 按键 |
-| `wait` | 瞬时 | `duration`: 秒 / `until`: 绝对时间点 | 等待（仅时间线模式） |
+| `wait` | — | `duration`: 秒 / `until`: 绝对时间点 | 等待（仅时间线模式） |
 | `run_node` | 瞬时 | `node`: 节点名, `blocking`: 是否阻塞 | 执行 Pipeline 节点 |
 
 ### 高级动作
@@ -284,8 +320,8 @@ SCHEDULED → RUNNING → COMPLETED
 
 | 参数 | 类型 | 说明 |
 | :--- | :--- | :--- |
-| `duration` | float | 动作持续时间（秒），顶层参数 |
-| `overlays` | list | 叠加动作列表，每个包含 `action`/`params`/`at` |
+| `duration` | float | 动作持续时间（秒） |
+| `overlays` | list | 叠加动作列表，每个包含 `action`/`params`/`at`。映射为 `Parallel(main, AtOffset(at, child))` |
 
 ## 新增模块标准流程
 
@@ -304,7 +340,11 @@ from ..registry import register_action
 
 @register_action("my_action")
 class MyAction(ActionBase):
-    timeline_meta = TimelineMeta(has_duration=True, release_method="my_action")
+    timeline_meta = TimelineMeta(
+        has_duration=True,
+        release_method="my_action",
+        smooth_transition=True,   # 可选：支持连续同类型平滑过渡
+    )
 
     def execute(self, params: dict) -> bool:
         return self._platform.my_action(params.get("target"))
@@ -313,7 +353,7 @@ class MyAction(ActionBase):
         return self._platform.my_action(params.get("target"))
 ```
 
-不再需要修改：`timeline.py`、`executor.py`、`parser.py`
+不再需要修改：`scheduler.py`、`executor.py`、`parser.py`
 
 ### 新增 Effect
 
@@ -338,8 +378,6 @@ class MyEffect(EffectBase):
     def apply(self, action_name: str, params: dict, context: dict) -> dict:
         return params
 ```
-
-不再需要修改：任何核心文件
 
 ### 新增 Platform
 
@@ -370,7 +408,7 @@ class MyPlatform(PlatformBase):
     def release_all(self) -> bool: ...
 ```
 
-不再需要修改：`factory.py`、`executor.py`、任何核心文件
+不再需要修改：`factory.py`、`executor.py`
 
 ## 效果插件系统
 
@@ -390,9 +428,9 @@ class MyPlatform(PlatformBase):
 
 | 方法 | 调用时机 | 用途 |
 | :--- | :------- | :--- |
-| `pre_action()` | 动作执行前 | 添加延迟（如反应时间、疲劳） |
+| `pre_action()` | 动作执行前 | 返回延迟值（float），由调度器 `time.sleep()` |
 | `apply()` | 参数处理时 | 修改参数（如加减速标记、随机延迟值） |
-| `post_action()` | 动作执行后 | 后处理（预留） |
+| `post_action()` | 动作执行后 | 后处理 |
 
 ### 配置示例
 
@@ -430,21 +468,33 @@ class MyPlatform(PlatformBase):
             "action": "move",
             "params": {
                 "direction": "left",
-                "duration": 0,
-                "acceleration": true,
+                "duration": 4.2,
                 "overlays": [
                     {
-                        "action": "turn",
-                        "params": { "angle": 45.0 },
-                        "at": 0.3
+                        "action": "move",
+                        "params": {"direction": "forward", "duration": 0.65},
+                        "at": 2
                     }
                 ]
-            },
-            "duration": 2.0
-        }
+            }
+        },
+        {"action": "jump", "params": {"duration": 0.3}},
+        {"action": "crouch", "params": {"duration": 1.0}}
     ],
     "loop_count": 1
 }
+```
+
+执行时间线：
+
+```
+t=0.00  → move(left) 开始
+t=2.00  → move(forward) overlay 开始（对角移动）
+t=2.65  → move(forward) overlay 结束
+t=4.20  → move(left) 结束
+t=4.20  → jump 执行
+t=4.20  → crouch 开始
+t=5.20  → crouch 结束
 ```
 
 ### Wait 动作
@@ -459,10 +509,10 @@ class MyPlatform(PlatformBase):
 
 ### 停止响应
 
-时间线执行过程中检查 `context.tasker.stopping`，收到停止信号时：
+执行过程中检查 `context.tasker.stopping`，收到停止信号时：
 
 1. 调用 `platform.release_all()` 释放所有按键/触点
-2. 调用 `timeline.stop()` 停止时间线
+2. 调用 `scheduler.stop()` 释放所有活跃动作
 3. 返回 `False`
 
 ## 平台支持
@@ -508,43 +558,6 @@ cm.set("effects.enabled", False)
 cm.save("path/to/config.json")
 ```
 
-## 方向自动合并
-
-`OperationParser.merge_move_directions()` 方法可自动合并重叠的移动方向：
-
-### 输入
-
-```json
-{
-    "operations": [
-        {"action": "move", "params": {"direction": "forward", "duration": 6}},
-        {"action": "move", "params": {"direction": "left", "duration": 3}, "at": 2}
-    ]
-}
-```
-
-### 输出
-
-```json
-{
-    "operations": [
-        {"action": "move", "params": {"direction": "forward", "duration": 2}},
-        {"action": "move", "params": {"direction": "forward_left", "duration": 3}},
-        {"action": "move", "params": {"direction": "forward", "duration": 1}}
-    ]
-}
-```
-
-### 合并规则
-
-| 输入方向 | 合并结果 |
-| :------- | :------- |
-| forward + left | forward_left |
-| forward + right | forward_right |
-| backward + left | backward_left |
-| backward + right | backward_right |
-| forward + backward | forward（按优先级） |
-
 ## 使用示例
 
 ### Pipeline JSON 调用
@@ -554,8 +567,17 @@ cm.save("path/to/config.json")
     "custom_action": "OperationRecordAction",
     "custom_action_param": {
         "operations": [
-            {"action": "move", "params": {"direction": "forward", "duration": 1.0}},
-            {"action": "jump", "params": {}}
+            {
+                "action": "move",
+                "params": {
+                    "direction": "left",
+                    "duration": 4.2,
+                    "overlays": [
+                        {"action": "move", "params": {"direction": "forward", "duration": 0.65}, "at": 2}
+                    ]
+                }
+            },
+            {"action": "jump", "params": {"duration": 0.3}}
         ],
         "loop_count": 1
     }
@@ -571,21 +593,47 @@ from OperationRecording import OperationExecutor
 def run_operations(context: Context):
     executor = OperationExecutor(context)
 
+    # 统一入口（自动检测模式）
+    executor.execute_unified({
+        "operations": [
+            {"action": "move", "params": {"direction": "left", "duration": 4.2}},
+            {"action": "jump", "params": {}},
+        ],
+        "loop_count": 1
+    })
+
+    # 时间线模式
+    executor.execute_timeline([
+        {"action": "move", "params": {"direction": "left", "duration": 4.2}},
+        {"action": "jump", "params": {"duration": 0.3}},
+        {"action": "wait", "params": {"duration": 0.5}},
+    ], loop_count=1)
+
     # 普通模式
     from OperationRecording import OperationParam
     param = OperationParam(operations=[...], loop_count=1)
     executor.execute(param)
+```
 
-    # 时间线模式
-    sequence = [
-        {"action": "move", "params": {"direction": "left", "duration": 1.0}, "duration": 2.0},
-        {"action": "jump", "params": {}},
-        {"action": "wait", "params": {"duration": 0.5}},
-    ]
-    executor.execute_timeline(sequence, loop_count=1)
+### 编程构建节点树
 
-    # 统一入口（自动检测模式）
-    executor.execute_unified({"operations": [...], "loop_count": 1})
+```python
+from OperationRecording.core.node import Sequence, Parallel, AtOffset, PrimitiveAction
+from OperationRecording.core.scheduler import EventScheduler
+
+node = Sequence(
+    Parallel(
+        PrimitiveAction("move", {"direction": "left", "duration": 4.2},
+                        has_duration=True, smooth_transition=True),
+        AtOffset(2.0, PrimitiveAction("move", {"direction": "forward", "duration": 0.65},
+                                      has_duration=True)),
+    ),
+    PrimitiveAction("jump", {"duration": 0.3}),
+)
+
+scheduler = EventScheduler(platform, context, effect_manager)
+scheduler.load(node)
+scheduler.run()
 ```
 
 ## 依赖

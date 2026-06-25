@@ -1,4 +1,33 @@
 {
+    "AutoPathFinding": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "PathFindingReco",
+                "custom_recognition_param": {
+                    "expected_templates": [
+                        "副本/目标点"
+                    ],
+                    "selector_type": "priority",
+                    "selector_priority": [
+                        "副本/目标点"
+                    ]
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "PathFinderAction",
+                "custom_action_param": {
+                    "move_duration": 800
+                }
+            }
+        },
+        "next": [
+            "AutoPathFinding"
+        ]
+    },
     "test_OperationRecordAction_turn": {
         "action": {
             "type": "Custom",
@@ -107,33 +136,325 @@
             }
         }
     },
-    "AutoPathFinding": {
+    "test_142-2": {
         "recognition": {
-            "type": "Custom",
+            "type": "TemplateMatch",
             "param": {
-                "custom_recognition": "PathFindingReco",
-                "custom_recognition_param": {
-                    "expected_templates": [
-                        "副本/目标点"
-                    ],
-                    "selector_type": "priority",
-                    "selector_priority": [
-                        "副本/目标点"
-                    ]
-                }
+                "template": "夜航手册/扼守/50/142"
             }
         },
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "PathFinderAction",
+                "custom_action": "OperationRecordAction",
                 "custom_action_param": {
-                    "move_duration": 800
+                    "operations": [
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 4.4,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 0.7
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 2.4
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 0.7
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 8.7
+                            }
+                        }
+                    ]
                 }
             }
+        }
+    },
+    "test_176": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "夜航手册/扼守/50/176"
+            }
         },
-        "next": [
-            "AutoPathFinding"
-        ]
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 5,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 1.3
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 0.8
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 0.8
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 11.5
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "test_204": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "夜航手册/扼守/50/204"
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 5,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 1
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 0.9
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 3
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 0.54
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 2.4
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 0.7
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 8.6
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "test_右下角2": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "副本/目标点",
+                "green_mask": true
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 2.5,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 0.6
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 2
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "backward",
+                                "duration": 0.6
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 2
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 0.8
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 8.2
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 0.8
+                            }
+                        }
+                    ]
+                }
+            }
+        }
     }
 }

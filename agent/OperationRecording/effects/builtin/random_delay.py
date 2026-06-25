@@ -7,7 +7,6 @@
 2. 非瞬时动作执行前添加间隔延迟
 """
 import random
-import time
 from typing import Any, ClassVar, Dict, List, Optional
 
 from ..base import EffectBase
@@ -51,9 +50,8 @@ class RandomDelayEffect(EffectBase):
         params["random_delay"] = random.uniform(self._min_ms, self._max_ms) / 1000.0
         return params
 
-    def pre_action(self, action_name: str, context: Dict[str, Any]) -> None:
+    def pre_action(self, action_name: str, context: Dict[str, Any]) -> float:
         is_instant = context.get("is_instant", True)
         if is_instant:
-            return
-        delay = random.uniform(self._gap_min_ms, self._gap_max_ms) / 1000.0
-        time.sleep(delay)
+            return 0.0
+        return random.uniform(self._gap_min_ms, self._gap_max_ms) / 1000.0

@@ -7,7 +7,6 @@
 2. 动作开始前添加微小随机延迟
 """
 import random
-import time
 from typing import Any, ClassVar, Dict, List, Optional
 
 from ..base import EffectBase
@@ -48,8 +47,7 @@ class AccelerationEffect(EffectBase):
             params["deceleration"] = True
         return params
 
-    def pre_action(self, action_name: str, context: Dict[str, Any]) -> None:
+    def pre_action(self, action_name: str, context: Dict[str, Any]) -> float:
         if action_name not in self._actions:
-            return
-        delay = random.uniform(0.01, 0.05) * self._factor / 0.15
-        time.sleep(delay)
+            return 0.0
+        return random.uniform(0.01, 0.05) * self._factor / 0.15
