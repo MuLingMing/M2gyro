@@ -221,17 +221,34 @@
     "夜航手册50扼守-跑图": {
         //四张地图，204m、176m、142m、和地图右下角
         "recognition": {
-            "type": "OCR",
+            "type": "Custom",
             "param": {
-                "expected": [
-                    "前往目标点"
-                ],
-                "roi": [
-                    0,
-                    0,
-                    350,
-                    500
-                ]
+                "custom_recognition": "IfElseReco",
+                "custom_recognition_param": {
+                    "entry": "扼守前往目标点",
+                    "if": "夜航手册50扼守-142m跑图",
+                    "elif": [
+                        "夜航手册50扼守-176m跑图",
+                        "夜航手册50扼守-204m跑图",
+                        "夜航手册50扼守-右下角跑图"
+                    ],
+                    "else": true
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "IfElseAction",
+                "custom_action_param": {
+                    "if": "夜航手册50扼守-142m跑图",
+                    "elif": [
+                        "夜航手册50扼守-176m跑图",
+                        "夜航手册50扼守-204m跑图",
+                        "夜航手册50扼守-右下角跑图"
+                    ],
+                    "else": "局内放弃委托"
+                }
             }
         },
         "next": [
@@ -240,18 +257,46 @@
     },
     //142m地图
     "夜航手册50扼守-142m跑图": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "sub_name": "夜航手册50扼守-142m跑图目标点",
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": "副本/目标点",
+                                "green_mask": true
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "142"
+                                ],
+                                "roi": "夜航手册50扼守-142m跑图目标点",
+                                "roi_offset": [
+                                    -26,
+                                    -30,
+                                    47,
+                                    57
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
         "action": {
             "type": "Custom",
             "param": {
                 "custom_action": "OperationRecordAction",
                 "custom_action_param": {
                     "operations": [
-                        {
-                            "action": "wait",
-                            "params": {
-                                "duration": 1.5
-                            }
-                        },
                         {
                             "action": "move",
                             "params": {
@@ -300,18 +345,46 @@
     },
     //176m地图
     "夜航手册50扼守-176m跑图": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "sub_name": "夜航手册50扼守-176m跑图目标点",
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": "副本/目标点",
+                                "green_mask": true
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "176"
+                                ],
+                                "roi": "夜航手册50扼守-176m跑图目标点",
+                                "roi_offset": [
+                                    -26,
+                                    -30,
+                                    47,
+                                    57
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
         "action": {
             "type": "Custom",
             "param": {
                 "custom_action": "OperationRecordAction",
                 "custom_action_param": {
                     "operations": [
-                        {
-                            "action": "wait",
-                            "params": {
-                                "duration": 1.5
-                            }
-                        },
                         {
                             "action": "move",
                             "params": {
@@ -357,7 +430,7 @@
                             "action": "move",
                             "params": {
                                 "direction": "left",
-                                "duration": 0.8
+                                "duration": 0.78
                             }
                         },
                         {
@@ -374,6 +447,40 @@
     },
     //204m地图
     "夜航手册50扼守-204m跑图": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "sub_name": "夜航手册50扼守-204m跑图目标点",
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "template": "副本/目标点",
+                                "green_mask": true
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [
+                                    "204"
+                                ],
+                                "roi": "夜航手册50扼守-204m跑图目标点",
+                                "roi_offset": [
+                                    -26,
+                                    -30,
+                                    47,
+                                    57
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
         "action": {
             "type": "Custom",
             "param": {
@@ -381,16 +488,10 @@
                 "custom_action_param": {
                     "operations": [
                         {
-                            "action": "wait",
-                            "params": {
-                                "duration": 1.5
-                            }
-                        },
-                        {
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 5.0,
+                                "duration": 5,
                                 "overlays": [
                                     {
                                         "action": "dodge",
@@ -403,34 +504,126 @@
                             "action": "move",
                             "params": {
                                 "direction": "right",
-                                "duration": 0.8
+                                "duration": 1.5
                             }
                         },
                         {
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 1,
-                                "overlays": [
-                                    {
-                                        "action": "dodge",
-                                        "at": 0.5
-                                    }
-                                ]
+                                "duration": 1.5
                             }
                         },
                         {
                             "action": "move",
                             "params": {
                                 "direction": "left",
-                                "duration": 0.8
+                                "duration": 1
                             }
                         },
                         {
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 1,
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 0.9
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 3
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 0.54
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 2.4
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 0.7
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 8.5
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    //右下角地图
+    "夜航手册50扼守-右下角跑图": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "副本/目标点",
+                "green_mask": true,
+                "roi": [
+                    900,
+                    400,
+                    150,
+                    100
+                ]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 1.5,
+                                "overlays": [
+                                    {
+                                        "action": "jump",
+                                        "at": 0.5
+                                    },
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.8
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 1.8
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 1.5,
                                 "overlays": [
                                     {
                                         "action": "dodge",
@@ -438,15 +631,68 @@
                                     }
                                 ]
                             }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 1
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 0.45
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 2.2
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "backward",
+                                "duration": 0.45
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 2.4
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 0.8
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 8.4
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 0.3
+                            }
                         }
-                    ],
-                    "loop_count": 1
+                    ]
                 }
             }
         }
     },
-    //右下角地图
-    "夜航手册50扼守-右下角跑图": {},
     //光羽翼专注、光羽翼昂扬、暗羽翼盛怒、暗盛怒
     "夜航手册羽翼扼守-直跑50m": {
         "recognition": {
@@ -701,6 +947,22 @@
         ]
     },
     //扼守战斗
+    "扼守前往目标点": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "前往目标点"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    500
+                ]
+            }
+        }
+    },
     "扼守未抵达目的地": {
         "recognition": {
             "type": "OCR",

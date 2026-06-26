@@ -47,6 +47,10 @@
         "BranchDef": {
             "oneOf": [
                 {
+                    "type": "string",
+                    "description": "单个节点名简写（自动转换为 [string]）"
+                },
+                {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/BranchItem"
@@ -55,14 +59,23 @@
                 },
                 {
                     "type": "object",
-                    "description": "分支定义（对象格式，带 next）\n\n字段：\n- Act_or_node: 分支项列表\n- next: 分支执行完毕后依次执行的 Pipeline 节点列表\n\n示例：\n{\"Act_or_node\": [{\"action\": \"Click\", \"param\": {\"target\": true}}], \"next\": [\"NextStep\"]}",
+                    "description": "分支定义（对象格式，带 next）\n\n字段：\n- Act_or_node: 分支项列表，支持单个节点名字符串简写（自动转换为 [string]）\n- next: 分支执行完毕后依次执行的 Pipeline 节点列表\n\n示例：\n{\"Act_or_node\": [{\"action\": \"Click\", \"param\": {\"target\": true}}], \"next\": [\"NextStep\"]}\n{\"Act_or_node\": \"NodeA\", \"next\": [\"NextStep\"]}",
                     "properties": {
                         "Act_or_node": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/BranchItem"
-                            },
-                            "description": "分支项列表"
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "description": "单个节点名简写（自动转换为 [string]）"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/BranchItem"
+                                    },
+                                    "description": "分支项列表"
+                                }
+                            ],
+                            "description": "分支项列表，支持单个节点名字符串简写"
                         },
                         "next": {
                             "oneOf": [
