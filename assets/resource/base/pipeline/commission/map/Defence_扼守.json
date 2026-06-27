@@ -1014,7 +1014,8 @@
                             "run": true,
                             "interval": 2,
                             "start_after": 10,
-                            "max_reco": 5
+                            "max_reco": 5,
+                            "record_reco": true
                         }
                     ],
                     "Continue": [

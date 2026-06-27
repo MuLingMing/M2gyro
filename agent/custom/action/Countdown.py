@@ -163,7 +163,7 @@ class Countdown(CustomAction):
                 if not tracker.should_check(current_time, elapsed):
                     continue
                 tracker.on_check(current_time)
-                result = self._recog_and_confirm(context, tracker, image)
+                result = self._recog_and_confirm(context, tracker, image, argv, params)
                 if result and result.hit:
                     return CustomAction.RunResult(success=True)
 
@@ -173,7 +173,7 @@ class Countdown(CustomAction):
                 tracker.on_check(current_time)
                 # c = tracker.config
                 # logger.info(f"[Countdown] 检查 [{c.name}] run_remaining={tracker.run_remaining} remaining={tracker.remaining}")
-                self._recog_and_confirm(context, tracker, image)
+                self._recog_and_confirm(context, tracker, image, argv, params)
 
             current_time = time.monotonic()
             elapsed = current_time - start_time
@@ -317,7 +317,8 @@ class Countdown(CustomAction):
         return None
 
     def _recog_and_confirm(
-        self, context: Context, tracker: "_NodeTracker", image
+        self, context: Context, tracker: "_NodeTracker", image,
+        argv: CustomAction.RunArg, params: dict
     ) -> RecognitionDetail | None:
         """
         识别 + 二次确认 + 执行任务
@@ -325,11 +326,16 @@ class Countdown(CustomAction):
         流程：
         1. 调用 _recognize 执行识别和二次确认
         2. 确认通过后，根据 run 配置决定是否执行节点任务
+        3. 如果配置了 record_reco，累加识别成功次数到 reco_stats
         """
         config = tracker.config
         result = self._recognize(context, config, image)
         if not result:
             return None
+
+        # 识别成功（含二次确认通过），累加 reco_stats
+        if config.record_reco:
+            self._save_reco_stats(context, argv, params, config.name)
 
         if isinstance(config.run, bool) and config.run:
             self._run_task(context, config.name)
@@ -350,6 +356,28 @@ class Countdown(CustomAction):
         except Exception as e:
             logger.error(f"Countdown: 执行节点 {node_name} 失败: {e}")
 
+    def _save_reco_stats(
+        self, context: Context, argv: CustomAction.RunArg, params: dict, node_name: str
+    ) -> None:
+        """
+        累加识别成功次数到 reco_stats 并持久化保存
+
+        参数:
+        - context: 上下文对象
+        - argv: 运行参数，包含节点名称
+        - params: 当前解析后的参数字典
+        - node_name: 识别成功的节点名称
+        """
+        try:
+            reco_stats = params.get("reco_stats", {})
+            reco_stats[node_name] = reco_stats.get(node_name, 0) + 1
+            params["reco_stats"] = reco_stats
+            context.override_pipeline(
+                {argv.node_name: {"custom_action_param": params}}
+            )
+        except Exception as e:
+            logger.error(f"Countdown: 保存 reco_stats 失败: {e}")
+
     def _parse_node(self, param: str | dict | None) -> "NodeConfig":
         """解析节点参数为 NodeConfig"""
         if not param:
@@ -360,6 +388,9 @@ class Countdown(CustomAction):
             run = param.get("run", True)
             if isinstance(run, str):
                 run = run.lower() == "true"
+            record_reco = param.get("record_reco", False)
+            if isinstance(record_reco, str):
+                record_reco = record_reco.lower() == "true"
             return NodeConfig(
                 name=param.get("name", ""),
                 run=run,
@@ -369,6 +400,7 @@ class Countdown(CustomAction):
                 delay=self._parse_number(param.get("delay", 0.0), 0.0, 0),
                 start_after=self._parse_number(param.get("start_after", 0.0), 0.0, 0),
                 max_reco=self._parse_bool_or_int(param.get("max_reco", True)),
+                record_reco=record_reco,
             )
         return NodeConfig()
 
@@ -414,6 +446,7 @@ class NodeConfig:
     - delay: 二次识别延迟（秒），用于确保识别稳定
     - start_after: 计时开始后多少秒再开始判定该节点
     - max_reco: 最大尝试识别次数，True=无限制，False=跳过识别，int=限制次数
+    - record_reco: 是否记录识别成功次数到 reco_stats，识别成功需通过二次确认（如有配置）
     """
 
     name: str = ""
@@ -422,6 +455,7 @@ class NodeConfig:
     delay: float = 0.0
     start_after: float = 0.0
     max_reco: bool | int = True
+    record_reco: bool = False
 
 
 class _NodeTracker:

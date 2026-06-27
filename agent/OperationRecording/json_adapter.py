@@ -45,6 +45,7 @@ class JsonAdapter:
         - ActionNode: 节点树根节点（Sequence 或单个 PrimitiveAction）
         """
         children: List[ActionNode] = []
+        cumulative_duration = 0.0  # 累计时间，用于计算 until 参数
 
         for item in sequence:
             action_name: Optional[str] = item.get("action")
@@ -56,12 +57,20 @@ class JsonAdapter:
             if action_name == "wait":
                 # wait 仅推进时间，不产生节点
                 # 用 PrimitiveAction("wait") 仅为了 total_duration 计算
-                children.append(PrimitiveAction("wait", duration=_parse_duration(item, params)))
+                # 处理 until 参数：绝对时间点转换为相对等待时长
+                until = params.get("until")
+                if until is not None:
+                    duration = max(0.0, float(until) - cumulative_duration)
+                else:
+                    duration = _parse_duration(item, params)
+                children.append(PrimitiveAction("wait", duration=duration))
+                cumulative_duration += duration
                 continue
 
             node = JsonAdapter._build_action_node(action_name, params, item)
             if node is not None:
                 children.append(node)
+                cumulative_duration += node.total_duration()
 
         if len(children) == 0:
             return PrimitiveAction("wait", duration=0.0)

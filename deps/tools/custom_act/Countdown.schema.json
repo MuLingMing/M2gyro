@@ -62,24 +62,29 @@
 					"description": "计时开始后多少秒再开始判定该节点，默认0秒（立即开始），float格式"
 				},
 				"max_reco": {
-					"oneOf": [
-						{
-							"type": "boolean"
-						},
-						{
-							"type": "integer",
-							"minimum": 0
-						}
-					],
-					"default": true,
-					"description": "是否识别（布尔值）或最大尝试识别次数（整数），默认true。\n\n布尔值格式：true表示无限制识别，false表示跳过识别（节点直接失效）\n例如：true\n\n整数格式：最大尝试识别次数，每次尝试识别时递减，减到0后节点失效\n例如：3\n\n与 run 的交互：max_reco 控制「是否参与识别」，run 控制「识别成功后是否执行任务」，两者正交。max_reco 优先级更高：max_reco 耗尽则节点完全失效，run 耗尽则节点仍参与识别但不执行任务"
-				}
+				"oneOf": [
+					{
+						"type": "boolean"
+					},
+					{
+						"type": "integer",
+						"minimum": 0
+					}
+				],
+				"default": true,
+				"description": "是否识别（布尔值）或最大尝试识别次数（整数），默认true。\n\n布尔值格式：true表示无限制识别，false表示跳过识别（节点直接失效）\n例如：true\n\n整数格式：最大尝试识别次数，每次尝试识别时递减，减到0后节点失效\n例如：3\n\n与 run 的交互：max_reco 控制「是否参与识别」，run 控制「识别成功后是否执行任务」，两者正交。max_reco 优先级更高：max_reco 耗尽则节点完全失效，run 耗尽则节点仍参与识别但不执行任务"
 			},
-			"required": [
-				"name"
-			],
-			"additionalProperties": false
+			"record_reco": {
+				"type": "boolean",
+				"default": false,
+				"description": "是否记录识别成功次数到 reco_stats，默认 false。\n\n当配置了 delay（二次确认）时，需两次识别都成功才算识别成功；未配置 delay 时，第一次识别成功即算识别成功。\n\n识别成功后会累加 reco_stats 中对应节点名的计数，并持久化保存到 custom_action_param"
+			}
 		},
+		"required": [
+			"name"
+		],
+		"additionalProperties": false
+	},
 		"OverNode": {
 			"type": "object",
 			"properties": {
@@ -113,15 +118,26 @@
 			"additionalProperties": false
 		},
 		"CountdownParam": {
-			"type": "object",
-			"properties": {
-				"total_time": {
-					"type": "integer",
-					"default": 90,
-					"minimum": 0,
-					"description": "总倒计时时间（秒），默认90秒。total_time=0时，进入无限循环模式"
+		"type": "object",
+		"properties": {
+			"total_time": {
+				"type": "integer",
+				"default": 90,
+				"minimum": 0,
+				"description": "总倒计时时间（秒），默认90秒。total_time=0时，进入无限循环模式"
+			},
+			"reco_stats": {
+				"type": "object",
+				"patternProperties": {
+					"^.+$": {
+						"type": "integer",
+						"minimum": 0
+					}
 				},
-				"Interrupt": {
+				"additionalProperties": false,
+				"description": "识别成功次数统计，格式为 {节点名: 次数}。\n\n由 Countdown 自动维护，当节点配置了 record_reco=true 且识别成功时，自动累加对应节点名的计数。\n\n跨多次 Countdown 执行持久化保存。\n\n示例：{\"扼守未抵达目的地\": 3, \"确认选择\": 1}"
+			},
+			"Interrupt": {
 					"oneOf": [
 						{
 							"type": "string"
@@ -140,29 +156,29 @@
 							}
 						}
 					],
-					"description": "中断节点列表，识别到该节点时，根据run配置执行对应节点并结束。节点内部逻辑为OR关系\n\n支持格式：\n- 单个节点名称（字符串）：\n  \"node_name\"\n\n- 节点列表（数组）：\n  [\n    \"node_name\",\n    {\n        \"name\": \"node_name\",\n        \"run\": false,\n        \"interval\": 2,\n        \"delay\": 1,\n        \"start_after\": 10,\n        \"max_reco\": 3\n    }\n]\n\n节点对象字段：\n- name: 节点名称（必填）\n- run: 是否执行/执行次数（默认 true）\n- interval: 识别间隔秒数（默认 2.0）\n- delay: 识别成功后延迟秒数（默认 0）\n- start_after: 计时开始后延迟秒数（默认 0）\n- max_reco: 最大尝试识别次数（默认 true）"
-				},
-				"Continue": {
-					"oneOf": [
-						{
-							"type": "string"
-						},
-						{
-							"type": "array",
-							"items": {
-								"oneOf": [
-									{
-										"type": "string"
-									},
-									{
-										"$ref": "#/definitions/CountdownNode"
-									}
-								]
-							}
+					"description": "中断节点列表，识别到该节点时，根据run配置执行对应节点并结束。节点内部逻辑为OR关系\n\n支持格式：\n- 单个节点名称（字符串）：\n  \"node_name\"\n\n- 节点列表（数组）：\n  [\n    \"node_name\",\n    {\n        \"name\": \"node_name\",\n        \"run\": false,\n        \"interval\": 2,\n        \"delay\": 1,\n        \"start_after\": 10,\n        \"max_reco\": 3,\n        \"record_reco\": true\n    }\n]\n\n节点对象字段：\n- name: 节点名称（必填）\n- run: 是否执行/执行次数（默认 true）\n- interval: 识别间隔秒数（默认 2.0）\n- delay: 识别成功后延迟秒数（默认 0）\n- start_after: 计时开始后延迟秒数（默认 0）\n- max_reco: 最大尝试识别次数（默认 true）\n- record_reco: 是否记录识别成功次数到 reco_stats（默认 false）"
+			},
+			"Continue": {
+				"oneOf": [
+					{
+						"type": "string"
+					},
+					{
+						"type": "array",
+						"items": {
+							"oneOf": [
+								{
+									"type": "string"
+								},
+								{
+									"$ref": "#/definitions/CountdownNode"
+								}
+							]
 						}
-					],
-					"description": "继续节点列表，识别到该节点时，根据run配置执行对应节点并继续识别。节点内部逻辑为OR关系\n\n支持格式：\n- 单个节点名称（字符串）：\n  \"node_name\"\n\n- 节点列表（数组）：\n  [\n    \"node_name\",\n    {\n        \"name\": \"node_name\",\n        \"run\": 1,\n        \"interval\": 3,\n        \"delay\": 2,\n        \"start_after\": 0,\n        \"max_reco\": true\n    }\n]\n\n节点对象字段：\n- name: 节点名称（必填）\n- run: 是否执行/执行次数（默认 true）\n- interval: 识别间隔秒数（默认 2.0）\n- delay: 识别成功后延迟秒数（默认 0）\n- start_after: 计时开始后延迟秒数（默认 0）\n- max_reco: 最大尝试识别次数（默认 true）"
-				},
+					}
+				],
+				"description": "继续节点列表，识别到该节点时，根据run配置执行对应节点并继续识别。节点内部逻辑为OR关系\n\n支持格式：\n- 单个节点名称（字符串）：\n  \"node_name\"\n\n- 节点列表（数组）：\n  [\n    \"node_name\",\n    {\n        \"name\": \"node_name\",\n        \"run\": 1,\n        \"interval\": 3,\n        \"delay\": 2,\n        \"start_after\": 0,\n        \"max_reco\": true,\n        \"record_reco\": true\n    }\n]\n\n节点对象字段：\n- name: 节点名称（必填）\n- run: 是否执行/执行次数（默认 true）\n- interval: 识别间隔秒数（默认 2.0）\n- delay: 识别成功后延迟秒数（默认 0）\n- start_after: 计时开始后延迟秒数（默认 0）\n- max_reco: 最大尝试识别次数（默认 true）\n- record_reco: 是否记录识别成功次数到 reco_stats（默认 false）"
+			},
 				"Over": {
 					"oneOf": [
 						{
