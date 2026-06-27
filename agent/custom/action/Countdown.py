@@ -234,6 +234,7 @@ class Countdown(CustomAction):
                 "Interrupt": node_list_type,
                 "Continue": node_list_type,
                 "Over": node_list_type,
+                "reco_stats": dict,
             }
             return ParamMerger.merge(
                 "action", custom_action_param, attach_params, schema
