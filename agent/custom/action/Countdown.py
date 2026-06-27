@@ -39,9 +39,10 @@ class Countdown(CustomAction):
     参数格式：
     {
         "total_time": 90,
-        "Interrupt": ["A1", {"name": "A2", "run": "True", "interval": 2, "delay": 1, "start_after": 10, "max_reco": 3}],
+        "Interrupt": ["A1", {"name": "A2", "run": "True", "interval": 2, "delay": 1, "start_after": 10, "max_reco": 3, "record_reco": true}],
         "Continue": "B",
-        "Over": ["C"]
+        "Over": ["C"],
+        "reco_stats": {}
     }
 
     字段说明：
@@ -49,15 +50,17 @@ class Countdown(CustomAction):
     - Interrupt: 中断节点列表，识别到该节点时，执行对应节点并结束
     - Continue: 继续节点列表，识别到该节点时，执行对应节点并继续识别
     - Over: 超时节点列表，超时时执行对应节点并结束。仅使用 name、run、delay 参数
+    - reco_stats: 识别统计信息，用于记录每个节点的识别次数，默认空，不记录
 
     节点格式：
     - 简单格式："A1"
-    - 对象格式：{"name": "A1", "run": "True", "interval": 2, "delay": 1, "start_after": 10, "max_reco": 3}
+    - 对象格式：{"name": "A1", "run": "True", "interval": 2, "delay": 1, "start_after": 10, "max_reco": 3, "record_reco": true}
     - run: 是否执行节点任务，可以是布尔值或整数（限制执行次数）
     - interval: 识别间隔时间（秒），默认2秒
     - delay: 二次识别延迟（秒），用于确保识别稳定
     - start_after: 计时开始后多少秒再开始判定该节点，默认0秒
     - max_reco: 最大尝试识别次数，默认true无限制，false则不识别
+    - record_reco: 是否记录识别结果，默认false
 
     run 与 max_reco 交互（正交关系，任一条件满足即失效）：
     - max_reco 控制「是否参与识别」：每次尝试识别时递减，耗尽后节点不再参与识别
@@ -223,6 +226,7 @@ class Countdown(CustomAction):
                 "delay": (int, float),
                 "start_after": (int, float),
                 "max_reco": (bool, int),
+                "record_reco": bool,
             }
             node_list_type = (str, node_schema, list)
             schema = {
