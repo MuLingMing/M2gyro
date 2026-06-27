@@ -1,0 +1,32 @@
+{
+	"key_codes": {
+		"W": 87,
+		"A": 65,
+		"S": 83,
+		"D": 68,
+		"Space": 32,
+		"Shift": 16,
+		"F": 70,
+		"Q": 81,
+		"C": 67,
+		"T": 84,
+		"E": 69,
+		"R": 82,
+		"Z": 90,
+		"MouseLeft": 1
+	},
+	"action_key_map": {
+		"move": [
+			"W",
+			"A",
+			"S",
+			"D"
+		],
+		"charge_attack": ["MouseLeft"],
+		"crouch": ["C"]
+	},
+	"turn_config": {
+		"min_duration_ms": 50,
+		"max_duration_ms": 500
+	}
+}

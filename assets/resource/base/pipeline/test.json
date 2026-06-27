@@ -28,24 +28,6 @@
             "AutoPathFinding"
         ]
     },
-    "test_OperationRecordAction_turn": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "turn",
-                            "params": {
-                                "angle": 60
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    },
     "test_OperationRecordAction_move": {
         "action": {
             "type": "Custom",
@@ -57,11 +39,11 @@
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 4.5,
+                                "duration": 1.5,
                                 "overlays": [
                                     {
-                                        "action": "dodge",
-                                        "at": 0.5
+                                        "action": "jump",
+                                        "at": 0.6
                                     }
                                 ]
                             }
@@ -70,18 +52,18 @@
                             "action": "move",
                             "params": {
                                 "direction": "right",
-                                "duration": 0.8
+                                "duration": 1.5
                             }
                         },
                         {
                             "action": "move",
                             "params": {
-                                "direction": "forward",
-                                "duration": 2.5,
+                                "direction": "backward",
+                                "duration": 2.1,
                                 "overlays": [
                                     {
                                         "action": "dodge",
-                                        "at": 0.5
+                                        "at": 0.6
                                     }
                                 ]
                             }
@@ -90,20 +72,7 @@
                             "action": "move",
                             "params": {
                                 "direction": "left",
-                                "duration": 0.8
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 8,
-                                "overlays": [
-                                    {
-                                        "action": "dodge",
-                                        "at": 0.5
-                                    }
-                                ]
+                                "duration": 0.9
                             }
                         }
                     ]
@@ -120,22 +89,6 @@
                     "operations": [
                         {
                             "action": "jump"
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_交互": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "interact",
-                            "params": {}
                         }
                     ]
                 }
@@ -188,7 +141,10 @@
                         {
                             "action": "turn",
                             "params": {
-                                "angle": 60
+                                "start_x": 1000,
+                                "start_y": 150,
+                                "end_x": 1210,
+                                "end_y": 150
                             }
                         }
                     ]
@@ -225,20 +181,7 @@
             }
         }
     },
-    "test_右下角": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": "副本/目标点",
-                "green_mask": true,
-                "roi": [
-                    900,
-                    400,
-                    150,
-                    100
-                ]
-            }
-        },
+    "test_交互_F": {
         "action": {
             "type": "Custom",
             "param": {
@@ -246,95 +189,79 @@
                 "custom_action_param": {
                     "operations": [
                         {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 1.5,
-                                "overlays": [
-                                    {
-                                        "action": "jump",
-                                        "at": 0.5
-                                    },
-                                    {
-                                        "action": "dodge",
-                                        "at": 0.8
-                                    }
-                                ]
-                            }
-                        },
+                            "action": "interact",
+                            "params": {}
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "test_交互_GrapplingHook": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
                         {
-                            "action": "wait",
+                            "action": "interact",
                             "params": {
-                                "duration": 1.5
+                                "interaction_type": "GrapplingHook"
                             }
-                        },
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "test_交互_E_skill": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
                         {
-                            "action": "move",
+                            "action": "interact",
                             "params": {
-                                "direction": "forward",
-                                "duration": 1.5,
-                                "overlays": [
-                                    {
-                                        "action": "dodge",
-                                        "at": 0.5
-                                    }
-                                ]
+                                "interaction_type": "E_skill"
                             }
-                        },
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "test_交互_Q_skill": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
                         {
-                            "action": "move",
+                            "action": "interact",
                             "params": {
-                                "direction": "right",
-                                "duration": 1
+                                "interaction_type": "Q_skill"
                             }
-                        },
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "test_交互_pet": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
                         {
-                            "action": "move",
+                            "action": "interact",
                             "params": {
-                                "direction": "forward",
-                                "duration": 0.45
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "right",
-                                "duration": 2.2
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "backward",
-                                "duration": 0.45
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "right",
-                                "duration": 2.4
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 0.8
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "right",
-                                "duration": 8.4
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 0.3
+                                "interaction_type": "pet"
                             }
                         }
                     ]

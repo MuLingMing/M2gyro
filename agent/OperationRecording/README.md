@@ -302,7 +302,7 @@ class AdbPlatform(TouchPlatform):
 | `charge_attack` | 持续 | `duration`: 秒, `x`/`y`: 可选坐标 | 蓄力攻击，`release_method="charge_attack"` |
 | `jump` | 瞬时 | — | 跳跃 |
 | `dodge` | 瞬时 | `direction`: 可选方向 | 闪避 |
-| `turn` | 瞬时 | `angle`: 角度（正右负左） | 转向 |
+| `turn` | 瞬时 | `start_x/y`, `end_x/y`: 起止坐标, `duration`: 毫秒 | 转向 |
 | `interact` | 瞬时 | `interaction_type`: 交互类型 | 交互 |
 | `swipe` | 瞬时 | `start_x/y`, `end_x/y`, `duration` | 滑动 |
 | `click` | 瞬时 | `x`, `y` | 点击 |

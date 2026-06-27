@@ -1,543 +1,567 @@
 {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "./custom_act/OperationRecordAction.schema.json",
-    "if": {
-        "properties": {
-            "custom_action": {
-                "const": "OperationRecordAction"
-            }
-        },
-        "required": [
-            "custom_action"
-        ]
-    },
-    "then": {
-        "properties": {
-            "custom_action_param": {
-                "$ref": "#/definitions/OperationRecordActionParam",
-                "description": "OperationRecordAction 参数\n\n示例：\n{\n    \"operations\": [\n        {\"action\": \"move\", \"params\": {\"direction\": \"forward\", \"duration\": 2.0}},\n        {\"action\": \"jump\", \"params\": {}},\n        {\"action\": \"turn\", \"params\": {\"angle\": 90.0}},\n        {\"action\": \"wait\", \"params\": {\"duration\": 1.0}}\n    ],\n    \"loop_count\": 1\n}\n\n字段说明：\n- operations: 操作列表（必填），支持普通模式和时间线模式\n- loop_count: 循环执行次数（默认 1，>= 1）\n\n支持的动作：\n- move: 移动（direction, duration, overlays）\n- jump: 跳跃（duration, overlays）\n- dodge: 闪避（direction, duration, overlays）\n- turn: 转向（angle, duration, overlays）\n- interact: 交互（interaction_type, duration, overlays）\n- charge_attack: 蓄力攻击（duration, x, y, overlays）\n- crouch: 下蹲（duration, overlays）\n- spiral_leap: 螺旋飞跃（duration, overlays）\n- wait: 等待（duration 或 until）\n- run_node: 执行节点（node）\n\n时间线模式：在 params 中设置 duration 启用，overlays 支持并行动作叠加"
-            }
-        },
-        "required": [
-            "custom_action_param"
-        ]
-    },
-    "definitions": {
-        "OperationRecordActionParam": {
-            "type": "object",
-            "properties": {
-                "operations": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/OperationItem"
-                    },
-                    "description": "操作列表，必填\n\n支持普通模式和时间线模式：\n\n普通模式示例：\n[\n    {\"action\": \"move\", \"params\": {\"direction\": \"forward\"}},\n    {\"action\": \"jump\", \"params\": {}}\n]\n\n时间线模式示例：\n[\n    {\n        \"action\": \"move\",\n        \"params\": {\"direction\": \"forward\", \"duration\": 2.0}\n    },\n    {\n        \"action\": \"move\",\n        \"params\": {\n            \"direction\": \"left\",\n            \"duration\": 3.0,\n            \"overlays\": [\n                {\n                    \"action\": \"dodge\",\n                    \"params\": {\"direction\": \"forward\"},\n                    \"at\": 1.5\n                }\n            ]\n        }\n    }\n]"
-                },
-                "loop_count": {
-                    "type": "integer",
-                    "default": 1,
-                    "minimum": 1,
-                    "description": "循环执行次数，默认 1，必须 >= 1"
-                }
-            },
-            "required": [
-                "operations"
-            ],
-            "additionalProperties": false
-        },
-        "OperationItem": {
-            "type": "object",
-            "properties": {
-                "action": {
-                    "type": "string",
-                    "enum": [
-                        "move",
-                        "jump",
-                        "dodge",
-                        "turn",
-                        "interact",
-                        "charge_attack",
-                        "crouch",
-                        "spiral_leap",
-                        "wait",
-                        "run_node"
-                    ],
-                    "description": "动作名称，必填\n\n支持的动作：\n- move: 移动动作\n- jump: 跳跃动作\n- dodge: 闪避动作\n- turn: 转向动作\n- interact: 交互动作\n- charge_attack: 蓄力攻击动作\n- crouch: 下蹲动作\n- spiral_leap: 螺旋飞跃动作\n- wait: 等待动作\n- run_node: 执行节点动作"
-                },
-                "params": {
-                    "type": "object",
-                    "description": "动作参数，不同动作有不同的参数格式"
-                }
-            },
-            "required": [
-                "action"
-            ],
-            "additionalProperties": false,
-            "description": "单个操作项\n\n根据动作类型不同，params 有不同的格式，详见各动作的说明",
-            "allOf": [
-                {
-                    "if": {
-                        "properties": {
-                            "action": {
-                                "const": "move"
-                            }
-                        },
-                        "required": [
-                            "action"
-                        ]
-                    },
-                    "then": {
-                        "required": [
-                            "params"
-                        ],
-                        "properties": {
-                            "params": {
-                                "$ref": "#/definitions/MoveParams"
-                            }
-                        }
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {
-                            "action": {
-                                "const": "jump"
-                            }
-                        },
-                        "required": [
-                            "action"
-                        ]
-                    },
-                    "then": {
-                        "properties": {
-                            "params": {
-                                "$ref": "#/definitions/JumpParams"
-                            }
-                        }
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {
-                            "action": {
-                                "const": "dodge"
-                            }
-                        },
-                        "required": [
-                            "action"
-                        ]
-                    },
-                    "then": {
-                        "properties": {
-                            "params": {
-                                "$ref": "#/definitions/DodgeParams"
-                            }
-                        }
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {
-                            "action": {
-                                "const": "turn"
-                            }
-                        },
-                        "required": [
-                            "action"
-                        ]
-                    },
-                    "then": {
-                        "required": [
-                            "params"
-                        ],
-                        "properties": {
-                            "params": {
-                                "$ref": "#/definitions/TurnParams"
-                            }
-                        }
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {
-                            "action": {
-                                "const": "interact"
-                            }
-                        },
-                        "required": [
-                            "action"
-                        ]
-                    },
-                    "then": {
-                        "properties": {
-                            "params": {
-                                "$ref": "#/definitions/InteractParams"
-                            }
-                        }
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {
-                            "action": {
-                                "const": "charge_attack"
-                            }
-                        },
-                        "required": [
-                            "action"
-                        ]
-                    },
-                    "then": {
-                        "properties": {
-                            "params": {
-                                "$ref": "#/definitions/ChargeAttackParams"
-                            }
-                        }
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {
-                            "action": {
-                                "const": "crouch"
-                            }
-                        },
-                        "required": [
-                            "action"
-                        ]
-                    },
-                    "then": {
-                        "properties": {
-                            "params": {
-                                "$ref": "#/definitions/CrouchParams"
-                            }
-                        }
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {
-                            "action": {
-                                "const": "spiral_leap"
-                            }
-                        },
-                        "required": [
-                            "action"
-                        ]
-                    },
-                    "then": {
-                        "properties": {
-                            "params": {
-                                "$ref": "#/definitions/SpiralLeapParams"
-                            }
-                        }
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {
-                            "action": {
-                                "const": "wait"
-                            }
-                        },
-                        "required": [
-                            "action"
-                        ]
-                    },
-                    "then": {
-                        "required": [
-                            "params"
-                        ],
-                        "properties": {
-                            "params": {
-                                "$ref": "#/definitions/WaitParams"
-                            }
-                        }
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {
-                            "action": {
-                                "const": "run_node"
-                            }
-                        },
-                        "required": [
-                            "action"
-                        ]
-                    },
-                    "then": {
-                        "required": [
-                            "params"
-                        ],
-                        "properties": {
-                            "params": {
-                                "$ref": "#/definitions/RunNodeParams"
-                            }
-                        }
-                    }
-                }
-            ]
-        },
-        "OverlayItem": {
-            "type": "object",
-            "properties": {
-                "action": {
-                    "type": "string",
-                    "enum": [
-                        "move",
-                        "jump",
-                        "dodge",
-                        "turn",
-                        "interact",
-                        "charge_attack",
-                        "crouch",
-                        "spiral_leap",
-                        "run_node"
-                    ],
-                    "description": "叠加动作名称，必填"
-                },
-                "params": {
-                    "type": "object",
-                    "description": "叠加动作参数"
-                },
-                "at": {
-                    "type": "number",
-                    "minimum": 0,
-                    "description": "开始时间点（秒），相对于所属主动作的开始，必须 >= 0"
-                }
-            },
-            "required": [
-                "action",
-                "at"
-            ],
-            "additionalProperties": false
-        },
-        "MoveParams": {
-            "type": "object",
-            "properties": {
-                "direction": {
-                    "type": "string",
-                    "enum": [
-                        "forward",
-                        "backward",
-                        "left",
-                        "right"
-                    ],
-                    "default": "forward",
-                    "description": "移动方向\n\n可选值：\n- forward: 向前移动\n- backward: 向后移动\n- left: 向左移动\n- right: 向右移动\n\n默认：forward"
-                },
-                "duration": {
-                    "type": "number",
-                    "default": 1.0,
-                    "minimum": 0,
-                    "description": "持续时间（秒），默认 1.0，必须 >= 0"
-                },
-                "overlays": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/OverlayItem"
-                    },
-                    "description": "叠加动作列表，可选"
-                }
-            },
-            "additionalProperties": false,
-            "description": "move 动作参数\n\n字段：\n- direction: 移动方向 forward|backward|left|right（默认 forward）\n- duration: 持续时间秒数（默认 1.0）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{\"direction\": \"forward\", \"duration\": 2.0}"
-        },
-        "JumpParams": {
-            "type": "object",
-            "properties": {
-                "duration": {
-                    "type": "number",
-                    "minimum": 0,
-                    "description": "持续时间（秒），必须 >= 0"
-                },
-                "overlays": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/OverlayItem"
-                    },
-                    "description": "叠加动作列表，可选"
-                }
-            },
-            "additionalProperties": false,
-            "description": "jump 动作参数\n\n字段：\n- duration: 持续时间秒数（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{}  或  {\"duration\": 0.5}"
-        },
-        "DodgeParams": {
-            "type": "object",
-            "properties": {
-                "direction": {
-                    "type": "string",
-                    "enum": [
-                        "forward",
-                        "backward",
-                        "left",
-                        "right"
-                    ],
-                    "description": "闪避方向\n\n可选值：\n- forward: 向前闪避\n- backward: 向后闪避\n- left: 向左闪避\n- right: 向右闪避\n\n可选，可为空"
-                },
-                "duration": {
-                    "type": "number",
-                    "minimum": 0,
-                    "description": "持续时间（秒），必须 >= 0"
-                },
-                "overlays": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/OverlayItem"
-                    },
-                    "description": "叠加动作列表，可选"
-                }
-            },
-            "additionalProperties": false,
-            "description": "dodge 动作参数\n\n字段：\n- direction: 闪避方向 forward|backward|left|right（可选）\n- duration: 持续时间秒数（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{\"direction\": \"forward\"}  或  {\"direction\": \"forward\", \"duration\": 0.5}"
-        },
-        "TurnParams": {
-            "type": "object",
-            "properties": {
-                "angle": {
-                    "type": "number",
-                    "default": 0.0,
-                    "description": "转向角度（度）\n\n说明：\n- 正数：向右转\n- 负数：向左转\n- 0：不转向\n\n默认：0.0"
-                },
-                "duration": {
-                    "type": "number",
-                    "minimum": 0,
-                    "description": "持续时间（秒），必须 >= 0"
-                },
-                "overlays": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/OverlayItem"
-                    },
-                    "description": "叠加动作列表，可选"
-                }
-            },
-            "additionalProperties": false,
-            "description": "turn 动作参数\n\n字段：\n- angle: 转向角度（正数右转，负数左转，默认 0）\n- duration: 持续时间秒数（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{\"angle\": 90.0}  或  {\"angle\": 90.0, \"duration\": 0.5}"
-        },
-        "InteractParams": {
-            "type": "object",
-            "properties": {
-                "interaction_type": {
-                    "type": "string",
-                    "default": "default",
-                    "description": "交互类型，默认 \"default\""
-                },
-                "duration": {
-                    "type": "number",
-                    "minimum": 0,
-                    "description": "持续时间（秒），必须 >= 0"
-                },
-                "overlays": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/OverlayItem"
-                    },
-                    "description": "叠加动作列表，可选"
-                }
-            },
-            "additionalProperties": false,
-            "description": "interact 动作参数\n\n字段：\n- interaction_type: 交互类型（默认 \"default\"）\n- duration: 持续时间秒数（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{}  或  {\"interaction_type\": \"default\", \"duration\": 0.5}"
-        },
-        "ChargeAttackParams": {
-            "type": "object",
-            "properties": {
-                "duration": {
-                    "type": "number",
-                    "default": 1.0,
-                    "minimum": 0,
-                    "description": "蓄力时间（秒），默认 1.0，必须 >= 0"
-                },
-                "x": {
-                    "type": "integer",
-                    "description": "X 坐标，可选"
-                },
-                "y": {
-                    "type": "integer",
-                    "description": "Y 坐标，可选"
-                },
-                "overlays": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/OverlayItem"
-                    },
-                    "description": "叠加动作列表，可选"
-                }
-            },
-            "additionalProperties": false,
-            "description": "charge_attack 动作参数\n\n字段：\n- duration: 蓄力时间秒数（默认 1.0）\n- x: X 坐标（可选）\n- y: Y 坐标（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{\"duration\": 1.0}  或  {\"duration\": 1.0, \"x\": 100, \"y\": 200}"
-        },
-        "CrouchParams": {
-            "type": "object",
-            "properties": {
-                "duration": {
-                    "type": "number",
-                    "default": 0.1,
-                    "minimum": 0,
-                    "description": "按住按键的时间（秒），默认 0.1，必须 >= 0"
-                },
-                "overlays": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/OverlayItem"
-                    },
-                    "description": "叠加动作列表，可选"
-                }
-            },
-            "additionalProperties": false,
-            "description": "crouch 动作参数\n\n字段：\n- duration: 按住按键的时间秒数（默认 0.1）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{}  或  {\"duration\": 0.5}"
-        },
-        "SpiralLeapParams": {
-            "type": "object",
-            "properties": {
-                "duration": {
-                    "type": "number",
-                    "minimum": 0,
-                    "description": "持续时间（秒），必须 >= 0"
-                },
-                "overlays": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/OverlayItem"
-                    },
-                    "description": "叠加动作列表，可选"
-                }
-            },
-            "additionalProperties": false,
-            "description": "spiral_leap 动作参数\n\n字段：\n- duration: 持续时间秒数（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{}  或  {\"duration\": 0.5}"
-        },
-        "WaitParams": {
-            "type": "object",
-            "properties": {
-                "duration": {
-                    "type": "number",
-                    "default": 1.0,
-                    "minimum": 0,
-                    "description": "等待时间（秒，默认 1.0）"
-                },
-                "until": {
-                    "type": "number",
-                    "minimum": 0,
-                    "description": "目标时间点（秒，相对于时间线开始，仅限时间线模式）\n\n说明：\n- 如果提供了 until，则忽略 duration\n- 如果当前时间 >= until，则不等待\n- 仅限时间线模式使用"
-                }
-            },
-            "additionalProperties": false,
-            "description": "wait 动作参数\n\n字段（二选一）：\n- duration: 等待时间秒数（默认 1.0）\n- until: 目标时间点秒数，仅时间线模式（提供后忽略 duration）\n\n示例：\n{\"duration\": 1.0}  或  {\"until\": 5.0}"
-        },
-        "RunNodeParams": {
-            "type": "object",
-            "properties": {
-                "node": {
-                    "type": "string",
-                    "description": "节点名称\n\n指定要执行的 Pipeline 节点名称，同步等待执行完成后再继续后续动作"
-                }
-            },
-            "required": [
-                "node"
-            ],
-            "additionalProperties": false,
-            "description": "run_node 动作参数\n\n字段：\n- node: Pipeline 节点名称（必填），同步等待执行完成\n\n示例：\n{\"node\": \"node_name\"}"
-        }
-    }
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "./custom_act/OperationRecordAction.schema.json",
+	"if": {
+		"properties": {
+			"custom_action": {
+				"const": "OperationRecordAction"
+			}
+		},
+		"required": [
+			"custom_action"
+		]
+	},
+	"then": {
+		"properties": {
+			"custom_action_param": {
+				"$ref": "#/definitions/OperationRecordActionParam",
+				"description": "OperationRecordAction 参数\n\n示例：\n{\n    \"operations\": [\n        {\"action\": \"move\", \"params\": {\"direction\": \"forward\", \"duration\": 2.0}},\n        {\"action\": \"jump\", \"params\": {}},\n        {\"action\": \"turn\", \"params\": {\"start_x\": 1000, \"start_y\": 150, \"end_x\": 1210, \"end_y\": 150}},\n        {\"action\": \"wait\", \"params\": {\"duration\": 1.0}}\n    ],\n    \"loop_count\": 1\n}\n\n字段说明：\n- operations: 操作列表（必填），支持普通模式和时间线模式\n- loop_count: 循环执行次数（默认 1，>= 1）\n\n支持的动作：\n- move: 移动（direction, duration, overlays）\n- jump: 跳跃（duration, overlays）\n- dodge: 闪避（direction, duration, overlays）\n- turn: 转向（start_x, start_y, end_x, end_y, duration, overlays）\n- interact: 交互（interaction_type, duration, overlays）\n- charge_attack: 蓄力攻击（duration, x, y, overlays）\n- crouch: 下蹲（duration, overlays）\n- spiral_leap: 螺旋飞跃（duration, overlays）\n- wait: 等待（duration 或 until）\n- run_node: 执行节点（node）\n\n时间线模式：在 params 中设置 duration 启用，overlays 支持并行动作叠加"
+			}
+		},
+		"required": [
+			"custom_action_param"
+		]
+	},
+	"definitions": {
+		"OperationRecordActionParam": {
+			"type": "object",
+			"properties": {
+				"operations": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/OperationItem"
+					},
+					"description": "操作列表，必填\n\n支持普通模式和时间线模式：\n\n普通模式示例：\n[\n    {\"action\": \"move\", \"params\": {\"direction\": \"forward\"}},\n    {\"action\": \"jump\", \"params\": {}}\n]\n\n时间线模式示例：\n[\n    {\n        \"action\": \"move\",\n        \"params\": {\"direction\": \"forward\", \"duration\": 2.0}\n    },\n    {\n        \"action\": \"move\",\n        \"params\": {\n            \"direction\": \"left\",\n            \"duration\": 3.0,\n            \"overlays\": [\n                {\n                    \"action\": \"dodge\",\n                    \"params\": {\"direction\": \"forward\"},\n                    \"at\": 1.5\n                }\n            ]\n        }\n    }\n]"
+				},
+				"loop_count": {
+					"type": "integer",
+					"default": 1,
+					"minimum": 1,
+					"description": "循环执行次数，默认 1，必须 >= 1"
+				}
+			},
+			"required": [
+				"operations"
+			],
+			"additionalProperties": false
+		},
+		"OperationItem": {
+			"type": "object",
+			"properties": {
+				"action": {
+					"type": "string",
+					"enum": [
+						"move",
+						"jump",
+						"dodge",
+						"turn",
+						"interact",
+						"charge_attack",
+						"crouch",
+						"spiral_leap",
+						"wait",
+						"run_node"
+					],
+					"description": "动作名称，必填\n\n支持的动作：\n- move: 移动动作\n- jump: 跳跃动作\n- dodge: 闪避动作\n- turn: 转向动作\n- interact: 交互动作\n- charge_attack: 蓄力攻击动作\n- crouch: 下蹲动作\n- spiral_leap: 螺旋飞跃动作\n- wait: 等待动作\n- run_node: 执行节点动作"
+				},
+				"params": {
+					"type": "object",
+					"description": "动作参数，不同动作有不同的参数格式"
+				}
+			},
+			"required": [
+				"action"
+			],
+			"additionalProperties": false,
+			"description": "单个操作项\n\n根据动作类型不同，params 有不同的格式，详见各动作的说明",
+			"allOf": [
+				{
+					"if": {
+						"properties": {
+							"action": {
+								"const": "move"
+							}
+						},
+						"required": [
+							"action"
+						]
+					},
+					"then": {
+						"required": [
+							"params"
+						],
+						"properties": {
+							"params": {
+								"$ref": "#/definitions/MoveParams"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"action": {
+								"const": "jump"
+							}
+						},
+						"required": [
+							"action"
+						]
+					},
+					"then": {
+						"properties": {
+							"params": {
+								"$ref": "#/definitions/JumpParams"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"action": {
+								"const": "dodge"
+							}
+						},
+						"required": [
+							"action"
+						]
+					},
+					"then": {
+						"properties": {
+							"params": {
+								"$ref": "#/definitions/DodgeParams"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"action": {
+								"const": "turn"
+							}
+						},
+						"required": [
+							"action"
+						]
+					},
+					"then": {
+						"required": [
+							"params"
+						],
+						"properties": {
+							"params": {
+								"$ref": "#/definitions/TurnParams"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"action": {
+								"const": "interact"
+							}
+						},
+						"required": [
+							"action"
+						]
+					},
+					"then": {
+						"properties": {
+							"params": {
+								"$ref": "#/definitions/InteractParams"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"action": {
+								"const": "charge_attack"
+							}
+						},
+						"required": [
+							"action"
+						]
+					},
+					"then": {
+						"properties": {
+							"params": {
+								"$ref": "#/definitions/ChargeAttackParams"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"action": {
+								"const": "crouch"
+							}
+						},
+						"required": [
+							"action"
+						]
+					},
+					"then": {
+						"properties": {
+							"params": {
+								"$ref": "#/definitions/CrouchParams"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"action": {
+								"const": "spiral_leap"
+							}
+						},
+						"required": [
+							"action"
+						]
+					},
+					"then": {
+						"properties": {
+							"params": {
+								"$ref": "#/definitions/SpiralLeapParams"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"action": {
+								"const": "wait"
+							}
+						},
+						"required": [
+							"action"
+						]
+					},
+					"then": {
+						"required": [
+							"params"
+						],
+						"properties": {
+							"params": {
+								"$ref": "#/definitions/WaitParams"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"action": {
+								"const": "run_node"
+							}
+						},
+						"required": [
+							"action"
+						]
+					},
+					"then": {
+						"required": [
+							"params"
+						],
+						"properties": {
+							"params": {
+								"$ref": "#/definitions/RunNodeParams"
+							}
+						}
+					}
+				}
+			]
+		},
+		"OverlayItem": {
+			"type": "object",
+			"properties": {
+				"action": {
+					"type": "string",
+					"enum": [
+						"move",
+						"jump",
+						"dodge",
+						"turn",
+						"interact",
+						"charge_attack",
+						"crouch",
+						"spiral_leap",
+						"run_node"
+					],
+					"description": "叠加动作名称，必填"
+				},
+				"params": {
+					"type": "object",
+					"description": "叠加动作参数"
+				},
+				"at": {
+					"type": "number",
+					"minimum": 0,
+					"description": "开始时间点（秒），相对于所属主动作的开始，必须 >= 0"
+				}
+			},
+			"required": [
+				"action",
+				"at"
+			],
+			"additionalProperties": false
+		},
+		"MoveParams": {
+			"type": "object",
+			"properties": {
+				"direction": {
+					"type": "string",
+					"enum": [
+						"forward",
+						"backward",
+						"left",
+						"right"
+					],
+					"default": "forward",
+					"description": "移动方向\n\n可选值：\n- forward: 向前移动\n- backward: 向后移动\n- left: 向左移动\n- right: 向右移动\n\n默认：forward"
+				},
+				"duration": {
+					"type": "number",
+					"default": 1.0,
+					"minimum": 0,
+					"description": "持续时间（秒），默认 1.0，必须 >= 0"
+				},
+				"overlays": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/OverlayItem"
+					},
+					"description": "叠加动作列表，可选"
+				}
+			},
+			"additionalProperties": false,
+			"description": "move 动作参数\n\n字段：\n- direction: 移动方向 forward|backward|left|right（默认 forward）\n- duration: 持续时间秒数（默认 1.0）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{\"direction\": \"forward\", \"duration\": 2.0}"
+		},
+		"JumpParams": {
+			"type": "object",
+			"properties": {
+				"duration": {
+					"type": "number",
+					"minimum": 0,
+					"description": "持续时间（秒），必须 >= 0"
+				},
+				"overlays": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/OverlayItem"
+					},
+					"description": "叠加动作列表，可选"
+				}
+			},
+			"additionalProperties": false,
+			"description": "jump 动作参数\n\n字段：\n- duration: 持续时间秒数（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{}  或  {\"duration\": 0.5}"
+		},
+		"DodgeParams": {
+			"type": "object",
+			"properties": {
+				"direction": {
+					"type": "string",
+					"enum": [
+						"forward",
+						"backward",
+						"left",
+						"right"
+					],
+					"description": "闪避方向\n\n可选值：\n- forward: 向前闪避\n- backward: 向后闪避\n- left: 向左闪避\n- right: 向右闪避\n\n可选，可为空"
+				},
+				"duration": {
+					"type": "number",
+					"minimum": 0,
+					"description": "持续时间（秒），必须 >= 0"
+				},
+				"overlays": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/OverlayItem"
+					},
+					"description": "叠加动作列表，可选"
+				}
+			},
+			"additionalProperties": false,
+			"description": "dodge 动作参数\n\n字段：\n- direction: 闪避方向 forward|backward|left|right（可选）\n- duration: 持续时间秒数（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{\"direction\": \"forward\"}  或  {\"direction\": \"forward\", \"duration\": 0.5}"
+		},
+		"TurnParams": {
+			"type": "object",
+			"properties": {
+				"start_x": {
+					"type": "number",
+					"description": "滑动起点 X 坐标（720p 基准），必填"
+				},
+				"start_y": {
+					"type": "number",
+					"description": "滑动起点 Y 坐标（720p 基准），必填"
+				},
+				"end_x": {
+					"type": "number",
+					"description": "滑动终点 X 坐标（720p 基准），必填"
+				},
+				"end_y": {
+					"type": "number",
+					"description": "滑动终点 Y 坐标（720p 基准），必填"
+				},
+				"duration": {
+					"type": "number",
+					"minimum": 0,
+					"description": "滑动时长（毫秒），可选，不填使用平台默认值"
+				},
+				"overlays": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/OverlayItem"
+					},
+					"description": "叠加动作列表，可选"
+				}
+			},
+			"required": [
+				"start_x",
+				"start_y",
+				"end_x",
+				"end_y"
+			],
+			"additionalProperties": false,
+			"description": "turn 动作参数\n\n字段：\n- start_x: 起点 X 坐标（720p，必填）\n- start_y: 起点 Y 坐标（720p，必填）\n- end_x: 终点 X 坐标（720p，必填）\n- end_y: 终点 Y 坐标（720p，必填）\n- duration: 滑动时长毫秒（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{\"start_x\": 1000, \"start_y\": 150, \"end_x\": 1210, \"end_y\": 150}"
+		},
+		"InteractParams": {
+			"type": "object",
+			"properties": {
+				"interaction_type": {
+					"type": "string",
+					"enum": [
+						"default",
+						"GrapplingHook",
+						"E_skill",
+						"Q_skill",
+						"pet"
+					],
+					"default": "default",
+					"description": "交互类型\n\n可选值：\n- default: 默认交互（F 键）\n- GrapplingHook: 钩爪交互（T 键）\n- E_skill: E 技能（E 键）\n- Q_skill: Q 技能（R 键）\n- pet: 宠物交互（Z 键）\n\n默认：default"
+				},
+				"duration": {
+					"type": "number",
+					"minimum": 0,
+					"description": "持续时间（秒），必须 >= 0"
+				},
+				"overlays": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/OverlayItem"
+					},
+					"description": "叠加动作列表，可选"
+				}
+			},
+			"additionalProperties": false,
+			"description": "interact 动作参数\n\n字段：\n- interaction_type: 交互类型 default|GrapplingHook|E_skill|Q_skill|pet（默认 default）\n- duration: 持续时间秒数（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{}  或  {\"interaction_type\": \"GrapplingHook\"}  或  {\"interaction_type\": \"E_skill\"}"
+		},
+		"ChargeAttackParams": {
+			"type": "object",
+			"properties": {
+				"duration": {
+					"type": "number",
+					"default": 1.0,
+					"minimum": 0,
+					"description": "蓄力时间（秒），默认 1.0，必须 >= 0"
+				},
+				"x": {
+					"type": "integer",
+					"description": "X 坐标，可选"
+				},
+				"y": {
+					"type": "integer",
+					"description": "Y 坐标，可选"
+				},
+				"overlays": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/OverlayItem"
+					},
+					"description": "叠加动作列表，可选"
+				}
+			},
+			"additionalProperties": false,
+			"description": "charge_attack 动作参数\n\n字段：\n- duration: 蓄力时间秒数（默认 1.0）\n- x: X 坐标（可选）\n- y: Y 坐标（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{\"duration\": 1.0}  或  {\"duration\": 1.0, \"x\": 100, \"y\": 200}"
+		},
+		"CrouchParams": {
+			"type": "object",
+			"properties": {
+				"duration": {
+					"type": "number",
+					"default": 0.1,
+					"minimum": 0,
+					"description": "按住按键的时间（秒），默认 0.1，必须 >= 0"
+				},
+				"overlays": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/OverlayItem"
+					},
+					"description": "叠加动作列表，可选"
+				}
+			},
+			"additionalProperties": false,
+			"description": "crouch 动作参数\n\n字段：\n- duration: 按住按键的时间秒数（默认 0.1）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{}  或  {\"duration\": 0.5}"
+		},
+		"SpiralLeapParams": {
+			"type": "object",
+			"properties": {
+				"duration": {
+					"type": "number",
+					"minimum": 0,
+					"description": "持续时间（秒），必须 >= 0"
+				},
+				"overlays": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/OverlayItem"
+					},
+					"description": "叠加动作列表，可选"
+				}
+			},
+			"additionalProperties": false,
+			"description": "spiral_leap 动作参数\n\n字段：\n- duration: 持续时间秒数（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{}  或  {\"duration\": 0.5}"
+		},
+		"WaitParams": {
+			"type": "object",
+			"properties": {
+				"duration": {
+					"type": "number",
+					"default": 1.0,
+					"minimum": 0,
+					"description": "等待时间（秒，默认 1.0）"
+				},
+				"until": {
+					"type": "number",
+					"minimum": 0,
+					"description": "目标时间点（秒，相对于时间线开始，仅限时间线模式）\n\n说明：\n- 如果提供了 until，则忽略 duration\n- 如果当前时间 >= until，则不等待\n- 仅限时间线模式使用"
+				}
+			},
+			"additionalProperties": false,
+			"description": "wait 动作参数\n\n字段（二选一）：\n- duration: 等待时间秒数（默认 1.0）\n- until: 目标时间点秒数，仅时间线模式（提供后忽略 duration）\n\n示例：\n{\"duration\": 1.0}  或  {\"until\": 5.0}"
+		},
+		"RunNodeParams": {
+			"type": "object",
+			"properties": {
+				"node": {
+					"type": "string",
+					"description": "节点名称\n\n指定要执行的 Pipeline 节点名称，同步等待执行完成后再继续后续动作"
+				}
+			},
+			"required": [
+				"node"
+			],
+			"additionalProperties": false,
+			"description": "run_node 动作参数\n\n字段：\n- node: Pipeline 节点名称（必填），同步等待执行完成\n\n示例：\n{\"node\": \"node_name\"}"
+		}
+	}
 }

@@ -15,7 +15,7 @@
         "properties": {
             "custom_action_param": {
                 "$ref": "#/definitions/IfElseParam",
-                "description": "IfElseAction 条件分支动作器参数\n\n根据前序识别结果的 detail.hit_node 字段分支执行：\n- hit_node=\"if\"       → 执行 if 分支\n- hit_node=\"elif[0]\"  → 执行 elif[0] 分支\n- hit_node=\"elif[1]\"  → 执行 elif[1] 分支\n- hit_node=\"else\"     → 执行 else 分支\n\n对象格式（带 next）：\n{\n    \"if\": {\n        \"Act_or_node\": [{\"action\": \"Click\", \"param\": {\"target\": true}}],\n        \"next\": [\"NextStep1\"]\n    },\n    \"elif\": [\"ActionB\", \"ActionC\"],\n    \"else\": [\"ActionD\"]\n}\n\n简写格式（无 next）：\n{\n    \"if\": [{\"action\": \"Click\", \"param\": {\"target\": true}}],\n    \"elif\": [\"ActionB\", \"ActionC\"],\n    \"else\": [\"ActionD\"]\n}\n\n字段说明：\n- if: hit_node=\"if\" 时执行的分支，可省略\n- elif: hit_node=\"elif[index]\" 时执行的分支列表，可省略。每个元素对应一个分支\n- else: hit_node=\"else\" 时执行的分支，可省略\n\n分支格式：\n- 数组: 分支项列表，无 next\n- 对象: {Act_or_node: [...], next: [...]}   \n  - Act_or_node: 分支项列表\n  - next: 分支执行完毕后依次执行的 Pipeline 节点列表\n\n分支项格式：\n- 字符串: Pipeline 节点名，通过 context.run_task() 执行\n- 字典: {\"action\": \"操作类型\", \"param\": {操作参数}}，通过 context.run_action_direct() 执行\n  action 可选值: DoNothing, Click, LongPress, Swipe, MultiSwipe, TouchDown, TouchMove, TouchUp, ClickKey, LongPressKey, KeyDown, KeyUp, InputText, StartApp, StopApp, StopTask, Scroll, Command, Shell, Screencap, Custom"
+                "description": "IfElseAction 条件分支动作器参数\n\n根据前序识别结果的 detail.hit_node 字段分支执行：\n- hit_node=\"if\"       → 执行 if 分支\n- hit_node=\"elif[0]\"  → 执行 elif[0] 分支\n- hit_node=\"elif[1]\"  → 执行 elif[1] 分支\n- hit_node=\"else\"     → 执行 else 分支\n\n简化格式（字符串简写，自动转换为 [string]）：\n{\n    \"if\": \"40探险-42m跑图\",\n    \"elif\": \"40探险-49m跑图\",\n    \"else\": \"局内放弃委托\"\n}\n\n对象格式（带 next）：\n{\n    \"if\": {\n        \"Act_or_node\": [{\"action\": \"Click\", \"param\": {\"target\": true}}],\n        \"next\": [\"NextStep1\"]\n    },\n    \"elif\": [\"ActionB\", \"ActionC\"],\n    \"else\": [\"ActionD\"]\n}\n\n简写格式（无 next）：\n{\n    \"if\": [{\"action\": \"Click\", \"param\": {\"target\": true}}],\n    \"elif\": [\"ActionB\", \"ActionC\"],\n    \"else\": [\"ActionD\"]\n}\n\n字段说明：\n- if: hit_node=\"if\" 时执行的分支，可省略。支持字符串简写（单个节点名）\n- elif: hit_node=\"elif[index]\" 时执行的分支，可省略。支持字符串简写（单个节点名）或数组格式（多个节点名）\n- else: hit_node=\"else\" 时执行的分支，可省略。支持字符串简写（单个节点名）\n\n分支格式：\n- 字符串: 单个节点名简写（自动转换为 [string]）\n- 数组: 分支项列表，无 next\n- 对象: {Act_or_node: [...], next: [...]}   \n  - Act_or_node: 分支项列表\n  - next: 分支执行完毕后依次执行的 Pipeline 节点列表\n\n分支项格式：\n- 字符串: Pipeline 节点名，通过 context.run_task() 执行\n- 字典: {\"action\": \"操作类型\", \"param\": {操作参数}}，通过 context.run_action_direct() 执行\n  action 可选值: DoNothing, Click, LongPress, Swipe, MultiSwipe, TouchDown, TouchMove, TouchUp, ClickKey, LongPressKey, KeyDown, KeyUp, InputText, StartApp, StopApp, StopTask, Scroll, Command, Shell, Screencap, Custom"
             }
         },
         "required": [
@@ -28,18 +28,27 @@
             "properties": {
                 "if": {
                     "$ref": "#/definitions/BranchDef",
-                    "description": "hit_node=\"if\" 时执行的分支。可省略，省略则不执行任何操作"
+                    "description": "hit_node=\"if\" 时执行的分支。支持字符串简写（单个节点名）。可省略，省略则不执行任何操作"
                 },
                 "elif": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/BranchDef"
-                    },
-                    "description": "hit_node=\"elif[index]\" 时执行的分支列表。每个元素对应一个 elif 分支，与 IfElseReco 的 elif 参数一一对应。可省略"
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "单个 elif 分支节点名简写（自动转换为 [string]）"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/BranchDef"
+                            },
+                            "description": "elif 分支列表，每个元素对应一个 elif 分支，与 IfElseReco 的 elif 参数一一对应"
+                        }
+                    ],
+                    "description": "hit_node=\"elif[index]\" 时执行的分支。支持字符串简写（单个分支）或数组格式（多个分支）。可省略"
                 },
                 "else": {
                     "$ref": "#/definitions/BranchDef",
-                    "description": "hit_node=\"else\" 时执行的分支。可省略，省略则不执行任何操作"
+                    "description": "hit_node=\"else\" 时执行的分支。支持字符串简写（单个节点名）。可省略，省略则不执行任何操作"
                 }
             },
             "additionalProperties": false

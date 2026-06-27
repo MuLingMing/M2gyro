@@ -20,14 +20,18 @@
 """
 
 import math
+import os
 import time
+import json
 from typing import Dict, Any, Optional, Tuple
 from maa.controller import Controller
 from .base import PlatformBase
 
-TOUCH_SWIPE_DURATION_MS = 70
+TOUCH_SWIPE_DURATION_MS = 600
 # 摇杆首次按下后等待游戏引擎确认的帧数（60fps ≈ 16.7ms/帧，2 帧 = 33ms）
 JOYSTICK_TOUCHDOWN_DELAY = 0.033
+# 配置文件目录
+_CONFIG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config")
 
 
 class TouchPlatform(PlatformBase):
@@ -42,6 +46,7 @@ class TouchPlatform(PlatformBase):
     _touch_positions: Dict[str, Dict[str, Any]] = {}
     _generic_contact: int = 8
     _joystick_offset: int = 72
+    _button_config_file: Optional[str] = None
 
     _key_touch_map: Dict[str, Dict[str, Any]] = {
         "W":     {"position": "joystick_center", "contact": "joystick", "is_joystick": "true"},
@@ -59,8 +64,56 @@ class TouchPlatform(PlatformBase):
         super().__init__(platform_controller)
         self._active_contacts: Dict[str, int] = {}
         self._active_directions: set = set()  # 跟踪活跃的移动方向
+        self._touch_positions_config: Dict[str, Dict[str, Any]] = {}  # 原始配置（含 w, h）
+        self._turn_config: Dict[str, float] = {"swipe_duration_ms": 70}
+        self._load_button_config()
 
     # ===== 内部工具方法 =====
+
+    def _load_button_config(self) -> None:
+        """从 JSON 配置文件加载按钮配置"""
+        if self._button_config_file is None:
+            return
+        config_path = os.path.join(_CONFIG_DIR, self._button_config_file)
+        if not os.path.exists(config_path):
+            return
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return
+
+        # 加载触控位置
+        positions: Dict[str, Dict[str, Any]] = {}
+        raw_config: Dict[str, Dict[str, Any]] = {}
+        for name, pos in config.items():
+            if name in ("key_touch_map", "generic_contact"):
+                continue
+            if isinstance(pos, dict) and "x" in pos and "y" in pos:
+                positions[name] = {
+                    "x": pos["x"],
+                    "y": pos["y"],
+                    "contact": pos.get("contact", self._generic_contact),
+                }
+                if "joystick_run_offset" in pos:
+                    positions[name]["joystick_run_offset"] = pos["joystick_run_offset"]
+                raw_config[name] = dict(pos)  # 保留原始配置（含 w, h）
+
+        if positions:
+            self._touch_positions = positions
+            self._touch_positions_config = raw_config
+
+        # 加载 key_touch_map
+        if "key_touch_map" in config:
+            self._key_touch_map = config["key_touch_map"]
+
+        # 加载 generic_contact
+        if "generic_contact" in config:
+            self._generic_contact = config["generic_contact"]
+
+        # 加载 turn_config
+        if "turn_config" in config:
+            self._turn_config = config["turn_config"]
 
     def _get_position(self, position_name: str, default_x: int, default_y: int) -> Tuple[int, int]:
         position = self._touch_positions.get(position_name, {})
@@ -375,25 +428,35 @@ class TouchPlatform(PlatformBase):
         except Exception:
             return False
 
-    def turn(self, angle: float) -> bool:
+    def turn(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: Optional[float] = None) -> bool:
         if self._controller is None:
             return False
         try:
-            dx = int(angle * 3.5)
-            view_center_x, view_center_y = self._get_position("view_control_center", 1000, 150)
-            contact = self._get_contact("view_control_center")
-            self._controller.post_swipe(
-                view_center_x, view_center_y,
-                view_center_x + dx, view_center_y,
-                TOUCH_SWIPE_DURATION_MS
-            ).wait()
+            swipe_duration_ms = int(duration) if duration is not None else int(self._turn_config.get("swipe_duration_ms", 70))
+            self._controller.post_swipe(start_x, start_y, end_x, end_y, swipe_duration_ms).wait()
             return True
         except Exception:
             return False
 
     def interact(self, interaction_type: str) -> bool:
-        x, y = self._get_position("interact_button", 1080, 390)
+        x, y = self._get_position("interact_button", 750, 358)
         return self._click_button(x, y, self._get_contact("interact_button"))
+
+    def grappling_hook(self) -> bool:
+        x, y = self._get_position("grappling_hook_button", 956, 248)
+        return self._click_button(x, y, self._get_contact("grappling_hook_button"))
+
+    def e_skill(self) -> bool:
+        x, y = self._get_position("e_skill_button", 0, 0)
+        return self._click_button(x, y, self._get_contact("e_skill_button"))
+
+    def q_skill(self) -> bool:
+        x, y = self._get_position("q_skill_button", 0, 0)
+        return self._click_button(x, y, self._get_contact("q_skill_button"))
+
+    def pet(self) -> bool:
+        x, y = self._get_position("pet_button", 0, 0)
+        return self._click_button(x, y, self._get_contact("pet_button"))
 
     def spiral_leap(self) -> bool:
         x, y = self._get_position("spiral_leap_button", 1166, 475)

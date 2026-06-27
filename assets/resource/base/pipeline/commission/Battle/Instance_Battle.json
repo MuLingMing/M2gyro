@@ -294,5 +294,20 @@
         "on_error": [
             "弹窗取消"
         ]
+    },
+    "下蹲防挂机": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "crouch"
+                        }
+                    ]
+                }
+            }
+        }
     }
 }

@@ -21,27 +21,11 @@ from ..registry import register_platform
 class DesktopPlatform(KeyboardPlatform):
     """Windows 桌面平台
 
-    仅提供 Windows 虚拟按键码映射，所有业务方法由 KeyboardPlatform 默认实现提供。
+    按键配置从 config/desktop_buttons.json 加载，支持外部修改。
+    所有业务方法由 KeyboardPlatform 默认实现提供。
     """
 
-    _key_codes = {
-        "W": 0x57,
-        "A": 0x41,
-        "S": 0x53,
-        "D": 0x44,
-        "Space": 0x20,
-        "Shift": 0x10,
-        "F": 0x46,
-        "Q": 0x51,
-        "C": 0x43,
-        "MouseLeft": 0x01,
-    }
-
-    _action_key_map = {
-        "move": ["W", "A", "S", "D"],
-        "charge_attack": ["MouseLeft"],
-        "crouch": ["C"],
-    }
+    _button_config_file = "desktop_buttons.json"
 
     def __init__(self, platform_controller):
         super().__init__(platform_controller)

@@ -77,7 +77,7 @@ class PlatformBase(ABC):
     def dodge(self, direction: Optional[str] = None) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 dodge()，请继承 KeyboardPlatform 或 TouchPlatform")
 
-    def turn(self, angle: float) -> bool:
+    def turn(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: float = None) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 turn()，请继承 KeyboardPlatform 或 TouchPlatform")
 
     def interact(self, interaction_type: str) -> bool:

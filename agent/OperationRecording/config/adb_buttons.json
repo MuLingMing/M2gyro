@@ -1,0 +1,125 @@
+{
+	"joystick_center": {
+		"x": 225,
+		"y": 536,
+		"contact": 0,
+		"joystick_run_offset": -60
+	},
+	"jump_button": {
+		"x": 978,
+		"y": 410,
+		"contact": 1
+	},
+	"sprint_button": {
+		"x": 1203,
+		"y": 363,
+		"contact": 1
+	},
+	"interact_button": {
+		"x": 750,
+		"y": 358,
+		"contact": 2
+	},
+	"spiral_leap_button": {
+		"x": 1086,
+		"y": 364,
+		"contact": 1
+	},
+	"view_control_center": {
+		"x": 1000,
+		"y": 150,
+		"contact": 3
+	},
+	"crouch_button": {
+		"x": 74,
+		"y": 644,
+		"contact": 4
+	},
+	"charge_attack_button": {
+		"x": 1090,
+		"y": 507,
+		"contact": 1
+	},
+	"grappling_hook_button": {
+		"x": 974,
+		"y": 270,
+		"contact": 4
+	},
+	"e_skill_button": {
+		"x": 862,
+		"y": 644,
+		"contact": 4
+	},
+	"q_skill_button": {
+		"x": 947,
+		"y": 644,
+		"contact": 4
+	},
+	"pet_button": {
+		"x": 1071,
+		"y": 642,
+		"contact": 5
+	},
+	"key_touch_map": {
+		"W": {
+			"position": "joystick_center",
+			"contact": "joystick",
+			"is_joystick": "true"
+		},
+		"A": {
+			"position": "joystick_center",
+			"contact": "joystick",
+			"is_joystick": "true"
+		},
+		"S": {
+			"position": "joystick_center",
+			"contact": "joystick",
+			"is_joystick": "true"
+		},
+		"D": {
+			"position": "joystick_center",
+			"contact": "joystick",
+			"is_joystick": "true"
+		},
+		"Space": {
+			"position": "jump_button",
+			"contact": "jump_button"
+		},
+		"F": {
+			"position": "interact_button",
+			"contact": "interact_button"
+		},
+		"Shift": {
+			"position": "sprint_button",
+			"contact": "sprint_button"
+		},
+		"Q": {
+			"position": "spiral_leap_button",
+			"contact": "spiral_leap_button"
+		},
+		"C": {
+			"position": "crouch_button",
+			"contact": "crouch"
+		},
+		"T": {
+			"position": "grappling_hook_button",
+			"contact": "grappling_hook_button"
+		},
+		"E": {
+			"position": "e_skill_button",
+			"contact": "e_skill_button"
+		},
+		"R": {
+			"position": "q_skill_button",
+			"contact": "q_skill_button"
+		},
+		"Z": {
+			"position": "pet_button",
+			"contact": "pet_button"
+		}
+	},
+	"generic_contact": 8,
+	"turn_config": {
+		"swipe_duration_ms": 210
+	}
+}

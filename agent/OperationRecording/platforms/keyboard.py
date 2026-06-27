@@ -15,10 +15,15 @@
         _action_key_map = {"move": ["W","A","S","D"], "crouch": ["C"], "charge_attack": ["MouseLeft"]}
 """
 
+import json
+import os
 import time
 from typing import Dict, List, Optional
 from maa.controller import Controller
 from .base import PlatformBase
+
+# 配置文件目录
+_CONFIG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config")
 
 
 class KeyboardPlatform(PlatformBase):
@@ -35,6 +40,7 @@ class KeyboardPlatform(PlatformBase):
 
     _key_codes: Dict[str, int] = {}
     _action_key_map: Dict[str, List[str]] = {}
+    _button_config_file: Optional[str] = None
 
     # 方向 → 按键列表映射
     # 4 基本方向（单键）+ 4 对角方向（双键组合），与 touch.py _get_joystick_directions 对齐
@@ -54,6 +60,29 @@ class KeyboardPlatform(PlatformBase):
     def __init__(self, platform_controller: Controller):
         super().__init__(platform_controller)
         self._active_keys: set[int] = set()
+        self._turn_config: Dict[str, float] = {"min_duration_ms": 50, "max_duration_ms": 500}
+        self._load_button_config()
+
+    def _load_button_config(self) -> None:
+        """从 JSON 配置文件加载按键配置"""
+        if self._button_config_file is None:
+            return
+        config_path = os.path.join(_CONFIG_DIR, self._button_config_file)
+        if not os.path.exists(config_path):
+            return
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return
+
+        if "key_codes" in config:
+            self._key_codes = config["key_codes"]
+        if "action_key_map" in config:
+            self._action_key_map = config["action_key_map"]
+
+        if "turn_config" in config:
+            self._turn_config = config["turn_config"]
 
     # ===== 原子操作实现 =====
 
@@ -188,25 +217,36 @@ class KeyboardPlatform(PlatformBase):
         except Exception:
             return False
 
-    def turn(self, angle: float) -> bool:
+    def turn(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: Optional[float] = None) -> bool:
         if self._controller is None:
             return False
         try:
-            center_x, center_y = 640, 360
-            pixels_per_degree = 10
-            dx = int(angle * pixels_per_degree)
-            if dx == 0:
-                return True
-            start_x = center_x
-            end_x = max(0, min(center_x + dx, 1279))
-            duration_ms = max(50, min(abs(dx) * 2, 500))
-            self._controller.post_swipe(start_x, center_y, end_x, center_y, duration_ms).wait()
+            if duration is not None:
+                duration_ms = int(duration)
+            else:
+                min_dur = int(self._turn_config.get("min_duration_ms", 50))
+                max_dur = int(self._turn_config.get("max_duration_ms", 500))
+                dx = abs(end_x - start_x)
+                duration_ms = max(min_dur, min(dx * 2, max_dur))
+            self._controller.post_swipe(start_x, start_y, end_x, end_y, duration_ms).wait()
             return True
         except Exception:
             return False
 
     def interact(self, interaction_type: str) -> bool:
         return self.press_key("F", 0.1)
+
+    def grappling_hook(self) -> bool:
+        return self.press_key("T", 0.1)
+
+    def e_skill(self) -> bool:
+        return self.press_key("E", 0.1)
+
+    def q_skill(self) -> bool:
+        return self.press_key("R", 0.1)
+
+    def pet(self) -> bool:
+        return self.press_key("Z", 0.1)
 
     def spiral_leap(self) -> bool:
         return self.press_key("Q", 0.1)
