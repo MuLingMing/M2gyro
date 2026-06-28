@@ -4,6 +4,29 @@
         //角色突破，委托密函
         "next": []
     },
+    //40级探险，适用于角色突破和委托密函
+    "角色突破40探险": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "探险"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    650
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]委托完成次数",
+            "[JumpBack]40探险-跑图",
+            "[JumpBack]倍率选择0加成",
+            "[JumpBack]确认选择"
+        ]
+    },
     "40探险-跑图": {
         //40级探险，两张图，42m和49m
         "recognition": {
@@ -32,12 +55,13 @@
         "next": [
             "退出委托仅识别",
             "[JumpBack]机关操作",
+            "[JumpBack]机关破解",
             "[JumpBack]无尽行动抉择",
-            "[JumpBack]探险战斗波次"
+            "[JumpBack]挂机战斗无复位",
+            "[JumpBack]委托报酬选择"
         ]
     },
     "40探险-42m跑图": {
-        //40级探险，两张图，42m
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -97,14 +121,20 @@
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 0.78
+                                "duration": 0.75
                             }
                         },
                         {
                             "action": "move",
                             "params": {
                                 "direction": "left",
-                                "duration": 0.66
+                                "duration": 0.6
+                            }
+                        },
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 0.6
                             }
                         }
                     ]
@@ -113,7 +143,6 @@
         }
     },
     "40探险-49m跑图": {
-        //40级探险，两张图，49m
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -149,92 +178,14 @@
                                 "direction": "left",
                                 "duration": 0.15
                             }
+                        },
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 0.6
+                            }
                         }
                     ]
-                }
-            }
-        }
-    },
-    //探险战斗
-    "探险未抵达目的地": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "调查目标"
-                ],
-                "roi": [
-                    0,
-                    0,
-                    350,
-                    500
-                ]
-            }
-        },
-        "next": [
-            "局内放弃委托"
-        ]
-    },
-    "探险战斗波次": {
-        //探险波次战斗
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "副本/副本退出/离开副本/"
-                ],
-                "roi": [
-                    0,
-                    0,
-                    100,
-                    75
-                ]
-            }
-        },
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Countdown",
-                "custom_action_param": {
-                    "total_time": 120,
-                    "Interrupt": [
-                        {
-                            "name": "挑战更多轮次可获得",
-                            "run": false,
-                            "interval": 2
-                        },
-                        {
-                            "name": "确认选择",
-                            "run": false,
-                            "interval": 2
-                        },
-                        {
-                            "name": "探险未抵达目的地",
-                            "run": true,
-                            "interval": 2,
-                            "start_after": 10,
-                            "max_reco": 5
-                        }
-                    ],
-                    "Continue": [
-                        "局内继续游戏",
-                        "弹窗取消",
-                        {
-                            "name": "释放技能E",
-                            "interval": 3,
-                            "delay": 2
-                        },
-                        {
-                            "name": "释放状态Q",
-                            "interval": 3,
-                            "delay": 2
-                        },
-                        {
-                            "name": "下蹲防挂机",
-                            "interval": 30
-                        }
-                    ],
-                    "Over": "放弃委托"
                 }
             }
         }

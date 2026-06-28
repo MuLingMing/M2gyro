@@ -5,7 +5,7 @@
 功能说明：
 1. 根据前序识别结果的 detail.hit_node 字段分支执行
 2. 分支项支持两种执行模式：
-   - 字符串 → context.run_task() 执行 Pipeline 节点
+   - 字符串 → context.run_task() 执行完整的 Pipeline 节点链（识别+操作+next）
    - 字典   → context.run_action_direct() 直接执行操作
 3. 每个分支可携带独立的 next 节点列表，分支执行完毕后依次执行
 
@@ -82,17 +82,17 @@ class IfElseAction(CustomAction):
     根据前序识别结果的 detail.hit_node 字段分支执行
 
     分支项支持两种执行模式：
-    1. 字符串 → context.run_task() 执行 Pipeline 节点
+    1. 字符串 → context.run_task() 执行完整的 Pipeline 节点链（识别+操作+next）
     2. 字典   → context.run_action_direct() 直接执行操作
 
     分支格式（两种）：
     - 列表格式（无 next）：[item1, item2, ...]
-    - 对象格式（带 next）：{"Act_or_node": [item1, ...], "next": ["NodeA", ...]}
+    - 对象格式（带 next）：{"action": [item1, ...], "next": ["NodeA", ...]}
 
     参数格式：
     {
         "if": {
-            "Act_or_node": [{"action": "Click", "param": {"target": true}}],
+            "action": [{"action": "Click", "param": {"target": true}}],
             "next": ["NextStep1"]
         },
         "elif": ["ActionB", "ActionC"],
@@ -114,7 +114,7 @@ class IfElseAction(CustomAction):
     分支格式：
     - 列表格式: 分支项列表，无 next
     - 对象格式:
-      - Act_or_node: 分支项列表
+      - action: 分支项列表
         - 字符串项: Pipeline 节点名，通过 context.run_task() 执行
         - 字典项: {"action": "操作类型", "param": {操作参数}}
       - next: 分支执行完毕后依次执行的 Pipeline 节点列表，可省略
@@ -139,7 +139,7 @@ class IfElseAction(CustomAction):
             "custom_action": "IfElseAction",
             "custom_action_param": {
                 "if": {
-                    "Act_or_node": [{"action": "Click", "param": {"target": true}}],
+                    "action": [{"action": "Click", "param": {"target": true}}],
                     "next": ["ConfirmA"]
                 },
                 "elif": ["ActionB", "ActionC"],
@@ -166,8 +166,8 @@ class IfElseAction(CustomAction):
         1. 解析 custom_action_param 获取 if/elif/else 分支配置
         2. 从 argv.reco_detail 提取 hit_node 值
         3. 根据 hit_node 选择对应分支
-        4. 解析分支格式（列表或对象），提取 Act_or_node 和 next
-        5. 遍历 Act_or_node，依次执行
+        4. 解析分支格式（列表或对象），提取 action 和 next
+        5. 遍历 action，依次执行
         6. 执行分支的 next 节点列表
         7. 执行中检查 stopping 信号
         """
@@ -195,9 +195,9 @@ class IfElseAction(CustomAction):
                 return CustomAction.RunResult(success=True)
 
             if isinstance(item, str):
-                self._run_task(context, item)
+                self._run_node(context, item)
             elif isinstance(item, dict):
-                self._execute_action(context, item, argv.box)
+                self._execute_action(context, item, argv.box, argv.reco_detail)
             else:
                 logger.warning(f"IfElse: 忽略无效分支项类型 {type(item)}")
 
@@ -205,7 +205,7 @@ class IfElseAction(CustomAction):
             if context.tasker.stopping:
                 return CustomAction.RunResult(success=True)
 
-            self._run_task(context, node_name)
+            self._run_node(context, node_name)
 
         return CustomAction.RunResult(success=True)
 
@@ -233,7 +233,8 @@ class IfElseAction(CustomAction):
             try:
                 index = int(hit_node[5:-1])
                 elif_branches = params.get("elif", [])
-                if isinstance(elif_branches, str):
+                # 支持简写：字符串或对象 → [str/dict]
+                if isinstance(elif_branches, (str, dict)):
                     elif_branches = [elif_branches]
                 if isinstance(elif_branches, list) and 0 <= index < len(elif_branches):
                     return elif_branches[index]
@@ -257,7 +258,7 @@ class IfElseAction(CustomAction):
         规范化规则：
         - str  → [str]（单节点名简写）
         - list → 原样返回
-        - dict → 若 Act_or_node 为 str，包装为 [str]
+        - dict → 若 action 为 str，包装为 [str]
 
         参数:
         - branch_raw: 原始分支配置
@@ -269,9 +270,9 @@ class IfElseAction(CustomAction):
             return [branch_raw]
 
         if isinstance(branch_raw, dict):
-            act_or_node = branch_raw.get("Act_or_node")
-            if isinstance(act_or_node, str):
-                branch_raw = {**branch_raw, "Act_or_node": [act_or_node]}
+            action = branch_raw.get("action")
+            if isinstance(action, str):
+                branch_raw = {**branch_raw, "action": [action]}
             return branch_raw
 
         return branch_raw  # list 原样返回
@@ -281,12 +282,12 @@ class IfElseAction(CustomAction):
         branch_raw: Union[str, List[BranchItem], Dict[str, Any]],
     ) -> Tuple[List[BranchItem], List[str]]:
         """
-        解析分支配置，提取 Act_or_node 和 next
+        解析分支配置，提取 action 和 next
 
         支持三种格式：
         - 字符串简写："NodeA" → items=["NodeA"], next=[]
         - 列表格式：[item1, item2, ...] → items=列表本身, next=[]
-        - 对象格式：{"Act_or_node": [...], "next": [...]} → 按字段提取
+        - 对象格式：{"action": [...], "next": [...]} → 按字段提取
 
         参数:
         - branch_raw: 原始分支配置
@@ -302,7 +303,7 @@ class IfElseAction(CustomAction):
             return branch_raw, []
 
         if isinstance(branch_raw, dict):
-            items = branch_raw.get("Act_or_node", [])
+            items = branch_raw.get("action", [])
             next_nodes = branch_raw.get("next", [])
             if isinstance(next_nodes, str):
                 next_nodes = [next_nodes]
@@ -315,6 +316,9 @@ class IfElseAction(CustomAction):
     def _extract_hit_node(argv: CustomAction.RunArg) -> str:
         """
         从识别结果中提取 hit_node 值
+
+        通过 best_result.detail 读取用户自定义 detail，
+        （新版 MaaFramework 已支持 CustomRecognitionResult，best_result 可用）
 
         参数:
         - argv: 运行参数
@@ -329,20 +333,17 @@ class IfElseAction(CustomAction):
         best = reco_detail.best_result
         if isinstance(best, CustomRecognitionResult):
             detail = best.detail
-            if isinstance(detail, str):
-                try:
-                    detail = json.loads(detail)
-                except (json.JSONDecodeError, TypeError):
-                    return ""
-            if isinstance(detail, dict):
+            if isinstance(detail, dict) and detail.get("hit"):
                 return detail.get("hit_node", "")
 
         return ""
 
     @staticmethod
-    def _run_task(context: Context, node_name: str) -> None:
+    def _run_node(context: Context, node_name: str) -> None:
         """
-        执行 Pipeline 节点任务
+        执行 Pipeline 节点的完整流程（识别 + 操作 + next）
+
+        通过 run_task 运行完整节点链，由节点自行识别和执行。
 
         参数:
         - context: MaaFramework 上下文对象
@@ -355,7 +356,7 @@ class IfElseAction(CustomAction):
 
     @staticmethod
     def _execute_action(
-        context: Context, action_def: Dict[str, Any], box: Optional[Rect]
+        context: Context, action_def: Dict[str, Any], box: Optional[Rect], reco_detail: Optional[Any] = None
     ) -> None:
         """
         通过 run_action_direct 直接执行操作
@@ -364,6 +365,7 @@ class IfElseAction(CustomAction):
         - context: MaaFramework 上下文对象
         - action_def: 操作定义 {"action": "类型", "param": {参数}}
         - box: 前序识别位置，传入 run_action_direct 的 box 参数，可能为 None
+        - reco_detail: 前序识别详情，序列化为 JSON 字符串传入 run_action_direct
         """
         action_type = action_def.get("action", "")
         param_dict = action_def.get("param", {})
@@ -392,11 +394,38 @@ class IfElseAction(CustomAction):
 
         try:
             box_tuple = (box.x, box.y, box.w, box.h)
+            reco_detail_str = IfElseAction._build_reco_detail_str(reco_detail)
             context.run_action_direct(
-                JActionType(action_type), action_param, box=box_tuple
+                JActionType(action_type), action_param, box=box_tuple, reco_detail=reco_detail_str
             )
         except Exception as e:
             logger.error(f"IfElse: 执行 action {action_type} 失败: {e}")
+
+    @staticmethod
+    def _build_reco_detail_str(reco_detail: Optional[Any]) -> str:
+        """
+        从 reco_detail 中提取匹配节点的识别详情，序列化为 JSON 字符串
+
+        优先从 best_result.detail 中提取 matched_detail（IfElseReco 注入的匹配节点详情），
+        使下游 action 获得原始识别结果。未找到则传入完整 raw_detail。
+
+        参数:
+        - reco_detail: RecognitionDetail 对象，可能为 None
+
+        返回值:
+        - str: JSON 字符串，可直接传入 run_action / run_action_direct 的 reco_detail 参数
+        """
+        if not reco_detail:
+            return ""
+        best = getattr(reco_detail, "best_result", None)
+        if isinstance(best, CustomRecognitionResult):
+            detail = best.detail
+            if isinstance(detail, dict) and "matched_detail" in detail:
+                return json.dumps(detail["matched_detail"], ensure_ascii=False)
+        raw = getattr(reco_detail, "raw_detail", None)
+        if isinstance(raw, dict):
+            return json.dumps(raw, ensure_ascii=False)
+        return ""
 
     @staticmethod
     def _create_action_param(param_cls: type, param_dict: Dict[str, Any]) -> Any:

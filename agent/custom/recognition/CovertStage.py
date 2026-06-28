@@ -297,8 +297,9 @@ class CovertStage(CustomRecognition):
         regions = [r for key, r in REGION_ATTACH_MAP.items() if attach.get(key)]
         stages = [s for key, s in STAGE_ATTACH_MAP.items() if attach.get(key)]
 
-        if not regions and not stages:
+        if not regions:
             regions = list(REGION_PRIORITY)
+        if not stages:
             stages = list(STAGE_PRIORITY)
 
         return regions, stages

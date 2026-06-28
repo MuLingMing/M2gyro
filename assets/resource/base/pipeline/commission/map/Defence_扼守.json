@@ -1,6 +1,39 @@
 {
     //波次扼守
     "扼守": {},
+    //密函
+    //四张地图，电梯左右下、平台
+    "密函40扼守-跑图": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "IfElseReco",
+                "custom_recognition_param": {
+                    "entry": "扼守探险未抵达目的地",
+                    "if": "",
+                    "elif": [],
+                    "else": true
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "IfElseAction",
+                "custom_action_param": {
+                    "if": "",
+                    "elif": [],
+                    "else": "局内放弃委托"
+                }
+            }
+        },
+        "next": [
+            "退出委托仅识别",
+            "[JumpBack]无尽行动抉择",
+            "[JumpBack]挂机战斗无复位",
+            "[JumpBack]委托报酬选择"
+        ]
+    },
     //皎皎币
     "皎皎信物50扼守": {
         "recognition": {
@@ -73,7 +106,7 @@
         "next": [
             "退出委托仅识别",
             "[JumpBack]无尽行动抉择",
-            "[JumpBack]扼守战斗波次"
+            "[JumpBack]挂机战斗无复位"
         ]
     },
     "皎皎信物80扼守": {},
@@ -192,7 +225,7 @@
             }
         },
         "next": [
-            "扼守战斗单次"
+            "挂机战斗无复位"
         ]
     },
     //囚狼之劫掠
@@ -218,14 +251,14 @@
             "[JumpBack]确认选择"
         ]
     },
+    //四张地图，204m、176m、142m、地图右下角
     "夜航手册50扼守-跑图": {
-        //四张地图，204m、176m、142m、和地图右下角
         "recognition": {
             "type": "Custom",
             "param": {
                 "custom_recognition": "IfElseReco",
                 "custom_recognition_param": {
-                    "entry": "扼守未抵达目的地",
+                    "entry": "扼守探险未抵达目的地",
                     "if": "夜航手册50扼守-142m跑图",
                     "elif": [
                         "夜航手册50扼守-176m跑图",
@@ -252,7 +285,7 @@
             }
         },
         "next": [
-            "扼守战斗单次"
+            "挂机战斗无复位"
         ]
     },
     //142m地图
@@ -298,14 +331,20 @@
                 "custom_action_param": {
                     "operations": [
                         {
+                            "action": "wait",
+                            "params": {
+                                "duration": 0.6
+                            }
+                        },
+                        {
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 4.4,
+                                "duration": 4.38,
                                 "overlays": [
                                     {
                                         "action": "dodge",
-                                        "at": 0.5
+                                        "at": 0.51
                                     }
                                 ]
                             }
@@ -314,7 +353,7 @@
                             "action": "move",
                             "params": {
                                 "direction": "right",
-                                "duration": 0.7
+                                "duration": 0.69
                             }
                         },
                         {
@@ -328,14 +367,20 @@
                             "action": "move",
                             "params": {
                                 "direction": "left",
-                                "duration": 0.7
+                                "duration": 0.69
                             }
                         },
                         {
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 8.7
+                                "duration": 8.4
+                            }
+                        },
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 0.6
                             }
                         }
                     ]
@@ -386,14 +431,20 @@
                 "custom_action_param": {
                     "operations": [
                         {
+                            "action": "wait",
+                            "params": {
+                                "duration": 0.6
+                            }
+                        },
+                        {
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 5,
+                                "duration": 5.01,
                                 "overlays": [
                                     {
                                         "action": "dodge",
-                                        "at": 0.5
+                                        "at": 0.51
                                     }
                                 ]
                             }
@@ -416,28 +467,34 @@
                             "action": "move",
                             "params": {
                                 "direction": "left",
-                                "duration": 1.3
+                                "duration": 1.02
                             }
                         },
                         {
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 0.8
+                                "duration": 0.81
                             }
                         },
                         {
                             "action": "move",
                             "params": {
                                 "direction": "left",
-                                "duration": 0.78
+                                "duration": 0.93
                             }
                         },
                         {
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 11.5
+                                "duration": 11.52
+                            }
+                        },
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 0.6
                             }
                         }
                     ]
@@ -488,14 +545,20 @@
                 "custom_action_param": {
                     "operations": [
                         {
+                            "action": "wait",
+                            "params": {
+                                "duration": 0.6
+                            }
+                        },
+                        {
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 5,
+                                "duration": 5.01,
                                 "overlays": [
                                     {
                                         "action": "dodge",
-                                        "at": 0.5
+                                        "at": 0.51
                                     }
                                 ]
                             }
@@ -518,7 +581,7 @@
                             "action": "move",
                             "params": {
                                 "direction": "left",
-                                "duration": 1
+                                "duration": 1.02
                             }
                         },
                         {
@@ -560,14 +623,20 @@
                             "action": "move",
                             "params": {
                                 "direction": "left",
-                                "duration": 0.7
+                                "duration": 0.72
                             }
                         },
                         {
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 8.5
+                                "duration": 8.46
+                            }
+                        },
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 0.6
                             }
                         }
                     ]
@@ -597,6 +666,12 @@
                 "custom_action_param": {
                     "operations": [
                         {
+                            "action": "wait",
+                            "params": {
+                                "duration": 0.6
+                            }
+                        },
+                        {
                             "action": "move",
                             "params": {
                                 "direction": "forward",
@@ -604,11 +679,11 @@
                                 "overlays": [
                                     {
                                         "action": "jump",
-                                        "at": 0.5
+                                        "at": 0.51
                                     },
                                     {
                                         "action": "dodge",
-                                        "at": 0.8
+                                        "at": 0.81
                                     }
                                 ]
                             }
@@ -623,11 +698,11 @@
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 1.5,
+                                "duration": 1.35,
                                 "overlays": [
                                     {
                                         "action": "dodge",
-                                        "at": 0.5
+                                        "at": 0.51
                                     }
                                 ]
                             }
@@ -643,14 +718,14 @@
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 0.45
+                                "duration": 0.57
                             }
                         },
                         {
                             "action": "move",
                             "params": {
                                 "direction": "right",
-                                "duration": 2.2
+                                "duration": 2.1
                             }
                         },
                         {
@@ -671,14 +746,14 @@
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 0.8
+                                "duration": 0.75
                             }
                         },
                         {
                             "action": "move",
                             "params": {
                                 "direction": "right",
-                                "duration": 8.4
+                                "duration": 8.52
                             }
                         },
                         {
@@ -686,6 +761,12 @@
                             "params": {
                                 "direction": "forward",
                                 "duration": 0.3
+                            }
+                        },
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 0.6
                             }
                         }
                     ]
@@ -763,7 +844,7 @@
             }
         },
         "next": [
-            "扼守战斗单次"
+            "挂机战斗无复位"
         ]
     },
     //风羽翼决断、雷羽翼决断
@@ -836,7 +917,7 @@
             }
         },
         "next": [
-            "扼守战斗单次"
+            "挂机战斗无复位"
         ]
     },
     //风羽翼背水、雷羽翼昂扬
@@ -943,145 +1024,7 @@
             }
         },
         "next": [
-            "扼守战斗单次"
+            "挂机战斗无复位"
         ]
-    },
-    //扼守战斗
-    "扼守未抵达目的地": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "前往目标点"
-                ],
-                "roi": [
-                    0,
-                    0,
-                    350,
-                    500
-                ]
-            }
-        },
-        "next": [
-            "局内放弃委托"
-        ]
-    },
-    "扼守战斗单次": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "副本/副本退出/离开副本/"
-                ],
-                "roi": [
-                    0,
-                    0,
-                    100,
-                    75
-                ]
-            }
-        },
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Countdown",
-                "custom_action_param": {
-                    "total_time": 120,
-                    "Interrupt": [
-                        {
-                            "name": "确认选择",
-                            "run": false,
-                            "interval": 2
-                        },
-                        {
-                            "name": "扼守未抵达目的地",
-                            "run": true,
-                            "interval": 2,
-                            "start_after": 10,
-                            "max_reco": 5,
-                            "record_reco": true
-                        }
-                    ],
-                    "Continue": [
-                        "局内继续游戏",
-                        {
-                            "name": "释放技能E",
-                            "interval": 3,
-                            "delay": 2
-                        },
-                        {
-                            "name": "释放状态Q",
-                            "interval": 3,
-                            "delay": 2
-                        }
-                    ],
-                    "Over": "放弃委托"
-                }
-            }
-        }
-    },
-    "扼守战斗波次": {
-        //扼守波次战斗
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "副本/副本退出/离开副本/"
-                ],
-                "roi": [
-                    0,
-                    0,
-                    100,
-                    75
-                ]
-            }
-        },
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "Countdown",
-                "custom_action_param": {
-                    "total_time": 120,
-                    "Interrupt": [
-                        {
-                            "name": "挑战更多轮次可获得",
-                            "run": false,
-                            "interval": 2
-                        },
-                        {
-                            "name": "确认选择",
-                            "run": false,
-                            "interval": 2
-                        },
-                        {
-                            "name": "扼守未抵达目的地",
-                            "run": true,
-                            "interval": 2,
-                            "start_after": 10,
-                            "max_reco": 5
-                        }
-                    ],
-                    "Continue": [
-                        "局内继续游戏",
-                        "弹窗取消",
-                        {
-                            "name": "释放技能E",
-                            "interval": 3,
-                            "delay": 2
-                        },
-                        {
-                            "name": "释放状态Q",
-                            "interval": 3,
-                            "delay": 2
-                        },
-                        {
-                            "name": "下蹲防挂机",
-                            "interval": 30
-                        }
-                    ],
-                    "Over": "放弃委托"
-                }
-            }
-        }
     }
 }

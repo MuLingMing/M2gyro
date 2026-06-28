@@ -1,4 +1,5 @@
 {
+    //委托密函
     "委托密函": {
         //驱离、探险/无尽、扼守/无尽
         "next": [
@@ -31,7 +32,7 @@
                 "custom_action": "IfElseAction",
                 "custom_action_param": {
                     "if": {
-                        "Act_or_node": [
+                        "action": [
                             {
                                 "action": "Click",
                                 "param": {
@@ -40,12 +41,102 @@
                             }
                         ],
                         "next": [
-                            "密函驱离"
+                            "密函副本跳转"
                         ]
                     }
                 }
             }
         }
+    },
+    "密函副本跳转": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "IfElseReco",
+                "custom_recognition_param": {
+                    "if": "密函副本选择驱离",
+                    "elif": "密函副本选择探险",
+                    "else": "密函副本选择扼守"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "IfElseAction",
+                "custom_action_param": {
+                    "if": "密函副本选择驱离",
+                    "elif": "密函副本选择探险",
+                    "else": "密函副本选择扼守"
+                }
+            }
+        }
+    },
+    "密函副本选择驱离": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "完成驱离"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    650
+                ]
+            }
+        },
+        "next": [
+            "密函驱离"
+        ]
+    },
+    "密函副本选择探险": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "获取血清",
+                    "坚持探查"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    650
+                ]
+            }
+        },
+        "next": [
+            "委托已更新",
+            "[JumpBack]40探险-跑图",
+            "[JumpBack]选择密函",
+            "[JumpBack]确认选择"
+        ]
+    },
+    "密函副本选择扼守": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "保护探险家皎皎",
+                    "探险家皎皎",
+                    "保护探险家"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    650
+                ]
+            }
+        },
+        "next": [
+            "委托已更新",
+            "[JumpBack]密函40扼守-跑图",
+            "[JumpBack]选择密函",
+            "[JumpBack]确认选择"
+        ]
     },
     "委托密函页面": {
         "next": [
@@ -74,6 +165,7 @@
         ]
     },
     "选择密函": {
+        //默认选择第一个密函
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -125,7 +217,8 @@
             "type": "OCR",
             "param": {
                 "expected": [
-                    "取消"
+                    "取消",
+                    "放弃"
                 ],
                 "roi": [
                     165,
@@ -135,7 +228,10 @@
                 ]
             }
         },
-        "action": "Click"
+        "action": "Click",
+        "next": [
+            "结束当前任务"
+        ]
     },
     "购买密函没有取消则不使用": {
         "recognition": {

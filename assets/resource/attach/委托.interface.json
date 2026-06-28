@@ -21,8 +21,7 @@
                 "角色突破等级",
                 "通用设置",
                 "波次选择",
-                "使用倍率书的波次",
-                "属性选择"
+                "使用倍率书的波次"
             ]
         },
         {
@@ -79,20 +78,31 @@
         "角色经验等级": {
             "type": "select",
             "label": "等级选择",
-            "description": "仅支持50级。",
+            "description": "仅支持40级。",
             "cases": [
                 {
-                    "name": "50"
+                    "name": "40",
+                    "pipeline_override": {
+                        "委托等级识别": {
+                            "expected": "40"
+                        }
+                    }
                 }
             ]
         },
         "角色突破等级": {
             "type": "select",
             "label": "等级选择",
-            "description": "仅支持50级。",
+            "description": "仅支持40级，主控黎瑟，需要手动选择水本。",
             "cases": [
                 {
-                    "name": "50"
+                    "name": "40",
+                    "pipeline_override": {
+                        "委托等级识别": {
+                            "expected": "40",
+                            "next": "角色突破40探险"
+                        }
+                    }
                 }
             ]
         },
@@ -122,7 +132,12 @@
             "description": "40、60、80、100。",
             "cases": [
                 {
-                    "name": "40"
+                    "name": "40",
+                    "pipeline_override": {
+                        "委托等级识别": {
+                            "expected": "40"
+                        }
+                    }
                 },
                 {
                     "name": "60",
@@ -189,17 +204,6 @@
                 }
             ]
         },
-        "属性选择": {
-            "type": "select",
-            "cases": [
-                {
-                    "name": "水"
-                },
-                {
-                    "name": "火"
-                }
-            ]
-        },
         "波次选择": {
             "type": "input",
             "inputs": [
@@ -229,7 +233,7 @@
                 }
             ],
             "pipeline_override": {
-                "无尽波次倍率选择": {
+                "无尽波次选择倍率书或密函": {
                     "attach": {
                         "target_count": "{target_count}"
                     }

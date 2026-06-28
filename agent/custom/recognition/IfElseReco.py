@@ -135,6 +135,7 @@ class IfElseReco(CustomRecognition):
 
         # 识别 entry 节点（如果配置了）
         entry_box = None
+        entry_result = None
         if entry_node:
             entry_result = context.run_recognition(entry_node, image)
             if not entry_result or not entry_result.hit:
@@ -150,7 +151,7 @@ class IfElseReco(CustomRecognition):
                 box = self._normalize_box(result.box)
                 return CustomRecognition.AnalyzeResult(
                     box=box,
-                    detail={"hit": True, "hit_node": "if"}
+                    detail={"hit": True, "hit_node": "if", "matched_detail": result.raw_detail}
                 )
 
         # 依次识别 elif 节点列表
@@ -162,15 +163,18 @@ class IfElseReco(CustomRecognition):
                 box = self._normalize_box(result.box)
                 return CustomRecognition.AnalyzeResult(
                     box=box,
-                    detail={"hit": True, "hit_node": f"elif[{index}]"}
+                    detail={"hit": True, "hit_node": f"elif[{index}]", "matched_detail": result.raw_detail}
                 )
 
         # 识别 else 节点
         if else_node is True:
             # else=true 兜底，直接视为识别成功，返回 entry 的识别框
+            detail: Dict[str, Any] = {"hit": True, "hit_node": "else"}
+            if entry_result and entry_result.raw_detail:
+                detail["matched_detail"] = entry_result.raw_detail
             return CustomRecognition.AnalyzeResult(
                 box=entry_box if entry_box is not None else Rect(0, 0, 0, 0),
-                detail={"hit": True, "hit_node": "else"}
+                detail=detail
             )
         elif else_node:
             result = context.run_recognition(else_node, image)
@@ -178,7 +182,7 @@ class IfElseReco(CustomRecognition):
                 box = self._normalize_box(result.box)
                 return CustomRecognition.AnalyzeResult(
                     box=box,
-                    detail={"hit": True, "hit_node": "else"}
+                    detail={"hit": True, "hit_node": "else", "matched_detail": result.raw_detail}
                 )
 
         # 均未命中

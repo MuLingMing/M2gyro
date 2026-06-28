@@ -42,16 +42,6 @@
                     "attach": {
                         "total_time": "{total_time}"
                     }
-                },
-                "扼守战斗单次": {
-                    "attach": {
-                        "total_time": "{total_time}"
-                    }
-                },
-                "扼守战斗波次": {
-                    "attach": {
-                        "total_time": "{total_time}"
-                    }
                 }
             }
         },

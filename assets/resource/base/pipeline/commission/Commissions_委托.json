@@ -330,7 +330,15 @@
             "空"
         ]
     },
-    "深境委托-普通委托": {},
+    "深境委托-普通委托": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "主页面/历练/委托/普通委托/跳转图标"
+            }
+        },
+        "action": "Click"
+    },
     "委托-迁移-向左三次": {
         //判断在委托最右端，则左滑三次
         "recognition": {

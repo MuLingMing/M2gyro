@@ -1,16 +1,54 @@
 {
+    //通用副本
+    "通用副本": {
+        //通用副本override
+        // "挂机战斗无复位": {
+        //     "attach": {
+        //         "Continue": [
+        //             {
+        //                 "name": "局内复位",
+        //                 "run": 1
+        //             }
+        //         ]
+        //     }
+        // },
+        "next": [
+            "委托已更新",
+            "[JumpBack]确认选择",
+            "[JumpBack]选择密函",
+            "[JumpBack]倍率选择0加成",
+            "[JumpBack]委托密函进入战斗",
+            "[JumpBack]委托报酬选择",
+            "[JumpBack]弹窗关闭匹配识别"
+        ]
+    },
+    "委托密函进入战斗": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "副本/副本退出/离开副本/"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    100,
+                    75
+                ]
+            }
+        },
+        "next": [
+            "退出委托仅识别",
+            "[JumpBack]机关操作",
+            "[JumpBack]机关破解",
+            "[JumpBack]无尽行动抉择",
+            "[JumpBack]挂机战斗无复位",
+            "[JumpBack]委托报酬选择"
+        ]
+    },
+    //挂机战斗复位、挂机战斗无复位
     "挂机战斗复位": {
         //基底挂机战斗流程，驱离默认
-        //在副本中
-        // "attach": {
-        //     "Interrupt": [
-        //         {
-        //             "name": "确认选择",
-        //             "run": false,
-        //             "interval": 2
-        //         }
-        //     ]
-        // },
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -32,6 +70,7 @@
                 "custom_action_param": {
                     "total_time": 120,
                     "Interrupt": [
+                        "委托报酬选择",
                         {
                             "name": "确认选择",
                             "run": false,
@@ -53,7 +92,13 @@
                             "name": "释放状态Q",
                             "interval": 3,
                             "delay": 2
-                        }
+                        },
+                        {
+                            "name": "下蹲防挂机",
+                            "interval": 30
+                        },
+                        "机关操作",
+                        "机关破解"
                     ],
                     "Over": "放弃委托"
                 }
@@ -82,14 +127,29 @@
                 "custom_action_param": {
                     "total_time": 120,
                     "Interrupt": [
+                        "委托报酬选择",
+                        {
+                            "name": "挑战更多轮次可获得",
+                            "run": false,
+                            "interval": 2
+                        },
                         {
                             "name": "确认选择",
                             "run": false,
                             "interval": 2
+                        },
+                        {
+                            "name": "探险扼守未抵达目的地",
+                            "run": true,
+                            "interval": 2,
+                            "start_after": 10,
+                            "max_reco": 5,
+                            "record_reco": true
                         }
                     ],
                     "Continue": [
                         "局内继续游戏",
+                        "弹窗取消",
                         {
                             "name": "释放技能E",
                             "interval": 3,
@@ -99,13 +159,40 @@
                             "name": "释放状态Q",
                             "interval": 3,
                             "delay": 2
-                        }
+                        },
+                        {
+                            "name": "下蹲防挂机",
+                            "interval": 30
+                        },
+                        "机关操作",
+                        "机关破解"
                     ],
                     "Over": "放弃委托"
                 }
             }
         }
     },
+    "探险扼守未抵达目的地": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "调查目标",
+                    "前往目标点"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    500
+                ]
+            }
+        },
+        "next": [
+            "局内放弃委托"
+        ]
+    },
+    //释放技能E、释放状态Q
     "释放技能E": {
         //仅识别水母E
         "recognition": {
@@ -163,6 +250,7 @@
             }
         }
     },
+    //局内复位
     "局内复位": {
         "recognition": {
             "type": "TemplateMatch",
@@ -295,6 +383,7 @@
             "弹窗取消"
         ]
     },
+    //下蹲防挂机
     "下蹲防挂机": {
         "action": {
             "type": "Custom",

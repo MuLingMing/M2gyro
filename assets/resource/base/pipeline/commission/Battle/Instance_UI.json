@@ -22,7 +22,7 @@
                         }
                     },
                     {
-                        "actionognition": {
+                        "recognition": {
                             "type": "OCR",
                             "param": {
                                 "expected": [
@@ -42,10 +42,29 @@
         },
         "action": "Click",
         "next": [
-            "巧手快速破解",
             "机关操作",
             "空"
         ]
+    },
+    "机关破解": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "IfElseReco",
+                "custom_recognition_param": {
+                    "if": "巧手快速破解"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "IfElseAction",
+                "custom_action_param": {
+                    "if": "巧手快速破解"
+                }
+            }
+        }
     },
     "巧手快速破解": {
         //巧手快速破解
@@ -63,7 +82,11 @@
                 ]
             }
         },
-        "action": "Click"
+        "action": "Click",
+        "post_delay": 800,
+        "next": [
+            "空"
+        ]
     },
     //退出委托
     "退出委托": {
@@ -85,6 +108,7 @@
         },
         "action": "Click"
     },
+    //确认选择
     "确认选择": {
         //右下角确认选择按钮
         "recognition": {
@@ -110,10 +134,12 @@
         },
         "action": "Click",
         "next": [
+            "委托已更新",
             "确认选择",
             "空"
         ]
     },
+    //局内放弃委托
     "局内放弃委托": {
         //局内放弃委托
         "recognition": {
@@ -296,7 +322,7 @@
                         "无尽撤离或局内放弃委托"
                     ],
                     "else": [
-                        "无尽波次倍率选择"
+                        "无尽波次选择倍率书或密函"
                     ]
                 }
             }
@@ -408,14 +434,58 @@
     },
     "无尽继续挑战倍率选择0加成": {
         "next": [
-            "倍率选择0加成",
+            "无尽波次选择倍率书或密函-0倍率",
             "[JumpBack]无尽继续挑战"
         ]
     },
     "无尽继续挑战倍率选择": {
         "next": [
-            "倍率选择",
+            "无尽波次选择倍率书或密函-自选倍率",
             "[JumpBack]无尽继续挑战"
         ]
+    },
+    "无尽波次选择倍率书或密函-0倍率": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "IfElseReco",
+                "custom_recognition_param": {
+                    "if": "倍率选择0加成",
+                    "else": "选择密函"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "IfElseAction",
+                "custom_action_param": {
+                    "if": "倍率选择0加成",
+                    "else": "选择密函"
+                }
+            }
+        }
+    },
+    "无尽波次选择倍率书或密函-自选倍率": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "IfElseReco",
+                "custom_recognition_param": {
+                    "if": "无尽波次倍率选择",
+                    "else": "选择密函"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "IfElseAction",
+                "custom_action_param": {
+                    "if": "无尽波次倍率选择",
+                    "else": "选择密函"
+                }
+            }
+        }
     }
 }

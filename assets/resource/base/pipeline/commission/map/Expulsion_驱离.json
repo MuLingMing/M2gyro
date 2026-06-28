@@ -23,6 +23,7 @@
             "[JumpBack]倍率选择"
         ]
     },
+    //密函驱离
     "密函驱离": {
         "recognition": {
             "type": "OCR",

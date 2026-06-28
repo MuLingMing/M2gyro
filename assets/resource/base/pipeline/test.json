@@ -1,4 +1,14 @@
 {
+    "test": {
+        "next": [
+            "退出委托仅识别",
+            "[JumpBack]机关操作",
+            "[JumpBack]机关破解",
+            "[JumpBack]无尽行动抉择",
+            "[JumpBack]挂机战斗无复位",
+            "[JumpBack]委托报酬选择"
+        ]
+    },
     "AutoPathFinding": {
         "recognition": {
             "type": "Custom",
@@ -163,15 +173,15 @@
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 2.0,
+                                "duration": 1.5,
                                 "overlays": [
                                     {
                                         "action": "jump",
-                                        "at": 0.5
+                                        "at": 0.51
                                     },
                                     {
                                         "action": "dodge",
-                                        "at": 0.8
+                                        "at": 0.81
                                     }
                                 ]
                             }
