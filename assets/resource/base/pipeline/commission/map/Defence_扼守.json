@@ -34,6 +34,187 @@
             "[JumpBack]委托报酬选择"
         ]
     },
+    "密函40扼守-电梯右跑图": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "副本/目标点",
+                "green_mask": true,
+                "roi": [
+                    830,
+                    455,
+                    70,
+                    80
+                ]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 2.1,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.51
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "run_node",
+                            "params": {
+                                "node": "局内复位"
+                            }
+                        },
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 7.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 1.23,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.51
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "backward",
+                                "duration": 6.9,
+                                "overlays": [
+                                    {
+                                        "action": "jump",
+                                        "at": 1.2
+                                    },
+                                    {
+                                        "action": "jump",
+                                        "at": 1.5
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 3
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "backward",
+                                "duration": 4.53
+                            }
+                        },
+                        {
+                            "action": "run_node",
+                            "params": {
+                                "node": "局内复位"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "密函40扼守-平台跑图": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "副本/目标点",
+                "green_mask": true,
+                "roi": [
+                    830,
+                    455,
+                    70,
+                    80
+                ]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 2.0,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 0.5
+                                    },
+                                    {
+                                        "action": "jump",
+                                        "at": 1.0
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 2
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 5.5,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 1.0
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "left",
+                                "duration": 19.5,
+                                "overlays": [
+                                    {
+                                        "action": "dodge",
+                                        "at": 1.0
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "loop_count": 1
+                }
+            }
+        }
+    },
     //皎皎币
     "皎皎信物50扼守": {
         "recognition": {

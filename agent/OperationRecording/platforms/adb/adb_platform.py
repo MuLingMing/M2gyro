@@ -31,6 +31,6 @@ class AdbPlatform(TouchPlatform):
 
     _button_config_file = "adb_buttons.json"
 
-    def __init__(self, platform_controller):
-        super().__init__(platform_controller)
+    def __init__(self, platform_controller, context=None):
+        super().__init__(platform_controller, context=context)
         self._controller_type = "adb"

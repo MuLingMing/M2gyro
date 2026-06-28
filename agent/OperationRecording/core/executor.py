@@ -68,7 +68,7 @@ class OperationExecutor:
         """初始化平台（PlatformFactory 自带缓存）"""
         if self._context and hasattr(self._context, 'tasker'):
             controller = self._context.tasker.controller
-            self._platform = PlatformFactory.create_from_config({}, controller)
+            self._platform = PlatformFactory.create_from_config({}, controller, context=self._context)
 
     def execute(self, param: OperationParam) -> bool:
         """

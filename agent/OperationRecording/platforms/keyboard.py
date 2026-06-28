@@ -18,7 +18,7 @@
 import json
 import os
 import time
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from maa.controller import Controller
 from .base import PlatformBase
 
@@ -57,8 +57,8 @@ class KeyboardPlatform(PlatformBase):
         "backward_right": ["S", "D"],
     }
 
-    def __init__(self, platform_controller: Controller):
-        super().__init__(platform_controller)
+    def __init__(self, platform_controller: Controller, context: Optional[Any] = None):
+        super().__init__(platform_controller, context=context)
         self._active_keys: set[int] = set()
         self._turn_config: Dict[str, float] = {"min_duration_ms": 50, "max_duration_ms": 500}
         self._load_button_config()
@@ -87,59 +87,64 @@ class KeyboardPlatform(PlatformBase):
     # ===== 原子操作实现 =====
 
     def press_key(self, key: str, duration: float) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             key_code = self._key_codes.get(key)
             if key_code is None:
                 return False
-            self._controller.post_key_down(key_code).wait()
+            controller.post_key_down(key_code).wait()
             self._active_keys.add(key_code)
             if duration > 0:
                 time.sleep(duration)
-                self._controller.post_key_up(key_code).wait()
+                controller.post_key_up(key_code).wait()
                 self._active_keys.discard(key_code)
             return True
         except Exception:
             return False
 
     def release_key(self, key: str) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             key_code = self._key_codes.get(key)
             if key_code is None:
                 return False
-            self._controller.post_key_up(key_code).wait()
+            controller.post_key_up(key_code).wait()
             self._active_keys.discard(key_code)
             return True
         except Exception:
             return False
 
     def click(self, x: int, y: int) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
-            self._controller.post_click(x, y).wait()
+            controller.post_click(x, y).wait()
             return True
         except Exception:
             return False
 
     def swipe(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: float) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
-            self._controller.post_swipe(start_x, start_y, end_x, end_y, int(duration * 1000)).wait()
+            controller.post_swipe(start_x, start_y, end_x, end_y, int(duration * 1000)).wait()
             return True
         except Exception:
             return False
 
     def release_all(self) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             for key_code in list(self._active_keys):
-                self._controller.post_key_up(key_code).wait()
+                controller.post_key_up(key_code).wait()
             self._active_keys.clear()
             return True
         except Exception:
@@ -165,7 +170,8 @@ class KeyboardPlatform(PlatformBase):
         - duration > 0 时会 sleep 等待
         - 未知方向返回 False
         """
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         keys = self._DIRECTION_KEYS.get(direction)
         if not keys:
@@ -177,7 +183,7 @@ class KeyboardPlatform(PlatformBase):
             if key_code is None:
                 return False
             if key_code not in self._active_keys:
-                self._controller.post_key_down(key_code).wait()
+                controller.post_key_down(key_code).wait()
                 self._active_keys.add(key_code)
 
         if duration > 0:
@@ -188,7 +194,8 @@ class KeyboardPlatform(PlatformBase):
         return self.press_key("Space", 0.1)
 
     def dodge(self, direction: Optional[str] = None) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             if direction:
@@ -198,17 +205,17 @@ class KeyboardPlatform(PlatformBase):
                     dir_code = self._key_codes.get(dir_key)
                     shift_code = self._key_codes.get("Shift")
                     if dir_code is not None and shift_code is not None:
-                        self._controller.post_key_down(dir_code).wait()
+                        controller.post_key_down(dir_code).wait()
                         self._active_keys.add(dir_code)
                         time.sleep(0.05)
                         try:
-                            self._controller.post_key_down(shift_code).wait()
+                            controller.post_key_down(shift_code).wait()
                             self._active_keys.add(shift_code)
                             time.sleep(0.1)
                         finally:
-                            self._controller.post_key_up(shift_code).wait()
+                            controller.post_key_up(shift_code).wait()
                             self._active_keys.discard(shift_code)
-                            self._controller.post_key_up(dir_code).wait()
+                            controller.post_key_up(dir_code).wait()
                             self._active_keys.discard(dir_code)
                         return True
                 return False
@@ -218,7 +225,8 @@ class KeyboardPlatform(PlatformBase):
             return False
 
     def turn(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: Optional[float] = None) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             if duration is not None:
@@ -228,7 +236,7 @@ class KeyboardPlatform(PlatformBase):
                 max_dur = int(self._turn_config.get("max_duration_ms", 500))
                 dx = abs(end_x - start_x)
                 duration_ms = max(min_dur, min(dx * 2, max_dur))
-            self._controller.post_swipe(start_x, start_y, end_x, end_y, duration_ms).wait()
+            controller.post_swipe(start_x, start_y, end_x, end_y, duration_ms).wait()
             return True
         except Exception:
             return False
@@ -272,7 +280,8 @@ class KeyboardPlatform(PlatformBase):
         返回值：
         - bool: 是否成功
         """
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         if action_name != "move":
             return False
@@ -283,7 +292,7 @@ class KeyboardPlatform(PlatformBase):
             for key in new_keys:
                 key_code = self._key_codes.get(key)
                 if key_code is not None and key_code not in self._active_keys:
-                    self._controller.post_key_down(key_code).wait()
+                    controller.post_key_down(key_code).wait()
                     self._active_keys.add(key_code)
 
         # 2. 再释放旧方向按键
@@ -291,7 +300,7 @@ class KeyboardPlatform(PlatformBase):
         for key in old_keys:
             key_code = self._key_codes.get(key)
             if key_code is not None and key_code in self._active_keys:
-                self._controller.post_key_up(key_code).wait()
+                controller.post_key_up(key_code).wait()
                 self._active_keys.discard(key_code)
 
         return True
@@ -314,7 +323,8 @@ class KeyboardPlatform(PlatformBase):
         - move 动作 + 无 direction：释放所有 WASD 键
         - 其他动作：释放所有相关按键
         """
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             if action_name == "move" and direction:
@@ -326,7 +336,7 @@ class KeyboardPlatform(PlatformBase):
                 for key in keys:
                     key_code = self._key_codes.get(key)
                     if key_code is not None and key_code in self._active_keys:
-                        self._controller.post_key_up(key_code).wait()
+                        controller.post_key_up(key_code).wait()
                         self._active_keys.discard(key_code)
                         released = True
                 return released
@@ -339,7 +349,7 @@ class KeyboardPlatform(PlatformBase):
                 for key in keys:
                     key_code = self._key_codes.get(key)
                     if key_code is not None and key_code in self._active_keys:
-                        self._controller.post_key_up(key_code).wait()
+                        controller.post_key_up(key_code).wait()
                         self._active_keys.discard(key_code)
                         released = True
                 return released

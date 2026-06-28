@@ -27,6 +27,6 @@ class DesktopPlatform(KeyboardPlatform):
 
     _button_config_file = "desktop_buttons.json"
 
-    def __init__(self, platform_controller):
-        super().__init__(platform_controller)
+    def __init__(self, platform_controller, context=None):
+        super().__init__(platform_controller, context=context)
         self._controller_type = "desktop"

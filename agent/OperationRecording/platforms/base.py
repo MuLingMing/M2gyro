@@ -10,8 +10,9 @@
 
 import time
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Any
 from maa.controller import Controller
+from utils.logger import logger
 
 
 class PlatformBase(ABC):
@@ -35,9 +36,72 @@ class PlatformBase(ABC):
     - charge_attack: 蓄力攻击
     """
 
-    def __init__(self, platform_controller: Controller):
+    def __init__(self, platform_controller: Controller, context: Optional[Any] = None):
         self._controller_type = "unknown"
         self._controller = platform_controller
+        self._context = context
+
+    def _get_valid_controller(self) -> Optional[Controller]:
+        """
+        获取有效的控制器实例
+
+        验证流程：
+        1. 若缓存句柄有效（connected=True），直接返回
+        2. 若句柄失效，尝试从 context.tasker.controller 刷新句柄
+        3. 刷新后验证新句柄，有效则更新缓存并返回
+        4. 全部失败返回 None
+
+        缓存策略：
+        - 正常情况下使用缓存句柄（零 RPC 开销）
+        - 仅当缓存句柄失效时才从 context 刷新
+        - 注意：context.tasker.controller 会销毁旧实例，调用后
+          其他持有旧句柄的代码将失效。因此刷新操作应尽量少触发。
+        """
+        if self._controller is None and self._context is None:
+            return None
+
+        # 尝试当前缓存的句柄
+        if self._controller is not None:
+            try:
+                if self._controller.connected:
+                    return self._controller
+            except Exception as e:
+                logger.warning(f"[PlatformBase] 缓存句柄异常: {type(e).__name__}: {e}, handle={getattr(self._controller, '_handle', None)}")
+
+        # 尝试从 context 刷新句柄
+        if self._context is not None:
+            try:
+                new_controller = self._context.tasker.controller
+                if new_controller.connected:
+                    self._controller = new_controller
+                    return new_controller
+            except Exception as e:
+                logger.warning(f"[PlatformBase] controller 刷新失败: {type(e).__name__}: {e}")
+
+        logger.warning(f"[PlatformBase] controller 不可用, controller={self._controller is not None}, context={self._context is not None}")
+        return None
+
+    def refresh_controller(self) -> bool:
+        """
+        强制刷新缓存句柄（用于外部代码可能已使缓存失效的场景）
+
+        调用场景：执行 run_node 等操作后，内部调用 context.tasker.controller
+        可能已销毁旧句柄，需主动刷新缓存以保证后续操作可用。
+
+        返回值：True 刷新成功，False 刷新失败
+        """
+        if self._context is None:
+            return False
+        try:
+            new_controller = self._context.tasker.controller
+            if new_controller.connected:
+                self._controller = new_controller
+                return True
+            else:
+                logger.warning("[PlatformBase] refresh: 新句柄 connected=False")
+        except Exception as e:
+            logger.warning(f"[PlatformBase] refresh_controller 失败: {type(e).__name__}: {e}")
+        return False
 
     @property
     def controller_type(self) -> str:
@@ -77,7 +141,7 @@ class PlatformBase(ABC):
     def dodge(self, direction: Optional[str] = None) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 dodge()，请继承 KeyboardPlatform 或 TouchPlatform")
 
-    def turn(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: float = None) -> bool:
+    def turn(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: Optional[float] = None) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 turn()，请继承 KeyboardPlatform 或 TouchPlatform")
 
     def interact(self, interaction_type: str) -> bool:

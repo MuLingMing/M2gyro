@@ -9,6 +9,7 @@
 from typing import Dict, Any
 from ..base import ActionBase, TimelineMeta
 from .. import register_action
+from utils.logger import logger
 
 
 @register_action("run_node")
@@ -74,12 +75,18 @@ class RunNodeAction(ActionBase):
             return False
 
         try:
-            result = self._context.run_recognition(node_name, image=self._context.tasker.controller.post_screencap().wait().get())
+            controller = self._platform._get_valid_controller()
+            if controller is None:
+                logger.warning(f"[RunNode] controller 为 None, node={node_name}")
+                return False
+            result = self._context.run_recognition(node_name, image=controller.post_screencap().wait().get())
 
             if not result or not result.hit:
                 return False
 
-            return self._context.run_task(node_name)
-        except Exception:
+            ret = self._context.run_task(node_name)
+            self._platform.refresh_controller()
+            return ret
+        except Exception as e:
+            logger.warning(f"[RunNode] 执行异常: {type(e).__name__}: {e}")
             return False
-        

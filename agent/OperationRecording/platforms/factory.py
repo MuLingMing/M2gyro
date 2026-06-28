@@ -20,7 +20,7 @@
 """
 
 import weakref
-from typing import Optional
+from typing import Optional, Any
 
 from .base import PlatformBase
 from .registry import platform_registry
@@ -90,7 +90,7 @@ class PlatformFactory:
 
     @classmethod
     def create_platform(
-        cls, platform_type: str, controller
+        cls, platform_type: str, controller, context: Optional[Any] = None
     ) -> Optional[PlatformBase]:
         """
         创建平台实例（无缓存）
@@ -98,26 +98,20 @@ class PlatformFactory:
         参数：
         - platform_type: 平台类型
         - controller: MAA 控制器对象
+        - context: MAA 上下文对象，可选（用于 controller 句柄自动刷新）
 
         返回值：
         - PlatformBase | None: 平台实例，失败返回 None
-
-        执行流程：
-        1. 规范化平台类型名称
-        2. 确保平台模块已导入（触发 @register_platform）
-        3. 从注册表创建实例
-
-        注意：此方法不走缓存，如需缓存请使用 create_from_config
         """
         normalized_type = platform_type.lower()
         if normalized_type == "win32":
             normalized_type = "desktop"
 
-        return platform_registry.create(normalized_type, controller)
+        return platform_registry.create(normalized_type, controller, context=context)
 
     @classmethod
     def create_from_config(
-        cls, config: dict, controller
+        cls, config: dict, controller, context: Optional[Any] = None
     ) -> Optional[PlatformBase]:
         """
         从配置创建平台实例（带缓存）
@@ -125,21 +119,7 @@ class PlatformFactory:
         参数：
         - config: 配置字典，可包含 platform_type 字段（可选，未提供则自动检测）
         - controller: MAA 控制器对象
-
-        返回值：
-        - PlatformBase | None: 平台实例，失败返回 None
-
-        执行流程：
-        1. 检查缓存（基于 controller 引用）
-        2. 缓存命中直接返回
-        3. 缓存未命中则检测类型 + 创建实例 + 缓存
-
-        缓存策略：
-        - 使用 WeakKeyDictionary，key 为 controller，value 为 platform
-        - 同一 controller 多次调用返回同一 platform 实例
-        - 注意：platform 持有 controller 强引用，所以 cache 不会自动收缩
-        - 仅缓存成功的 platform 实例（None 不缓存）
-        - 进程退出时由 Python GC 统一清理；测试/重连场景请用 clear_cache()
+        - context: MAA 上下文对象，可选（用于 controller 句柄自动刷新）
         """
         # 检查缓存
         cached = _platform_cache.get(controller)
@@ -150,7 +130,7 @@ class PlatformFactory:
         platform_type = config.get("platform_type")
         if not platform_type:
             platform_type = cls.detect_platform(controller)
-        platform = cls.create_platform(platform_type, controller)
+        platform = cls.create_platform(platform_type, controller, context=context)
 
         # 缓存成功的实例（None 不缓存，保留重新创建的机会）
         if platform is not None:

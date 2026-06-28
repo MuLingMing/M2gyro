@@ -26,6 +26,8 @@ import json
 from typing import Dict, Any, Optional, Tuple
 from maa.controller import Controller
 from .base import PlatformBase
+from utils.logger import logger
+from maa.context import Context as MaaContext
 
 TOUCH_SWIPE_DURATION_MS = 600
 # 摇杆首次按下后等待游戏引擎确认的帧数（60fps ≈ 16.7ms/帧，2 帧 = 33ms）
@@ -60,8 +62,8 @@ class TouchPlatform(PlatformBase):
         "C":     {"position": "crouch_button",    "contact": "crouch"},
     }
 
-    def __init__(self, platform_controller: Controller):
-        super().__init__(platform_controller)
+    def __init__(self, platform_controller: Controller, context: Optional[MaaContext] = None):
+        super().__init__(platform_controller, context=context)
         self._active_contacts: Dict[str, int] = {}
         self._active_directions: set = set()  # 跟踪活跃的移动方向
         self._touch_positions_config: Dict[str, Dict[str, Any]] = {}  # 原始配置（含 w, h）
@@ -164,7 +166,8 @@ class TouchPlatform(PlatformBase):
 
     def _hold_button(self, position_name: str, contact_name: str, duration: float,
                      x: Optional[int] = None, y: Optional[int] = None) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             pos_x, pos_y = self._get_position(position_name, 0, 0)
@@ -174,12 +177,12 @@ class TouchPlatform(PlatformBase):
             y = max(0, min(y, 719))
             contact = self._get_contact(contact_name)
 
-            self._controller.post_touch_down(x, y, contact, 1).wait()
+            controller.post_touch_down(x, y, contact, 1).wait()
             self._active_contacts[contact_name] = contact
 
             if duration > 0:
                 time.sleep(duration)
-                self._controller.post_touch_up(contact).wait()
+                controller.post_touch_up(contact).wait()
                 if contact_name in self._active_contacts:
                     del self._active_contacts[contact_name]
             return True
@@ -187,20 +190,22 @@ class TouchPlatform(PlatformBase):
             return False
 
     def _click_button(self, x: int, y: int, contact: int, hold_time: float = 0.05) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             x = max(0, min(x, 1279))
             y = max(0, min(y, 719))
-            self._controller.post_touch_down(x, y, contact, 1).wait()
+            controller.post_touch_down(x, y, contact, 1).wait()
             time.sleep(hold_time)
-            self._controller.post_touch_up(contact).wait()
+            controller.post_touch_up(contact).wait()
             return True
         except Exception:
             return False
 
     def _joystick_move(self, x: int, y: int, duration: float) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             contact = self._get_contact("joystick_center")
@@ -209,15 +214,15 @@ class TouchPlatform(PlatformBase):
             x = max(0, min(x, 1279))
             y = max(0, min(y, 719))
 
-            self._controller.post_touch_down(joystick_center_x, joystick_center_y, contact, 1).wait()
+            controller.post_touch_down(joystick_center_x, joystick_center_y, contact, 1).wait()
             time.sleep(JOYSTICK_TOUCHDOWN_DELAY)
-            self._controller.post_touch_move(x, y, contact, 1).wait()
+            controller.post_touch_move(x, y, contact, 1).wait()
 
             self._active_contacts["joystick"] = contact
 
             if duration > 0:
                 time.sleep(duration)
-                self._controller.post_touch_up(contact).wait()
+                controller.post_touch_up(contact).wait()
                 if "joystick" in self._active_contacts:
                     del self._active_contacts["joystick"]
 
@@ -226,12 +231,13 @@ class TouchPlatform(PlatformBase):
             return False
 
     def _joystick_center(self) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             contact = self._get_contact("joystick_center")
             if "joystick" in self._active_contacts:
-                self._controller.post_touch_up(contact).wait()
+                controller.post_touch_up(contact).wait()
                 del self._active_contacts["joystick"]
             return True
         except Exception:
@@ -302,7 +308,8 @@ class TouchPlatform(PlatformBase):
         return self._hold_button(position_name, contact_name, duration)
 
     def release_key(self, key: str) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             mapping = self._key_touch_map.get(key)
@@ -312,7 +319,7 @@ class TouchPlatform(PlatformBase):
 
             if contact_name in self._active_contacts:
                 contact = self._active_contacts[contact_name]
-                self._controller.post_touch_up(contact).wait()
+                controller.post_touch_up(contact).wait()
                 del self._active_contacts[contact_name]
                 return True
             return False
@@ -323,10 +330,11 @@ class TouchPlatform(PlatformBase):
         return self._click_button(x, y, self._generic_contact)
 
     def swipe(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: float) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
-            self._controller.post_swipe(
+            controller.post_swipe(
                 start_x, start_y, end_x, end_y, int(duration * 1000)
             ).wait()
             return True
@@ -334,11 +342,12 @@ class TouchPlatform(PlatformBase):
             return False
 
     def release_all(self) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             for contact in list(self._active_contacts.values()):
-                self._controller.post_touch_up(contact).wait()
+                controller.post_touch_up(contact).wait()
             self._active_contacts.clear()
             return True
         except Exception:
@@ -370,40 +379,46 @@ class TouchPlatform(PlatformBase):
         if not target:
             return False
 
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
 
-        # 添加方向到活跃方向集合
-        self._active_directions.add(direction)
+        try:
+            # 添加方向到活跃方向集合
+            self._active_directions.add(direction)
 
-        # 多方向时合成摇杆位置（如 left + forward → forward_left）
-        if len(self._active_directions) > 1:
-            x, y = self._calculate_joystick_position(self._active_directions)
-        else:
-            x = max(0, min(target[0], 1279))
-            y = max(0, min(target[1], 719))
+            # 多方向时合成摇杆位置（如 left + forward → forward_left）
+            if len(self._active_directions) > 1:
+                x, y = self._calculate_joystick_position(self._active_directions)
+            else:
+                x = max(0, min(target[0], 1279))
+                y = max(0, min(target[1], 719))
 
-        if "joystick" in self._active_contacts:
-            contact = self._active_contacts["joystick"]
-            self._controller.post_touch_move(x, y, contact, 1).wait()
-        else:
-            contact = self._get_contact("joystick_center")
-            joystick_center_x, joystick_center_y = self._get_position("joystick_center", 198, 552)
-            self._controller.post_touch_down(joystick_center_x, joystick_center_y, contact, 1).wait()
-            time.sleep(JOYSTICK_TOUCHDOWN_DELAY)
-            self._controller.post_touch_move(x, y, contact, 1).wait()
-            self._active_contacts["joystick"] = contact
+            if "joystick" in self._active_contacts:
+                contact = self._active_contacts["joystick"]
+                controller.post_touch_move(x, y, contact, 1).wait()
+            else:
+                contact = self._get_contact("joystick_center")
+                joystick_center_x, joystick_center_y = self._get_position("joystick_center", 198, 552)
+                controller.post_touch_down(joystick_center_x, joystick_center_y, contact, 1).wait()
+                time.sleep(JOYSTICK_TOUCHDOWN_DELAY)
+                controller.post_touch_move(x, y, contact, 1).wait()
+                self._active_contacts["joystick"] = contact
 
-        if duration > 0:
-            time.sleep(duration)
-        return True
+            if duration > 0:
+                time.sleep(duration)
+            return True
+        except Exception:
+            self._active_directions.discard(direction)
+            return False
 
     def jump(self) -> bool:
         x, y = self._get_position("jump_button", 1166, 475)
         return self._click_button(x, y, self._get_contact("jump_button"))
 
     def dodge(self, direction: Optional[str] = None) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             if direction:
@@ -412,14 +427,14 @@ class TouchPlatform(PlatformBase):
                 if target:
                     contact = self._get_contact("joystick_center")
                     joystick_center_x, joystick_center_y = self._get_position("joystick_center", 198, 552)
-                    self._controller.post_touch_down(joystick_center_x, joystick_center_y, contact, 1).wait()
-                    self._controller.post_touch_move(target[0], target[1], contact, 1).wait()
+                    controller.post_touch_down(joystick_center_x, joystick_center_y, contact, 1).wait()
+                    controller.post_touch_move(target[0], target[1], contact, 1).wait()
                     time.sleep(0.05)
                     x, y = self._get_position("sprint_button", 1166, 620)
                     sprint_contact = self._get_contact("sprint_button")
                     self._click_button(x, y, sprint_contact)
                     time.sleep(0.1)
-                    self._controller.post_touch_up(contact).wait()
+                    controller.post_touch_up(contact).wait()
                     return True
                 return False
             else:
@@ -429,11 +444,12 @@ class TouchPlatform(PlatformBase):
             return False
 
     def turn(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: Optional[float] = None) -> bool:
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             swipe_duration_ms = int(duration) if duration is not None else int(self._turn_config.get("swipe_duration_ms", 70))
-            self._controller.post_swipe(start_x, start_y, end_x, end_y, swipe_duration_ms).wait()
+            controller.post_swipe(start_x, start_y, end_x, end_y, swipe_duration_ms).wait()
             return True
         except Exception:
             return False
@@ -489,10 +505,14 @@ class TouchPlatform(PlatformBase):
             self._active_directions.discard(old_direction)
             if new_direction:
                 self._active_directions.add(new_direction)
-            if "joystick" in self._active_contacts and self._active_directions:
-                x, y = self._calculate_joystick_position(self._active_directions)
-                contact = self._active_contacts["joystick"]
-                self._controller.post_touch_move(x, y, contact, 1).wait()
+            controller = self._get_valid_controller()
+            if controller is not None and "joystick" in self._active_contacts and self._active_directions:
+                try:
+                    x, y = self._calculate_joystick_position(self._active_directions)
+                    contact = self._active_contacts["joystick"]
+                    controller.post_touch_move(x, y, contact, 1).wait()
+                except Exception:
+                    return False
             return True
         return False
 
@@ -512,7 +532,8 @@ class TouchPlatform(PlatformBase):
         - move 动作 + 无 direction：归位摇杆
         - 其他动作：释放对应触点
         """
-        if self._controller is None:
+        controller = self._get_valid_controller()
+        if controller is None:
             return False
         try:
             if action_name == "move":
@@ -523,7 +544,7 @@ class TouchPlatform(PlatformBase):
                         # 还有其他方向，重新计算摇杆位置
                         position = self._calculate_joystick_position(self._active_directions)
                         contact = self._get_contact("joystick_center")
-                        self._controller.post_touch_move(position[0], position[1], contact, 1).wait()
+                        controller.post_touch_move(position[0], position[1], contact, 1).wait()
                     else:
                         # 没有方向了，归位摇杆
                         self._joystick_center()
@@ -533,7 +554,7 @@ class TouchPlatform(PlatformBase):
                     return self._joystick_center()
             if action_name in self._active_contacts:
                 contact = self._active_contacts[action_name]
-                self._controller.post_touch_up(contact).wait()
+                controller.post_touch_up(contact).wait()
                 del self._active_contacts[action_name]
                 return True
             return False
