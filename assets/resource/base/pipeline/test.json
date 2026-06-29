@@ -335,167 +335,40 @@
             }
         }
     },
-    "test_密函40扼守电梯左": {
+    "test_密函40扼守电梯中": {
         "action": {
             "type": "Custom",
             "param": {
                 "custom_action": "OperationRecordAction",
                 "custom_action_param": {
                     "operations": [
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 3.9,
-                                "overlays": [
-                                    {
-                                        "action": "dodge",
-                                        "at": 0.51
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "action": "wait",
-                            "params": {
-                                "duration": 5.1
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 8.4,
-                                "overlays": [
-                                    {
-                                        "action": "dodge",
-                                        "at": 0.51
-                                    },
-                                    {
-                                        "action": "move",
-                                        "params": {
-                                            "direction": "right",
-                                            "duration": 0.81
-                                        },
-                                        "at": 1.2
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "left",
-                                "duration": 18,
-                                "overlays": [
-                                    {
-                                        "action": "dodge",
-                                        "at": 0.51
-                                    },
-                                    {
-                                        "action": "move",
-                                        "params": {
-                                            "direction": "forward",
-                                            "duration": 0.87
-                                        },
-                                        "at": 6
-                                    },
-                                    {
-                                        "action": "move",
-                                        "params": {
-                                            "direction": "forward",
-                                            "duration": 0.5
-                                        },
-                                        "at": 12
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_电梯右复位": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 2.1,
-                                "overlays": [
-                                    {
-                                        "action": "dodge",
-                                        "at": 0.51
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "action": "run_node",
-                            "params": {
-                                "node": "局内复位"
-                            }
-                        },
-                        {
-                            "action": "wait",
-                            "params": {
-                                "duration": 7.5
-                            }
-                        },
                         {
                             "action": "move",
                             "params": {
                                 "direction": "right",
-                                "duration": 1.23,
+                                "duration": 7.8,
                                 "overlays": [
                                     {
                                         "action": "dodge",
                                         "at": 0.51
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "backward",
-                                "duration": 6.9,
-                                "overlays": [
-                                    {
-                                        "action": "jump",
-                                        "at": 1.2
                                     },
                                     {
-                                        "action": "jump",
-                                        "at": 1.5
+                                        "action": "move",
+                                        "params": {
+                                            "direction": "backward",
+                                            "duration": 0.9
+                                        },
+                                        "at": 0.78
+                                    },
+                                    {
+                                        "action": "move",
+                                        "params": {
+                                            "direction": "forward",
+                                            "duration": 1.2
+                                        },
+                                        "at": 2.7
                                     }
                                 ]
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "left",
-                                "duration": 3
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "backward",
-                                "duration": 4.53
-                            }
-                        },
-                        {
-                            "action": "run_node",
-                            "params": {
-                                "node": "局内复位"
                             }
                         }
                     ]

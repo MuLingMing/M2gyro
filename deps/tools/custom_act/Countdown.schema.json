@@ -135,7 +135,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"description": "识别成功次数统计，格式为 {节点名: 次数}。\n\n由 Countdown 自动维护，当节点配置了 record_reco=true 且识别成功时，自动累加对应节点名的计数。\n\n跨多次 Countdown 执行持久化保存。\n\n示例：{\"扼守未抵达目的地\": 3, \"确认选择\": 1}"
+				"description": "识别成功次数统计，格式为 {节点名: 次数}。\n\n由 Countdown 自动维护，当节点配置了 record_reco=true 且识别成功时，自动累加对应节点名的计数。\n\n跨多次 Countdown 执行持久化保存。\n\n示例：{\"探险扼守未抵达目的地\": 3, \"确认选择\": 1}"
 			},
 			"Interrupt": {
 					"oneOf": [

@@ -61,6 +61,9 @@ FALLBACK_TAB_X: Dict[str, int] = {
 
 VALID_REGIONS = {"角色", "武器", "魔之楔"}
 
+TITLE_TEXT: str = "刷新密函委托"
+TITLE_ROI: List[int] = [400, 600, 300, 120]
+
 REGION_ATTACH_MAP: Dict[str, str] = {
     "region_0": "角色",
     "region_1": "武器",
@@ -143,15 +146,16 @@ class CovertStage(CustomRecognition):
         执行流程:
         1. 校验输入图像有效性（非空、numpy 数组、size > 0）
         2. 检查 stopping 信号，收到则立即返回
-        3. 优先从节点 attach 读取 checkbox 选项，无 attach 则回退 custom_recognition_param
-        4. 校验 stage_list 非空，为空则 post_stop 终止
-        5. 计算 effective_regions（region_types ∩ REGION_PRIORITY，保持优先级顺序）
-        6. 单次 OCR → 最近 Tab 分类 → 提取持有数和关卡
-        7. 按区域优先级遍历：
+        3. 标题检测：OCR 检查 TITLE_ROI 区域是否包含"刷新密函委托"，未识别到则提前返回 hit=False
+        4. 优先从节点 attach 读取 checkbox 选项，无 attach 则回退 custom_recognition_param
+        5. 校验 stage_list 非空，为空则 post_stop 终止
+        6. 计算 effective_regions（region_types ∩ REGION_PRIORITY，保持优先级顺序）
+        7. 单次 OCR → 最近 Tab 分类 → 提取持有数和关卡
+        8. 按区域优先级遍历：
            a. 跳过持有数 <= 0 或无法识别的区域
            b. 跳过无命中关卡的区域
            c. 第一个满足条件的区域，按 STAGE_PRIORITY 选最优关卡并返回
-        8. 所有区域均不满足 → 根据 tabs_found_count 区分：
+        9. 所有区域均不满足 → 根据 tabs_found_count 区分：
            a. tabs_found_count == 3（页面正确但无命中）→ 返回 box=[0,0,0,0]
            b. tabs_found_count < 3（未识别到页面）→ 返回 box=None
         """
@@ -166,6 +170,11 @@ class CovertStage(CustomRecognition):
         if context.tasker.stopping:
             return CustomRecognition.AnalyzeResult(
                 box=None, detail={"hit": False, "reason": "stopping"}
+            )
+
+        if not self._check_title(context, image):
+            return CustomRecognition.AnalyzeResult(
+                box=None, detail={"hit": False, "reason": "title_not_found"}
             )
 
         node_data = context.get_node_data(argv.node_name) or {}
@@ -276,6 +285,34 @@ class CovertStage(CustomRecognition):
                 "tabs_found_count": tabs_found_count,
             },
         )
+
+    @staticmethod
+    def _check_title(context: Context, image: numpy.ndarray) -> bool:
+        """检查标题文字 '刷新密函委托' 是否存在，不存在则说明不在目标页面"""
+        try:
+            reco_param = JOCR(
+                expected=[TITLE_TEXT],
+                roi=(TITLE_ROI[0], TITLE_ROI[1], TITLE_ROI[2], TITLE_ROI[3]),
+            )
+            result = context.run_recognition_direct(
+                JRecognitionType.OCR,
+                reco_param,
+                image,
+            )
+            if (
+                result
+                and result.hit
+                and result.best_result
+                and isinstance(result.best_result, OCRResult)
+            ):
+                text = result.best_result.text
+                if text and TITLE_TEXT in text:
+                    return True
+        except Exception as e:
+            logger.error(
+                f"CovertStage: _check_title 异常 error={e}", exc_info=True
+            )
+        return False
 
     @staticmethod
     def _read_options_from_attach(attach: dict) -> Tuple[List[str], List[str]]:

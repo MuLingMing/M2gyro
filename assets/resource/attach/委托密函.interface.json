@@ -7,6 +7,7 @@
         {
             "name": "委托密函",
             "entry": "委托密函",
+            "description": "委托密函任务，主控黎瑟。当前暂不支持自选关卡优先级，仅支持探险关卡和驱离关卡。",
             "option": [
                 "密函区域选择",
                 "密函关卡列表选择",
@@ -63,25 +64,26 @@
             "label": "关卡选择",
             "description": "选择要匹配的关卡，不选则默认全部",
             "default_case": [
+                "探险",
                 "驱离"
             ],
             "cases": [
-                {
-                    "name": "驱离",
-                    "pipeline_override": {
-                        "密函副本选择": {
-                            "attach": {
-                                "stage_1": true
-                            }
-                        }
-                    }
-                },
                 {
                     "name": "探险",
                     "pipeline_override": {
                         "密函副本选择": {
                             "attach": {
                                 "stage_0": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "驱离",
+                    "pipeline_override": {
+                        "密函副本选择": {
+                            "attach": {
+                                "stage_1": true
                             }
                         }
                     }

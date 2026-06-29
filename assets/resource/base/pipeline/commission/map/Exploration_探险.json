@@ -34,7 +34,7 @@
             "param": {
                 "custom_recognition": "IfElseReco",
                 "custom_recognition_param": {
-                    "entry": "探险未抵达目的地",
+                    "entry": "探险扼守未抵达目的地",
                     "if": "40探险-42m跑图",
                     "elif": "40探险-49m跑图",
                     "else": true
