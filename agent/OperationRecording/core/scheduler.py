@@ -201,15 +201,20 @@ class EventScheduler:
                     del self._active[event.action_id]
                 return
 
-        # 正常释放
-        if action_cls and action_cls.timeline_meta.has_duration and action_cls.timeline_meta.release_method:
-            direction = event.params.get("direction")
-            success = self._platform.release_action(action_cls.timeline_meta.release_method, direction=direction)
-            if not success:
-                logger.warning(
-                    f"[EventScheduler] release_action({action_cls.timeline_meta.release_method!r}) "
-                    f"failed for {event.action_name!r}"
-                )
+        # 正常释放：通过 action.stop() 释放，支持子类自定义释放逻辑
+        if action_cls and action_cls.timeline_meta.has_duration:
+            try:
+                action_obj = action_registry.create_action(event.action_name, self._platform, self._context)
+                if action_obj is not None:
+                    params = (
+                        self._effect_manager.apply_effects(event.action_name, event.params, {})
+                        if self._effect_manager is not None
+                        else event.params
+                    )
+                    if not action_obj.stop(params):
+                        logger.warning(f"[EventScheduler] stop({event.action_name!r}) 失败")
+            except Exception as e:
+                logger.error(f"[EventScheduler] stop({event.action_name!r}) 异常: {type(e).__name__}: {e}")
 
         if event.action_id in self._active:
             del self._active[event.action_id]
@@ -271,15 +276,19 @@ class EventScheduler:
 
         执行流程：
         1. 标记非运行
-        2. 释放所有活跃动作
+        2. 通过 action.stop() 释放所有活跃动作
         """
         self._is_running = False
         for action_id in list(self._active.keys()):
             event = self._active.pop(action_id)
             action_cls = action_registry.get(event.action_name)
-            if action_cls and action_cls.timeline_meta.release_method:
-                direction = event.params.get("direction")
-                self._platform.release_action(action_cls.timeline_meta.release_method, direction=direction)
+            if action_cls and action_cls.timeline_meta.has_duration:
+                try:
+                    action_obj = action_registry.create_action(event.action_name, self._platform, self._context)
+                    if action_obj is not None:
+                        action_obj.stop(event.params)
+                except Exception as e:
+                    logger.error(f"[EventScheduler] stop({event.action_name!r}) 异常: {type(e).__name__}: {e}")
 
     @property
     def is_running(self) -> bool:

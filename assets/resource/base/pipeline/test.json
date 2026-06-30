@@ -6,7 +6,7 @@
             "[JumpBack]机关破解",
             "[JumpBack]无尽行动抉择",
             "[JumpBack]挂机战斗无复位",
-            "[JumpBack]委托报酬选择"
+            "[JumpBack]密函报酬选择"
         ]
     },
     "AutoPathFinding": {
@@ -335,7 +335,7 @@
             }
         }
     },
-    "test_密函40扼守电梯中": {
+    "test_50驱逐": {
         "action": {
             "type": "Custom",
             "param": {
@@ -343,32 +343,86 @@
                 "custom_action_param": {
                     "operations": [
                         {
+                            "action": "wait",
+                            "params": {
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "interact",
+                            "params": {
+                                "interaction_type": "Q_skill",
+                                "duration": 4.2
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 6.61,
+                                "overlays": [
+                                    {
+                                        "action": "jump",
+                                        "params": {
+                                            "duration": 6
+                                        },
+                                        "at": 0.93
+                                    }
+                                ]
+                            }
+                        },
+                        {
                             "action": "move",
                             "params": {
                                 "direction": "right",
-                                "duration": 7.8,
+                                "duration": 2.14
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 4.12
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 0.95
+                            }
+                        },
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 1.72
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 1.54,
                                 "overlays": [
                                     {
-                                        "action": "dodge",
-                                        "at": 0.51
-                                    },
-                                    {
-                                        "action": "move",
-                                        "params": {
-                                            "direction": "backward",
-                                            "duration": 0.9
-                                        },
-                                        "at": 0.78
-                                    },
-                                    {
-                                        "action": "move",
-                                        "params": {
-                                            "direction": "forward",
-                                            "duration": 1.2
-                                        },
-                                        "at": 2.7
+                                        "action": "jump",
+                                        "at": 0.49
                                     }
                                 ]
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "right",
+                                "duration": 4.60
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 1.16
                             }
                         }
                     ]

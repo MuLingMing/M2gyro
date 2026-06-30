@@ -80,6 +80,11 @@
                     "attach": {
                         "logger_count": "{logger_count}"
                     }
+                },
+                "无尽波次选择倍率书或密函": {
+                    "attach": {
+                        "logger_count": "{logger_count}"
+                    }
                 }
             }
         },

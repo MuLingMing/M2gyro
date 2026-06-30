@@ -205,7 +205,7 @@ class Countdown(CustomAction):
                 except Exception as e:
                     logger.error(f"Countdown: 执行 Over 节点 {config.name} 失败: {e}")
 
-        return CustomAction.RunResult(success=False)
+        return CustomAction.RunResult(success=True)
 
     def _parse_params(self, argv: CustomAction.RunArg, context: Context) -> dict | None:
         """解析并合并参数，失败时返回 None"""

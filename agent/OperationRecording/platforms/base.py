@@ -27,13 +27,17 @@ class PlatformBase(ABC):
 
     业务操作（由家族基类提供默认实现，如 KeyboardPlatform/TouchPlatform）：
     - move: 移动
-    - jump: 跳跃
+    - jump: 跳跃（支持 duration）
     - dodge: 闪避
     - turn: 转向
-    - interact: 交互
+    - interact: 交互（支持 duration）
     - spiral_leap: 螺旋飞跃
     - crouch: 下蹲
     - charge_attack: 蓄力攻击
+    - hold_key: 按住按键（duration=0 只按不松）
+    - release_interact: 释放交互按键/触点
+    - touch_hold: 按住屏幕坐标
+    - release_touch: 释放屏幕触点
     """
 
     def __init__(self, platform_controller: Controller, context: Optional[Any] = None):
@@ -135,7 +139,7 @@ class PlatformBase(ABC):
     def move(self, direction: str, duration: float) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 move()，请继承 KeyboardPlatform 或 TouchPlatform")
 
-    def jump(self) -> bool:
+    def jump(self, duration: float = 0.1) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 jump()，请继承 KeyboardPlatform 或 TouchPlatform")
 
     def dodge(self, direction: Optional[str] = None) -> bool:
@@ -144,7 +148,7 @@ class PlatformBase(ABC):
     def turn(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: Optional[float] = None) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 turn()，请继承 KeyboardPlatform 或 TouchPlatform")
 
-    def interact(self, interaction_type: str) -> bool:
+    def interact(self, interaction_type: str = "default", duration: float = 0.1) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 interact()，请继承 KeyboardPlatform 或 TouchPlatform")
 
     def spiral_leap(self) -> bool:
@@ -155,6 +159,22 @@ class PlatformBase(ABC):
 
     def charge_attack(self, duration: float, x: Optional[int] = None, y: Optional[int] = None) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 charge_attack()，请继承 KeyboardPlatform 或 TouchPlatform")
+
+    def hold_key(self, key: str, duration: float) -> bool:
+        """按住按键，duration=0 时只按不松"""
+        return self.press_key(key, duration)
+
+    def release_interact(self, interaction_type: str = "default") -> bool:
+        """释放交互动作的按键/触点"""
+        return False
+
+    def touch_hold(self, x: int, y: int, duration: float = 0) -> bool:
+        """按住屏幕指定坐标，duration=0 时只按不松"""
+        return False
+
+    def release_touch(self) -> bool:
+        """释放 touch_hold 按下的触点"""
+        return False
 
     # ===== 通用方法 =====
 

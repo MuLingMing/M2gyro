@@ -31,6 +31,7 @@ TEMPLATE_WEAPON_BLUEPRINT = "委托密函/武器图纸"
 TEMPLATE_WEAPON_PART = "委托密函/武器零件"
 
 TITLE_TEXT = "密函报酬选择"
+HOLDING_TEXT = "持有数"
 TITLE_ROI = [560, 140, 160, 100]
 
 CLICK_ABSOLUTE_ROIS = [
@@ -44,7 +45,9 @@ COUNT_MERGED_ROI = [415, 450, 450, 60]
 
 CARD_X_THRESHOLDS = [553, 728]
 
-TEMPLATE_THRESHOLD = 0.85
+# 模板匹配阈值
+# 0.9 为默认值，根据实际情况调整
+TEMPLATE_THRESHOLD = 0.9
 
 
 class RewardSelector(CustomRecognition):
@@ -66,9 +69,10 @@ class RewardSelector(CustomRecognition):
         1. 验证输入图像
         2. 检查任务是否停止
         3. 检查标题文字"密函报酬选择"是否存在
-        4. 识别武器图标（图纸优先，零件多匹配）
-        5. 根据优先级逻辑确定选择位置
-        6. 返回选择位置的点击区域
+        4. 检查"持有数"文字是否存在
+        5. 识别武器图标（图纸优先，零件多匹配）
+        6. 根据优先级逻辑确定选择位置
+        7. 返回选择位置的点击区域
         """
         image = argv.image
 
@@ -84,7 +88,14 @@ class RewardSelector(CustomRecognition):
             )
 
         if not self._check_title(context, image):
-            return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
+            return CustomRecognition.AnalyzeResult(
+                box=None, detail={"hit": False, "reason": "title_not_found"}
+            )
+
+        if not self._check_holding_count(context, image):
+            return CustomRecognition.AnalyzeResult(
+                box=None, detail={"hit": False, "reason": "holding_count_not_found"}
+            )
 
         if context.tasker.stopping:
             return CustomRecognition.AnalyzeResult(
@@ -130,6 +141,40 @@ class RewardSelector(CustomRecognition):
         except Exception as e:
             logger.error(
                 f"RewardSelector: _check_title 异常 "
+                f"image_shape={image.shape if image is not None else None}, error={e}",
+                exc_info=True,
+            )
+        return False
+
+    def _check_holding_count(self, context: Context, image: numpy.ndarray) -> bool:
+        """检查"持有数"文字是否存在"""
+        try:
+            reco_param = JOCR(
+                expected=[HOLDING_TEXT],
+                roi=(
+                    COUNT_MERGED_ROI[0],
+                    COUNT_MERGED_ROI[1],
+                    COUNT_MERGED_ROI[2],
+                    COUNT_MERGED_ROI[3],
+                ),
+            )
+            result = context.run_recognition_direct(
+                JRecognitionType.OCR,
+                reco_param,
+                image,
+            )
+            if (
+                result
+                and result.hit
+                and result.best_result
+                and isinstance(result.best_result, OCRResult)
+            ):
+                text = result.best_result.text
+                if text and HOLDING_TEXT in text:
+                    return True
+        except Exception as e:
+            logger.error(
+                f"RewardSelector: _check_holding_count 异常 "
                 f"image_shape={image.shape if image is not None else None}, error={e}",
                 exc_info=True,
             )

@@ -83,19 +83,20 @@ class ActionBase(ABC):
         """
         return self.execute(params)
 
-    def stop(self, direction: Optional[str] = None) -> bool:
+    def stop(self, params: Optional[Dict[str, Any]] = None) -> bool:
         """
         时间线模式：释放
 
         默认通过 platform.release_action(release_method) 统一释放，持续动作子类可覆写。
 
         参数：
-        - direction: 方向（可选，用于 move 动作的方向感知释放）
+        - params: 动作参数（可选，用于提取 direction 等信息）
 
         返回值：
         - bool: 是否成功
         """
         if self.timeline_meta.release_method:
+            direction = params.get("direction") if params else None
             return self._platform.release_action(self.timeline_meta.release_method, direction=direction)
         return True
 

@@ -18,7 +18,7 @@
             "[JumpBack]选择密函",
             "[JumpBack]倍率选择0加成",
             "[JumpBack]委托密函进入战斗",
-            "[JumpBack]委托报酬选择",
+            "[JumpBack]密函报酬选择",
             "[JumpBack]弹窗关闭匹配识别"
         ]
     },
@@ -43,7 +43,7 @@
             "[JumpBack]机关破解",
             "[JumpBack]无尽行动抉择",
             "[JumpBack]挂机战斗无复位",
-            "[JumpBack]委托报酬选择"
+            "[JumpBack]密函报酬选择"
         ]
     },
     //挂机战斗复位、挂机战斗无复位
@@ -70,7 +70,8 @@
                 "custom_action_param": {
                     "total_time": 120,
                     "Interrupt": [
-                        "委托报酬选择",
+                        "密函报酬选择",
+                        "无尽没有密函报酬选择则退出",
                         {
                             "name": "确认选择",
                             "run": false,
@@ -85,12 +86,12 @@
                         },
                         {
                             "name": "释放技能E",
-                            "interval": 3,
+                            "interval": 2,
                             "delay": 2
                         },
                         {
                             "name": "释放状态Q",
-                            "interval": 3,
+                            "interval": 2,
                             "delay": 2
                         },
                         {
@@ -127,7 +128,8 @@
                 "custom_action_param": {
                     "total_time": 120,
                     "Interrupt": [
-                        "委托报酬选择",
+                        "密函报酬选择",
+                        "无尽没有密函报酬选择则退出",
                         {
                             "name": "挑战更多轮次可获得",
                             "run": false,
@@ -152,12 +154,12 @@
                         "弹窗取消",
                         {
                             "name": "释放技能E",
-                            "interval": 3,
+                            "interval": 2,
                             "delay": 2
                         },
                         {
                             "name": "释放状态Q",
-                            "interval": 3,
+                            "interval": 2,
                             "delay": 2
                         },
                         {

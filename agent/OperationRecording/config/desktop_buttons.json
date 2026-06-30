@@ -22,6 +22,7 @@
 			"S",
 			"D"
 		],
+		"jump_button": ["Space"],
 		"charge_attack": ["MouseLeft"],
 		"crouch": ["C"]
 	},

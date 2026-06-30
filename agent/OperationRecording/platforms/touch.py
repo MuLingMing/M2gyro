@@ -49,6 +49,7 @@ class TouchPlatform(PlatformBase):
     _generic_contact: int = 8
     _joystick_offset: int = 72
     _button_config_file: Optional[str] = None
+    _touch_contact: str = "generic_touch"
 
     _key_touch_map: Dict[str, Dict[str, Any]] = {
         "W":     {"position": "joystick_center", "contact": "joystick", "is_joystick": "true"},
@@ -203,6 +204,21 @@ class TouchPlatform(PlatformBase):
         except Exception:
             return False
 
+    def _release_button(self, contact_name: str) -> bool:
+        """释放指定名称的活跃触点"""
+        controller = self._get_valid_controller()
+        if controller is None:
+            return False
+        try:
+            if contact_name in self._active_contacts:
+                contact = self._active_contacts[contact_name]
+                controller.post_touch_up(contact).wait()
+                del self._active_contacts[contact_name]
+                return True
+            return False
+        except Exception:
+            return False
+
     def _joystick_move(self, x: int, y: int, duration: float) -> bool:
         controller = self._get_valid_controller()
         if controller is None:
@@ -291,6 +307,15 @@ class TouchPlatform(PlatformBase):
     # ===== 原子操作实现 =====
 
     def press_key(self, key: str, duration: float) -> bool:
+        """按键并等待指定时间后释放（duration=0 时只按不松）"""
+        return self.hold_key(key, duration)
+
+    def hold_key(self, key: str, duration: float) -> bool:
+        """
+        按住按键（触控映射）
+
+        duration > 0 时等待后自动释放；duration = 0 时只按不松，需后续调用 release_key 释放。
+        """
         mapping = self._key_touch_map.get(key)
         if not mapping:
             return False
@@ -306,6 +331,18 @@ class TouchPlatform(PlatformBase):
         contact_name = mapping["contact"]
 
         return self._hold_button(position_name, contact_name, duration)
+
+    def touch_hold(self, x: int, y: int, duration: float = 0) -> bool:
+        """
+        按住屏幕指定坐标
+
+        duration > 0 时等待后自动释放；duration = 0 时只按不松，需后续调用 release_touch 释放。
+        """
+        return self._hold_button("", self._touch_contact, duration, x, y)
+
+    def release_touch(self) -> bool:
+        """释放 touch_hold 按下的触点"""
+        return self._release_button(self._touch_contact)
 
     def release_key(self, key: str) -> bool:
         controller = self._get_valid_controller()
@@ -412,9 +449,8 @@ class TouchPlatform(PlatformBase):
             self._active_directions.discard(direction)
             return False
 
-    def jump(self) -> bool:
-        x, y = self._get_position("jump_button", 1166, 475)
-        return self._click_button(x, y, self._get_contact("jump_button"))
+    def jump(self, duration: float = 0.1) -> bool:
+        return self._hold_button("jump_button", "jump_button", duration)
 
     def dodge(self, direction: Optional[str] = None) -> bool:
         controller = self._get_valid_controller()
@@ -454,25 +490,20 @@ class TouchPlatform(PlatformBase):
         except Exception:
             return False
 
-    def interact(self, interaction_type: str) -> bool:
-        x, y = self._get_position("interact_button", 750, 358)
-        return self._click_button(x, y, self._get_contact("interact_button"))
+    def interact(self, interaction_type: str = "default", duration: float = 0.1) -> bool:
+        return self._hold_button("interact_button", "interact_button", duration)
 
-    def grappling_hook(self) -> bool:
-        x, y = self._get_position("grappling_hook_button", 956, 248)
-        return self._click_button(x, y, self._get_contact("grappling_hook_button"))
+    def grappling_hook(self, duration: float = 0.1) -> bool:
+        return self._hold_button("grappling_hook_button", "grappling_hook_button", duration)
 
-    def e_skill(self) -> bool:
-        x, y = self._get_position("e_skill_button", 0, 0)
-        return self._click_button(x, y, self._get_contact("e_skill_button"))
+    def e_skill(self, duration: float = 0.1) -> bool:
+        return self._hold_button("e_skill_button", "e_skill_button", duration)
 
-    def q_skill(self) -> bool:
-        x, y = self._get_position("q_skill_button", 0, 0)
-        return self._click_button(x, y, self._get_contact("q_skill_button"))
+    def q_skill(self, duration: float = 0.1) -> bool:
+        return self._hold_button("q_skill_button", "q_skill_button", duration)
 
-    def pet(self) -> bool:
-        x, y = self._get_position("pet_button", 0, 0)
-        return self._click_button(x, y, self._get_contact("pet_button"))
+    def pet(self, duration: float = 0.1) -> bool:
+        return self._hold_button("pet_button", "pet_button", duration)
 
     def spiral_leap(self) -> bool:
         x, y = self._get_position("spiral_leap_button", 1166, 475)
@@ -560,3 +591,23 @@ class TouchPlatform(PlatformBase):
             return False
         except Exception:
             return False
+
+    def release_interact(self, interaction_type: str = "default") -> bool:
+        """
+        释放交互动作的触点
+
+        参数：
+        - interaction_type: 交互类型
+
+        返回值：
+        - bool: 是否成功释放
+        """
+        type_contact_map = {
+            "default": "interact_button",
+            "GrapplingHook": "grappling_hook_button",
+            "E_skill": "e_skill_button",
+            "Q_skill": "q_skill_button",
+            "pet": "pet_button",
+        }
+        contact_name = type_contact_map.get(interaction_type, "interact_button")
+        return self._release_button(contact_name)

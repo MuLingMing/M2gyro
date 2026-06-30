@@ -39,7 +39,9 @@ class KeyboardPlatform(PlatformBase):
     """
 
     _key_codes: Dict[str, int] = {}
-    _action_key_map: Dict[str, List[str]] = {}
+    _action_key_map: Dict[str, List[str]] = {
+        "jump_button": ["Space"],
+    }
     _button_config_file: Optional[str] = None
 
     # 方向 → 按键列表映射
@@ -60,6 +62,8 @@ class KeyboardPlatform(PlatformBase):
     def __init__(self, platform_controller: Controller, context: Optional[Any] = None):
         super().__init__(platform_controller, context=context)
         self._active_keys: set[int] = set()
+        self._active_touch: bool = False
+        self._generic_contact: int = 9
         self._turn_config: Dict[str, float] = {"min_duration_ms": 50, "max_duration_ms": 500}
         self._load_button_config()
 
@@ -87,6 +91,15 @@ class KeyboardPlatform(PlatformBase):
     # ===== 原子操作实现 =====
 
     def press_key(self, key: str, duration: float) -> bool:
+        """按键并等待指定时间后释放（duration=0 时只按不松）"""
+        return self.hold_key(key, duration)
+
+    def hold_key(self, key: str, duration: float) -> bool:
+        """
+        按住按键
+
+        duration > 0 时等待后自动释放；duration = 0 时只按不松，需后续调用 release_key 释放。
+        """
         controller = self._get_valid_controller()
         if controller is None:
             return False
@@ -104,6 +117,26 @@ class KeyboardPlatform(PlatformBase):
         except Exception:
             return False
 
+    def release_interact(self, interaction_type: str = "default") -> bool:
+        """
+        释放交互动作的按键
+
+        参数：
+        - interaction_type: 交互类型
+
+        返回值：
+        - bool: 是否成功释放
+        """
+        type_key_map = {
+            "default": "F",
+            "GrapplingHook": "T",
+            "E_skill": "E",
+            "Q_skill": "R",
+            "pet": "Z",
+        }
+        key = type_key_map.get(interaction_type, "F")
+        return self.release_key(key)
+
     def release_key(self, key: str) -> bool:
         controller = self._get_valid_controller()
         if controller is None:
@@ -115,6 +148,38 @@ class KeyboardPlatform(PlatformBase):
             controller.post_key_up(key_code).wait()
             self._active_keys.discard(key_code)
             return True
+        except Exception:
+            return False
+
+    def touch_hold(self, x: int, y: int, duration: float = 0) -> bool:
+        """按住屏幕指定坐标（通过触控 API 实现）"""
+        controller = self._get_valid_controller()
+        if controller is None:
+            return False
+        try:
+            x = max(0, min(x, 1279))
+            y = max(0, min(y, 719))
+            controller.post_touch_down(x, y, self._generic_contact, 1).wait()
+            self._active_touch = True
+            if duration > 0:
+                time.sleep(duration)
+                controller.post_touch_up(self._generic_contact).wait()
+                self._active_touch = False
+            return True
+        except Exception:
+            return False
+
+    def release_touch(self) -> bool:
+        """释放 touch_hold 按下的触点"""
+        controller = self._get_valid_controller()
+        if controller is None:
+            return False
+        try:
+            if self._active_touch:
+                controller.post_touch_up(self._generic_contact).wait()
+                self._active_touch = False
+                return True
+            return False
         except Exception:
             return False
 
@@ -146,6 +211,9 @@ class KeyboardPlatform(PlatformBase):
             for key_code in list(self._active_keys):
                 controller.post_key_up(key_code).wait()
             self._active_keys.clear()
+            if self._active_touch:
+                controller.post_touch_up(self._generic_contact).wait()
+                self._active_touch = False
             return True
         except Exception:
             return False
@@ -190,8 +258,8 @@ class KeyboardPlatform(PlatformBase):
             time.sleep(duration)
         return True
 
-    def jump(self) -> bool:
-        return self.press_key("Space", 0.1)
+    def jump(self, duration: float = 0.1) -> bool:
+        return self.hold_key("Space", duration)
 
     def dodge(self, direction: Optional[str] = None) -> bool:
         controller = self._get_valid_controller()
@@ -241,20 +309,20 @@ class KeyboardPlatform(PlatformBase):
         except Exception:
             return False
 
-    def interact(self, interaction_type: str) -> bool:
-        return self.press_key("F", 0.1)
+    def interact(self, interaction_type: str = "default", duration: float = 0.1) -> bool:
+        return self.hold_key("F", duration)
 
-    def grappling_hook(self) -> bool:
-        return self.press_key("T", 0.1)
+    def grappling_hook(self, duration: float = 0.1) -> bool:
+        return self.hold_key("T", duration)
 
-    def e_skill(self) -> bool:
-        return self.press_key("E", 0.1)
+    def e_skill(self, duration: float = 0.1) -> bool:
+        return self.hold_key("E", duration)
 
-    def q_skill(self) -> bool:
-        return self.press_key("R", 0.1)
+    def q_skill(self, duration: float = 0.1) -> bool:
+        return self.hold_key("R", duration)
 
-    def pet(self) -> bool:
-        return self.press_key("Z", 0.1)
+    def pet(self, duration: float = 0.1) -> bool:
+        return self.hold_key("Z", duration)
 
     def spiral_leap(self) -> bool:
         return self.press_key("Q", 0.1)
