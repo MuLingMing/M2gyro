@@ -118,7 +118,7 @@ class MultiRecognition(CustomRecognition):
         - {NodeName} 引用其他已执行节点的识别结果
         - 支持 AND、OR、NOT 逻辑运算符（大小写不敏感）
         - 支持括号分组调整优先级
-    - return: 返回的ROI区域
+    - return: 返回的ROI区域（可选，默认为 [0, 0, 1280, 720] 全屏）
       - int[4] 格式: 直接返回固定坐标 [x, y, w, h]
       - string 格式: 基于识别结果计算的ROI表达式
         - $0, $1, $2 引用节点的识别区域
@@ -220,13 +220,10 @@ class MultiRecognition(CustomRecognition):
         params = json.loads(raw_param)
         nodes = params.get("nodes", [])
         logic = params.get("logic", {"type": "AND"})
-        return_value = params.get("return", None)
+        return_value = params.get("return", [0, 0, 1280, 720])
 
         if not nodes:
             raise ValueError("nodes字段不能为空或空数组")
-
-        if return_value is None or return_value == "":
-            raise ValueError("return字段不能为空")
 
         return {"nodes": nodes, "logic": logic, "return": return_value}
 

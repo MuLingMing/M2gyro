@@ -3,5 +3,136 @@
     "驱逐": {
         //武器经验，夜航手册
         "next": []
+    },
+    "武器经验50驱逐": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "驱逐"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    650
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]委托完成次数",
+            "[JumpBack]夜航手册60驱逐-舍身.*?萼蚀",
+            "[JumpBack]倍率选择0加成",
+            "[JumpBack]确认选择"
+        ]
+    },
+    //夜航手册60驱逐-舍身.*?萼蚀，同武器经验50级，仅限赛琪
+    "夜航手册60驱逐-舍身.*?萼蚀": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "MultiRecognition",
+                "custom_recognition_param": {
+                    "nodes": [
+                        "驱逐敌人识别",
+                        "已驱逐敌人识别40/40"
+                    ],
+                    "logic": {
+                        "type": "CUSTOM",
+                        "expression": "$0 AND (NOT $1)"
+                    }
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "OperationRecordAction",
+                "custom_action_param": {
+                    "operations": [
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 1.5
+                            }
+                        },
+                        {
+                            "action": "interact",
+                            "params": {
+                                "interaction_type": "Q_skill",
+                                "duration": 4.2
+                            }
+                        },
+                        {
+                            "action": "move",
+                            "params": {
+                                "direction": "forward",
+                                "duration": 20,
+                                "overlays": [
+                                    {
+                                        "action": "jump",
+                                        "at": 0.93,
+                                        "params": {
+                                            "duration": 3.21
+                                        }
+                                    },
+                                    {
+                                        "action": "move",
+                                        "params": {
+                                            "direction": "right",
+                                            "duration": 18
+                                        },
+                                        "at": 5.58
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "wait",
+                            "params": {
+                                "duration": 8
+                            }
+                        },
+                        {
+                            "action": "jump"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    //驱逐敌人识别
+    "驱逐敌人识别": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "驱逐敌人"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    650
+                ]
+            }
+        }
+    },
+    //已驱逐敌人识别40/40
+    "已驱逐敌人识别40/40": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "40/40"
+                ],
+                "roi": [
+                    0,
+                    0,
+                    350,
+                    650
+                ]
+            }
+        }
     }
 }

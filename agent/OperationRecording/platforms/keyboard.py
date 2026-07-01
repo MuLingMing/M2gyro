@@ -65,6 +65,7 @@ class KeyboardPlatform(PlatformBase):
         self._active_touch: bool = False
         self._generic_contact: int = 9
         self._turn_config: Dict[str, float] = {"min_duration_ms": 50, "max_duration_ms": 500}
+        self._default_durations: Dict[str, float] = {}
         self._load_button_config()
 
     def _load_button_config(self) -> None:
@@ -84,6 +85,8 @@ class KeyboardPlatform(PlatformBase):
             self._key_codes = config["key_codes"]
         if "action_key_map" in config:
             self._action_key_map = config["action_key_map"]
+        if "default_durations" in config:
+            self._default_durations = config["default_durations"]
 
         if "turn_config" in config:
             self._turn_config = config["turn_config"]
@@ -258,7 +261,13 @@ class KeyboardPlatform(PlatformBase):
             time.sleep(duration)
         return True
 
-    def jump(self, duration: float = 0.1) -> bool:
+    def _get_default_duration(self, action_name: str) -> float:
+        """获取动作的默认持续时间"""
+        return self._default_durations.get(action_name, 0.1)
+
+    def jump(self, duration: Optional[float] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("jump")
         return self.hold_key("Space", duration)
 
     def dodge(self, direction: Optional[str] = None) -> bool:
@@ -309,28 +318,42 @@ class KeyboardPlatform(PlatformBase):
         except Exception:
             return False
 
-    def interact(self, interaction_type: str = "default", duration: float = 0.1) -> bool:
+    def interact(self, interaction_type: str = "default", duration: Optional[float] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("interact")
         return self.hold_key("F", duration)
 
-    def grappling_hook(self, duration: float = 0.1) -> bool:
+    def grappling_hook(self, duration: Optional[float] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("grappling_hook")
         return self.hold_key("T", duration)
 
-    def e_skill(self, duration: float = 0.1) -> bool:
+    def e_skill(self, duration: Optional[float] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("e_skill")
         return self.hold_key("E", duration)
 
-    def q_skill(self, duration: float = 0.1) -> bool:
+    def q_skill(self, duration: Optional[float] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("q_skill")
         return self.hold_key("R", duration)
 
-    def pet(self, duration: float = 0.1) -> bool:
+    def pet(self, duration: Optional[float] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("pet")
         return self.hold_key("Z", duration)
 
     def spiral_leap(self) -> bool:
-        return self.press_key("Q", 0.1)
+        return self.press_key("Q", self._get_default_duration("spiral_leap"))
 
-    def crouch(self, duration: float = 0.1) -> bool:
+    def crouch(self, duration: Optional[float] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("crouch")
         return self.press_key("C", duration)
 
-    def charge_attack(self, duration: float, x: Optional[int] = None, y: Optional[int] = None) -> bool:
+    def charge_attack(self, duration: Optional[float] = None, x: Optional[int] = None, y: Optional[int] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("charge_attack")
         return self.press_key("MouseLeft", duration)
 
     def cleanup_direction(self, action_name: str, old_direction: str, new_direction: Optional[str] = None) -> bool:

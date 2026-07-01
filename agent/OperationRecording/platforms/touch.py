@@ -128,6 +128,11 @@ class TouchPlatform(PlatformBase):
         position_config = self._touch_positions.get(position_name, {})
         return position_config.get("contact", self._generic_contact)
 
+    def _get_default_duration(self, position_name: str) -> float:
+        """获取按钮的默认持续时间"""
+        position_config = self._touch_positions.get(position_name, {})
+        return position_config.get("default_duration", 0.1)
+
     def _get_joystick_directions(self) -> Dict[str, Tuple[int, int]]:
         """
         获取摇杆方向坐标映射
@@ -449,7 +454,9 @@ class TouchPlatform(PlatformBase):
             self._active_directions.discard(direction)
             return False
 
-    def jump(self, duration: float = 0.1) -> bool:
+    def jump(self, duration: Optional[float] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("jump_button")
         return self._hold_button("jump_button", "jump_button", duration)
 
     def dodge(self, direction: Optional[str] = None) -> bool:
@@ -490,30 +497,44 @@ class TouchPlatform(PlatformBase):
         except Exception:
             return False
 
-    def interact(self, interaction_type: str = "default", duration: float = 0.1) -> bool:
+    def interact(self, interaction_type: str = "default", duration: Optional[float] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("interact_button")
         return self._hold_button("interact_button", "interact_button", duration)
 
-    def grappling_hook(self, duration: float = 0.1) -> bool:
+    def grappling_hook(self, duration: Optional[float] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("grappling_hook_button")
         return self._hold_button("grappling_hook_button", "grappling_hook_button", duration)
 
-    def e_skill(self, duration: float = 0.1) -> bool:
+    def e_skill(self, duration: Optional[float] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("e_skill_button")
         return self._hold_button("e_skill_button", "e_skill_button", duration)
 
-    def q_skill(self, duration: float = 0.1) -> bool:
+    def q_skill(self, duration: Optional[float] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("q_skill_button")
         return self._hold_button("q_skill_button", "q_skill_button", duration)
 
-    def pet(self, duration: float = 0.1) -> bool:
+    def pet(self, duration: Optional[float] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("pet_button")
         return self._hold_button("pet_button", "pet_button", duration)
 
     def spiral_leap(self) -> bool:
         x, y = self._get_position("spiral_leap_button", 1166, 475)
         return self._click_button(x, y, self._get_contact("spiral_leap_button"))
 
-    def crouch(self, duration: float = 0.1) -> bool:
-        return self._hold_button("crouch_button", "crouch", duration)
+    def crouch(self, duration: Optional[float] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("crouch_button")
+        return self._hold_button("crouch_button", "crouch_button", duration)
 
-    def charge_attack(self, duration: float, x: Optional[int] = None, y: Optional[int] = None) -> bool:
-        return self._hold_button("charge_attack_button", "charge_attack", duration, x, y)
+    def charge_attack(self, duration: Optional[float] = None, x: Optional[int] = None, y: Optional[int] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("charge_attack_button")
+        return self._hold_button("charge_attack_button", "charge_attack_button", duration, x, y)
 
     # ===== 释放方法 =====
 

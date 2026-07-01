@@ -359,70 +359,24 @@
                             "action": "move",
                             "params": {
                                 "direction": "forward",
-                                "duration": 6.61,
+                                "duration": 24,
                                 "overlays": [
                                     {
                                         "action": "jump",
+                                        "at": 0.93,
                                         "params": {
-                                            "duration": 6
-                                        },
-                                        "at": 0.93
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "right",
-                                "duration": 2.14
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 4.12
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "right",
-                                "duration": 0.95
-                            }
-                        },
-                        {
-                            "action": "wait",
-                            "params": {
-                                "duration": 1.72
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 1.54,
-                                "overlays": [
+                                            "duration": 3.21
+                                        }
+                                    },
                                     {
-                                        "action": "jump",
-                                        "at": 0.49
+                                        "action": "move",
+                                        "params": {
+                                            "direction": "right",
+                                            "duration": 18
+                                        },
+                                        "at": 5.52
                                     }
                                 ]
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "right",
-                                "duration": 4.60
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 1.16
                             }
                         }
                     ]

@@ -1,67 +1,72 @@
 {
-    "Count": {
-        "type": "action",
-        "class": "Count",
-        "file_path": "custom/action/Count.py"
-    },
-    "DisableNode": {
-        "type": "action",
-        "class": "DisableNode",
-        "file_path": "custom/action/Node.py"
-    },
-    "NodeOverride": {
-        "type": "action",
-        "class": "NodeOverride",
-        "file_path": "custom/action/Node.py"
-    },
-    "ScreenShot": {
-        "type": "action",
-        "class": "ScreenShot",
-        "file_path": "custom/action/ScreenShot.py"
-    },
-    "CheckResolution": {
-        "type": "action",
-        "class": "CheckResolution",
-        "file_path": "custom/action/CheckResolution.py"
-    },
-    "Countdown": {
-        "type": "action",
-        "class": "Countdown",
-        "file_path": "custom/action/Countdown.py"
-    },
-    "IfElseAction": {
-        "type": "action",
-        "class": "IfElseAction",
-        "file_path": "custom/action/IfElseAction.py"
-    },
-    "RewardSelector": {
-        "type": "recognition",
-        "class": "RewardSelector",
-        "file_path": "custom/recognition/RewardSelector.py"
-    },
-    "CovertStage": {
-        "type": "recognition",
-        "class": "CovertStage",
-        "file_path": "custom/recognition/CovertStage.py"
-    },
-    "IfElseReco": {
-        "type": "recognition",
-        "class": "IfElseReco",
-        "file_path": "custom/recognition/IfElseReco.py"
-    },
-    "PathFindingReco": {
-        "type": "recognition",
-        "class": "PathFindingReco",
-        "file_path": "AutoPathFinding/recognition/path_finding_reco.py"
-    },
-    "PathFinderAction": {
-        "type": "action",
-        "class": "PathFinderAction",
-        "file_path": "AutoPathFinding/action/path_finder_action.py"
-    },
-    "OperationRecordAction": {
-        "type": "action",
-        "class": "OperationRecordAction",
-        "file_path": "OperationRecording/actions/operation_record_action.py"
-    }
+	"Count": {
+		"type": "action",
+		"class": "Count",
+		"file_path": "custom/action/Count.py"
+	},
+	"DisableNode": {
+		"type": "action",
+		"class": "DisableNode",
+		"file_path": "custom/action/Node.py"
+	},
+	"NodeOverride": {
+		"type": "action",
+		"class": "NodeOverride",
+		"file_path": "custom/action/Node.py"
+	},
+	"ScreenShot": {
+		"type": "action",
+		"class": "ScreenShot",
+		"file_path": "custom/action/ScreenShot.py"
+	},
+	"CheckResolution": {
+		"type": "action",
+		"class": "CheckResolution",
+		"file_path": "custom/action/CheckResolution.py"
+	},
+	"Countdown": {
+		"type": "action",
+		"class": "Countdown",
+		"file_path": "custom/action/Countdown.py"
+	},
+	"IfElseAction": {
+		"type": "action",
+		"class": "IfElseAction",
+		"file_path": "custom/action/IfElseAction.py"
+	},
+	"RewardSelector": {
+		"type": "recognition",
+		"class": "RewardSelector",
+		"file_path": "custom/recognition/RewardSelector.py"
+	},
+	"CovertStage": {
+		"type": "recognition",
+		"class": "CovertStage",
+		"file_path": "custom/recognition/CovertStage.py"
+	},
+	"IfElseReco": {
+		"type": "recognition",
+		"class": "IfElseReco",
+		"file_path": "custom/recognition/IfElseReco.py"
+	},
+	"PathFindingReco": {
+		"type": "recognition",
+		"class": "PathFindingReco",
+		"file_path": "AutoPathFinding/recognition/path_finding_reco.py"
+	},
+	"PathFinderAction": {
+		"type": "action",
+		"class": "PathFinderAction",
+		"file_path": "AutoPathFinding/action/path_finder_action.py"
+	},
+	"OperationRecordAction": {
+		"type": "action",
+		"class": "OperationRecordAction",
+		"file_path": "OperationRecording/actions/operation_record_action.py"
+	},
+	"MultiRecognition": {
+		"type": "recognition",
+		"class": "MultiRecognition",
+		"file_path": "custom/recognition/MultiRecognition.py"
+	}
 }

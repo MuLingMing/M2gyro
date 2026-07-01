@@ -109,10 +109,16 @@
         "武器经验等级": {
             "type": "select",
             "label": "等级选择",
-            "description": "仅支持50级。",
+            "description": "仅支持50级，仅限赛琪。",
             "cases": [
                 {
-                    "name": "50"
+                    "name": "50",
+                    "pipeline_override": {
+                        "委托等级识别": {
+                            "expected": "50",
+                            "next": "武器经验50驱逐"
+                        }
+                    }
                 }
             ]
         },

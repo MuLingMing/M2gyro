@@ -1,0 +1,92 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "./custom_reco/MultiRecognition.schema.json",
+	"if": {
+		"properties": {
+			"custom_recognition": {
+				"const": "MultiRecognition"
+			}
+		},
+		"required": [
+			"custom_recognition"
+		]
+	},
+	"then": {
+		"properties": {
+			"custom_recognition_param": {
+				"$ref": "#/definitions/MultiRecognitionParam",
+				"description": "多算法组合识别器参数\n\n功能说明：\n1. 批量节点识别：对 nodes 列表中的每个节点执行识别，映射为 $0、$1、$2... 供后续表达式引用\n2. 逻辑判定：支持 AND/OR/NOT/CUSTOM 四种模式\n3. ROI 计算：支持固定坐标和表达式计算（UNION、INTERSECTION、OFFSET）\n4. 外部节点引用：通过 {NodeName} 引用其他已执行节点的识别结果\n\n返回值逻辑：\n1. 参数解析失败 → 返回 None\n2. 节点识别失败 → 返回 None\n3. 逻辑条件不满足 → 返回 None\n4. ROI 计算成功 → 返回计算后的 ROI 区域\n5. ROI 计算失败或超出屏幕 → 返回 None\n\n示例：\n{\n    \"nodes\": [\"节点A\", \"节点B\", \"节点C\"],\n    \"logic\": {\n        \"type\": \"CUSTOM\",\n        \"expression\": \"$0 AND ($1 OR $2)\"\n    },\n    \"return\": \"UNION($0, INTERSECTION($1, $2))\"\n}\n\n字段说明：\n- nodes: 节点名称数组，按顺序映射为 $0、$1、$2... 用于后续表达式引用\n- logic: 逻辑判定条件\n  - type: 逻辑类型 (AND/OR/NOT/CUSTOM)\n  - expression: 自定义布尔表达式，仅 type=\"CUSTOM\" 时生效\n- return: 返回的 ROI 区域，支持 int[4] 固定坐标或字符串表达式"
+			}
+		},
+		"required": [
+			"custom_recognition_param"
+		]
+	},
+	"definitions": {
+		"MultiRecognitionParam": {
+			"type": "object",
+			"properties": {
+				"nodes": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"minItems": 1,
+					"description": "节点名称数组。按顺序映射为 $0、$1、$2... 用于后续表达式引用"
+				},
+				"logic": {
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": [
+								"AND",
+								"OR",
+								"NOT",
+								"CUSTOM"
+							],
+							"default": "AND",
+							"description": "逻辑类型：\n- AND: 所有节点都识别成功时通过（默认）\n- OR: 任意节点识别成功时通过\n- NOT: AND 的取反，任一节点未识别成功时通过\n- CUSTOM: 使用自定义布尔表达式判定"
+						},
+						"expression": {
+							"type": "string",
+							"description": "自定义布尔表达式，仅 type=\"CUSTOM\" 时生效\n\n- $0, $1, $10... 引用 nodes 数组中对应索引的节点识别结果\n- {NodeName} 引用其他已执行节点的识别结果\n- 支持 AND、OR、NOT 逻辑运算符（大小写不敏感）\n- 支持括号分组调整优先级\n\n示例：$0 AND ($1 OR $2)"
+						}
+					},
+					"required": ["type"],
+					"additionalProperties": false,
+					"description": "逻辑判定条件配置"
+				},
+				"return": {
+					"oneOf": [
+						{
+							"type": "array",
+							"items": {
+								"type": "integer"
+							},
+							"minItems": 4,
+							"maxItems": 4,
+							"description": "固定坐标 [x, y, w, h]，以 720p 为基准"
+						},
+						{
+							"type": "string",
+							"description": "基于识别结果计算的 ROI 表达式\n\n- $0, $1, $2 引用节点的识别区域\n- {NodeName} 引用其他已执行节点的识别区域\n- UNION($0, $1): 计算两个区域的并集（最小包围矩形）\n- INTERSECTION($0, $1): 计算两个区域的交集\n- OFFSET($0, dx, dy, dw, dh): 对区域进行偏移调整\n- 支持嵌套调用，如 UNION($0, OFFSET($1, 10, 10, -20, -20))\n\n示例：UNION($0, INTERSECTION($1, $2))"
+						}
+					],
+					"default": [
+						0,
+						0,
+						1280,
+						720
+					],
+					"description": "返回的 ROI 区域（可选，默认为 [0, 0, 1280, 720] 全屏）"
+				}
+			},
+			"required": [
+				"nodes",
+				"logic"
+			],
+			"additionalProperties": false
+		}
+	}
+}

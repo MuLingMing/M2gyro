@@ -22,9 +22,26 @@
 			"S",
 			"D"
 		],
-		"jump_button": ["Space"],
-		"charge_attack": ["MouseLeft"],
-		"crouch": ["C"]
+		"jump_button": [
+			"Space"
+		],
+		"charge_attack": [
+			"MouseLeft"
+		],
+		"crouch": [
+			"C"
+		]
+	},
+	"default_durations": {
+		"jump": 0.1,
+		"interact": 0.1,
+		"grappling_hook": 0.1,
+		"e_skill": 0.1,
+		"q_skill": 0.1,
+		"pet": 0.1,
+		"crouch": 0.1,
+		"charge_attack": 0.5,
+		"spiral_leap": 0.1
 	},
 	"turn_config": {
 		"min_duration_ms": 50,
