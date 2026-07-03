@@ -108,20 +108,7 @@
     },
     "无尽波次选择倍率书或密函": {
         // attach添加target_count，指定波次选择倍率书
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "挑战更多轮次可获得"
-                ],
-                "roi": [
-                    640,
-                    60,
-                    600,
-                    600
-                ]
-            }
-        },
+        // ”无尽行动抉择“引用该节点
         "action": {
             "type": "Custom",
             "param": {

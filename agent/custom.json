@@ -49,6 +49,11 @@
 		"class": "IfElseReco",
 		"file_path": "custom/recognition/IfElseReco.py"
 	},
+	"RoundTracker": {
+		"type": "recognition",
+		"class": "RoundTracker",
+		"file_path": "custom/recognition/RoundTracker.py"
+	},
 	"PathFindingReco": {
 		"type": "recognition",
 		"class": "PathFindingReco",

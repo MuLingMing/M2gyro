@@ -5,7 +5,7 @@
 	"properties": {
 		"custom_recognition": {
 			"type": "string",
-			"description": "识别名\n\n支持的自定义识别：\n\n1. RewardSelector - 奖励选择识别，识别并选择指定的奖励选项\n\n2. CovertStage - 委托密函关卡选择识别，按区域和优先级选取最优关卡，兼容 IfElseAction\n\n3. IfElseReco - 条件分支识别，按优先级依次识别节点：entry → if → elif → else，返回首个命中的节点信息，配合 IfElseAction 使用\n\n4. PathFindingReco - 自动寻路识别器，识别游戏画面中的目标图标，计算方向和距离，支持插件式选择器\n\n5. MultiRecognition - 多算法组合识别器，批量执行节点识别，支持 AND/OR/NOT/CUSTOM 逻辑判定和 ROI 表达式计算（UNION/INTERSECTION/OFFSET）"
+			"description": "识别名\n\n支持的自定义识别：\n\n1. RewardSelector - 奖励选择识别，识别并选择指定的奖励选项\n\n2. CovertStage - 委托密函关卡选择识别，按区域和优先级选取最优关卡，兼容 IfElseAction\n\n3. IfElseReco - 条件分支识别，按优先级依次识别节点：entry → if → elif → else，返回首个命中的节点信息，配合 IfElseAction 使用\n\n4. PathFindingReco - 自动寻路识别器，识别游戏画面中的目标图标，计算方向和距离，支持插件式选择器\n\n5. MultiRecognition - 多算法组合识别器，批量执行节点识别，支持 AND/OR/NOT/CUSTOM 逻辑判定和 ROI 表达式计算（UNION/INTERSECTION/OFFSET）\n\n6. RoundTracker - 轮次追踪识别，OCR 识别\"当前轮次：xx\"，大于 current_round 时更新节点参数并返回命中"
 		},
 		"custom_recognition_param": {
 			"type": "object"
@@ -26,6 +26,9 @@
 		},
 		{
 			"$ref": "./custom_reco/MultiRecognition.schema.json"
+		},
+		{
+			"$ref": "./custom_reco/RoundTracker.schema.json"
 		}
 	]
 }

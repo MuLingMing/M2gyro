@@ -1,387 +1,388 @@
 {
-    "test": {
-        "next": [
-            "退出委托仅识别",
-            "[JumpBack]机关操作",
-            "[JumpBack]机关破解",
-            "[JumpBack]无尽行动抉择",
-            "[JumpBack]挂机战斗无复位",
-            "[JumpBack]密函报酬选择"
-        ]
-    },
-    "AutoPathFinding": {
-        "recognition": {
-            "type": "Custom",
-            "param": {
-                "custom_recognition": "PathFindingReco",
-                "custom_recognition_param": {
-                    "expected_templates": [
-                        "副本/目标点"
-                    ],
-                    "selector_type": "priority",
-                    "selector_priority": [
-                        "副本/目标点"
-                    ]
-                }
-            }
-        },
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "PathFinderAction",
-                "custom_action_param": {
-                    "move_duration": 800
-                }
-            }
-        },
-        "next": [
-            "AutoPathFinding"
-        ]
-    },
-    "test_OperationRecordAction_move": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 1.5,
-                                "overlays": [
-                                    {
-                                        "action": "jump",
-                                        "at": 0.6
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "right",
-                                "duration": 1.5
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "backward",
-                                "duration": 2.1,
-                                "overlays": [
-                                    {
-                                        "action": "dodge",
-                                        "at": 0.6
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "left",
-                                "duration": 0.9
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_跳跃": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "jump"
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_下蹲": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "crouch",
-                            "params": {
-                                "duration": 0.5
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_蓄力攻击": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "charge_attack",
-                            "params": {
-                                "duration": 1.0
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_转向": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "turn",
-                            "params": {
-                                "start_x": 1000,
-                                "start_y": 150,
-                                "end_x": 1210,
-                                "end_y": 150
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_移动_跳跃overlay": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 1.5,
-                                "overlays": [
-                                    {
-                                        "action": "jump",
-                                        "at": 0.51
-                                    },
-                                    {
-                                        "action": "dodge",
-                                        "at": 0.81
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_交互_F": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "interact",
-                            "params": {}
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_交互_GrapplingHook": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "interact",
-                            "params": {
-                                "interaction_type": "GrapplingHook"
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_交互_E_skill": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "interact",
-                            "params": {
-                                "interaction_type": "E_skill"
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_交互_Q_skill": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "interact",
-                            "params": {
-                                "interaction_type": "Q_skill"
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_交互_pet": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "interact",
-                            "params": {
-                                "interaction_type": "pet"
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_controller": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 2.1,
-                                "overlays": [
-                                    {
-                                        "action": "dodge",
-                                        "at": 0.51
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "action": "run_node",
-                            "params": {
-                                "node": "局内复位"
-                            }
-                        },
-                        {
-                            "action": "wait",
-                            "params": {
-                                "duration": 1.5
-                            }
-                        },
-                        {
-                            "action": "interact",
-                            "params": {
-                                "interaction_type": "E_skill"
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 2.1,
-                                "overlays": [
-                                    {
-                                        "action": "dodge",
-                                        "at": 0.51
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "test_50驱逐": {
-        "action": {
-            "type": "Custom",
-            "param": {
-                "custom_action": "OperationRecordAction",
-                "custom_action_param": {
-                    "operations": [
-                        {
-                            "action": "wait",
-                            "params": {
-                                "duration": 1.5
-                            }
-                        },
-                        {
-                            "action": "interact",
-                            "params": {
-                                "interaction_type": "Q_skill",
-                                "duration": 4.2
-                            }
-                        },
-                        {
-                            "action": "move",
-                            "params": {
-                                "direction": "forward",
-                                "duration": 24,
-                                "overlays": [
-                                    {
-                                        "action": "jump",
-                                        "at": 0.93,
-                                        "params": {
-                                            "duration": 3.21
-                                        }
-                                    },
-                                    {
-                                        "action": "move",
-                                        "params": {
-                                            "direction": "right",
-                                            "duration": 18
-                                        },
-                                        "at": 5.52
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    }
+	"AutoPathFinding": {
+		"recognition": {
+			"type": "Custom",
+			"param": {
+				"custom_recognition": "PathFindingReco",
+				"custom_recognition_param": {
+					"expected_templates": [
+						"副本/目标点"
+					],
+					"selector_type": "priority",
+					"selector_priority": [
+						"副本/目标点"
+					]
+				}
+			}
+		},
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "PathFinderAction",
+				"custom_action_param": {
+					"move_duration": 800
+				}
+			}
+		},
+		"next": [
+			"AutoPathFinding"
+		]
+	},
+	"test_OperationRecordAction_move": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "OperationRecordAction",
+				"custom_action_param": {
+					"operations": [
+						{
+							"action": "move",
+							"params": {
+								"direction": "forward",
+								"duration": 1.5,
+								"overlays": [
+									{
+										"action": "jump",
+										"at": 0.6
+									}
+								]
+							}
+						},
+						{
+							"action": "move",
+							"params": {
+								"direction": "right",
+								"duration": 1.5
+							}
+						},
+						{
+							"action": "move",
+							"params": {
+								"direction": "backward",
+								"duration": 2.1,
+								"overlays": [
+									{
+										"action": "dodge",
+										"at": 0.6
+									}
+								]
+							}
+						},
+						{
+							"action": "move",
+							"params": {
+								"direction": "left",
+								"duration": 0.9
+							}
+						}
+					]
+				}
+			}
+		}
+	},
+	"test_跳跃": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "OperationRecordAction",
+				"custom_action_param": {
+					"operations": [
+						{
+							"action": "jump"
+						}
+					]
+				}
+			}
+		}
+	},
+	"test_下蹲": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "OperationRecordAction",
+				"custom_action_param": {
+					"operations": [
+						{
+							"action": "crouch",
+							"params": {
+								"duration": 0.5
+							}
+						}
+					]
+				}
+			}
+		}
+	},
+	"test_蓄力攻击": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "OperationRecordAction",
+				"custom_action_param": {
+					"operations": [
+						{
+							"action": "charge_attack",
+							"params": {
+								"duration": 1.0
+							}
+						}
+					]
+				}
+			}
+		}
+	},
+	"test_转向": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "OperationRecordAction",
+				"custom_action_param": {
+					"operations": [
+						{
+							"action": "turn",
+							"params": {
+								"start_x": 1000,
+								"start_y": 150,
+								"end_x": 1210,
+								"end_y": 150
+							}
+						}
+					]
+				}
+			}
+		}
+	},
+	"test_移动_跳跃overlay": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "OperationRecordAction",
+				"custom_action_param": {
+					"operations": [
+						{
+							"action": "move",
+							"params": {
+								"direction": "forward",
+								"duration": 1.5,
+								"overlays": [
+									{
+										"action": "jump",
+										"at": 0.51
+									},
+									{
+										"action": "dodge",
+										"at": 0.81
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		}
+	},
+	"test_交互_F": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "OperationRecordAction",
+				"custom_action_param": {
+					"operations": [
+						{
+							"action": "interact",
+							"params": {}
+						}
+					]
+				}
+			}
+		}
+	},
+	"test_交互_GrapplingHook": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "OperationRecordAction",
+				"custom_action_param": {
+					"operations": [
+						{
+							"action": "interact",
+							"params": {
+								"interaction_type": "GrapplingHook"
+							}
+						}
+					]
+				}
+			}
+		}
+	},
+	"test_交互_E_skill": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "OperationRecordAction",
+				"custom_action_param": {
+					"operations": [
+						{
+							"action": "interact",
+							"params": {
+								"interaction_type": "E_skill"
+							}
+						}
+					]
+				}
+			}
+		}
+	},
+	"test_交互_Q_skill": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "OperationRecordAction",
+				"custom_action_param": {
+					"operations": [
+						{
+							"action": "interact",
+							"params": {
+								"interaction_type": "Q_skill"
+							}
+						}
+					]
+				}
+			}
+		}
+	},
+	"test_交互_pet": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "OperationRecordAction",
+				"custom_action_param": {
+					"operations": [
+						{
+							"action": "interact",
+							"params": {
+								"interaction_type": "pet"
+							}
+						}
+					]
+				}
+			}
+		}
+	},
+	"test_controller": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "OperationRecordAction",
+				"custom_action_param": {
+					"operations": [
+						{
+							"action": "move",
+							"params": {
+								"direction": "forward",
+								"duration": 2.1,
+								"overlays": [
+									{
+										"action": "dodge",
+										"at": 0.51
+									}
+								]
+							}
+						},
+						{
+							"action": "run_node",
+							"params": {
+								"node": "局内复位"
+							}
+						},
+						{
+							"action": "wait",
+							"params": {
+								"duration": 1.5
+							}
+						},
+						{
+							"action": "interact",
+							"params": {
+								"interaction_type": "E_skill"
+							}
+						},
+						{
+							"action": "move",
+							"params": {
+								"direction": "forward",
+								"duration": 2.1,
+								"overlays": [
+									{
+										"action": "dodge",
+										"at": 0.51
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		}
+	},
+	"test_50驱逐": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "OperationRecordAction",
+				"custom_action_param": {
+					"operations": [
+						{
+							"action": "wait",
+							"params": {
+								"duration": 1.5
+							}
+						},
+						{
+							"action": "interact",
+							"params": {
+								"interaction_type": "Q_skill",
+								"duration": 4.2
+							}
+						},
+						{
+							"action": "move",
+							"params": {
+								"direction": "forward",
+								"duration": 24,
+								"overlays": [
+									{
+										"action": "jump",
+										"at": 0.93,
+										"params": {
+											"duration": 3.21
+										}
+									},
+									{
+										"action": "move",
+										"params": {
+											"direction": "right",
+											"duration": 18
+										},
+										"at": 5.52
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		}
+	},
+	"test_round_tracker": {
+		"recognition": {
+			"type": "Custom",
+			"param": {
+				"custom_recognition": "RoundTracker",
+				"custom_recognition_param": {
+					"current_round": 6
+				}
+			}
+		}
+	}
 }

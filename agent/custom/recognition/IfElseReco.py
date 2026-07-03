@@ -9,7 +9,7 @@
 4. elif 识别成功 → 返回 box=elif.box, hit=True, hit_node="elif[index]"
 5. else 识别成功 → 返回 box=else.box, hit=True, hit_node="else"
 6. 均未识别到 → 返回 box=None, hit=False
-7. 识别成功但 box=None 时，将 box 设为 [0,0,0,0]
+7. 识别成功但 box=None 时，将 box 设为 [0,0,1280,720]
 
 与 IfElseAction 动作器配合使用：
 - hit=True  → IfElseAction 根据 hit_node 执行对应分支
@@ -57,7 +57,7 @@ class IfElseReco(CustomRecognition):
     5. if 未命中，elif 未命中，else 识别成功 → AnalyzeResult(box=else.box, detail={hit=True, hit_node="else"})
     6. else=true → 跳过识别，直接返回 AnalyzeResult(box=entry.box, detail={hit=True, hit_node="else"})
     7. if、elif、else 均未识别到 → AnalyzeResult(box=None, detail={hit=False})
-    8. 特殊情况：识别成功但 box=None 时 → box 设为 [0,0,0,0]
+    8. 特殊情况：识别成功但 box=None 时 → box 设为 [0,0,1280,720]
     9. 逻辑类似于 if-elif-else 语句
 
     Pipeline 使用示例：
@@ -173,7 +173,7 @@ class IfElseReco(CustomRecognition):
             if entry_result and entry_result.raw_detail:
                 detail["matched_detail"] = entry_result.raw_detail
             return CustomRecognition.AnalyzeResult(
-                box=entry_box if entry_box is not None else Rect(0, 0, 0, 0),
+                box=entry_box if entry_box is not None else Rect(0, 0, 1280, 720),
                 detail=detail
             )
         elif else_node:
@@ -215,7 +215,7 @@ class IfElseReco(CustomRecognition):
     @staticmethod
     def _normalize_box(box: Optional[RectType]) -> RectType:
         """
-        标准化 box，None 转换为 Rect(0,0,0,0)
+        标准化 box，None 转换为 Rect(0,0,1280,720)
 
         参数:
         - box: 原始 box 值
@@ -224,5 +224,5 @@ class IfElseReco(CustomRecognition):
         - RectType: 标准化后的 box
         """
         if box is None:
-            return Rect(0, 0, 0, 0)
+            return Rect(0, 0, 1280, 720)
         return box

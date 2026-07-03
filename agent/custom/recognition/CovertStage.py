@@ -31,7 +31,7 @@
 
 返回值（兼容 IfElseAction）：
 - 类型1 命中关卡: AnalyzeResult(box=关卡ROI, detail={hit=True, hit_node="if", region, stage, ...})
-- 类型2 页面正确但无命中: AnalyzeResult(box=[0,0,0,0], detail={hit=True, hit_node="else", ...})
+- 类型2 页面正确但无命中: AnalyzeResult(box=[0,0,1280,720], detail={hit=True, hit_node="else", ...})
 - 类型3 未识别到页面: AnalyzeResult(box=None, detail={hit=False, ...})
 """
 
@@ -140,7 +140,7 @@ class CovertStage(CustomRecognition):
         返回值（兼容 IfElseAction）:
         - CustomRecognition.AnalyzeResult:
             类型1 命中关卡: box=选中关卡的 ROI，detail 包含 hit=True/hit_node="if"/区域/关卡/持有数等信息
-            类型2 页面正确但无命中: box=[0,0,0,0]，detail 包含 hit=True/hit_node="else"
+            类型2 页面正确但无命中: box=[0,0,1280,720]，detail 包含 hit=True/hit_node="else"
             类型3 未识别到页面: box=None，detail 包含 hit=False
 
         执行流程:
@@ -156,7 +156,7 @@ class CovertStage(CustomRecognition):
            b. 跳过无命中关卡的区域
            c. 第一个满足条件的区域，按 STAGE_PRIORITY 选最优关卡并返回
         9. 所有区域均不满足 → 根据 tabs_found_count 区分：
-           a. tabs_found_count == 3（页面正确但无命中）→ 返回 box=[0,0,0,0]
+           a. tabs_found_count == 3（页面正确但无命中）→ 返回 box=[0,0,1280,720]
            b. tabs_found_count < 3（未识别到页面）→ 返回 box=None
         """
         image = argv.image
@@ -266,7 +266,7 @@ class CovertStage(CustomRecognition):
 
         if tabs_found_count == 3:
             return CustomRecognition.AnalyzeResult(
-                box=[0, 0, 0, 0],
+                box=[0, 0, 1280, 720],
                 detail={
                     "hit": True,
                     "hit_node": "else",
