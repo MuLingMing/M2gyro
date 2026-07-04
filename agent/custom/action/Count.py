@@ -38,7 +38,7 @@ class Count(CustomAction):
         "next_node": ["node1", "node2"],
         "else_node": ["node3"],
         "reset_node": ["node4"],
-        "logger_count": False,
+        "logger_count": 0,
         "log_else": "当前运行次数为{count}, 目标次数为{target_count}",
         "log_next": "{node_name}已达到目标次数{target_count}"
     }
@@ -57,16 +57,15 @@ class Count(CustomAction):
     - reset_node: 将指定节点的 count 重置为 0
       - 支持多个节点
       - 可以为空
-    - logger_count: 是否输出运行次数或按倍数输出运行次数，默认 False
-      - False: 不输出运行次数
-      - True: 不输出运行次数到达目标次数前的次数，仅输出达到目标次数时的次数
+    - logger_count: 输出运行次数的频率控制，默认 0（不输出）
+      - 0 或负数: 不输出运行次数
       - 正整数: 每 logger_count 次输出一次
     - log_else: 未达标时的自定义日志模板，支持占位符
       - 可用占位符：{count}, {target_count}, {node_name}, {next_node}, {else_node}
-      - 在 logger_count 为任意非 False 值时且 log_else 为 True 时，生效
+      - 在 logger_count > 0 时且 log_else 非空时生效
     - log_next: 已达标时的自定义日志模板，支持占位符
       - 可用占位符：{count}, {target_count}, {node_name}, {next_node}, {else_node}
-      - 在 logger_count 为任意非 False 值时且 log_next 为 True 时，生效
+      - 在 logger_count > 0 时且 log_next 非空时生效
 
     备注：
     - target_count=0 时，始终执行 else_node
@@ -124,7 +123,7 @@ class Count(CustomAction):
                     "next_node": (str, list),
                     "else_node": (str, list),
                     "reset_node": (str, list),
-                    "logger_count": (bool, int),
+                    "logger_count": int,
                     "log_else": str,
                     "log_next": str,
                 }
@@ -140,7 +139,7 @@ class Count(CustomAction):
         next_node = params.get("next_node", [])
         else_node = params.get("else_node", [])
         reset_node = params.get("reset_node", [])
-        logger_count = params.get("logger_count", False)
+        logger_count: int = params.get("logger_count", 0)
         log_else = params.get("log_else", "")
         log_next = params.get("log_next", "")
 
@@ -310,24 +309,21 @@ class Count(CustomAction):
             logger.warning(f"Count: 日志模板格式化失败: {e}，使用原始消息")
             return log_message
 
-    def _magnitude(self, count: int, logger_count: int | bool = False) -> bool:
+    def _magnitude(self, count: int, logger_count: int = 0) -> bool:
         """
         判断是否需要输出运行次数
 
         参数:
         - count: 当前计数
         - logger_count: 输出频率控制参数
-          - False/True: 不输出
+          - 0 或负数: 不输出
           - 正整数: 每 logger_count 次输出一次（含第 1 次和第 logger_count 次）
-          - 非正整数或其他类型: 使用默认行为（每 10 次输出一次）
 
         返回值:
         - bool: 是否需要输出
         """
         if count <= 0:
             return False
-        if logger_count is False or logger_count is True:
-            return False  # False/True 都不输出（True 的输出由 log_next 处理）
-        if not isinstance(logger_count, int) or logger_count <= 0:
-            return count % 10 == 0 or count == 1 or count == 10
+        if logger_count <= 0:
+            return False
         return count % logger_count == 0 or count == 1 or count == logger_count

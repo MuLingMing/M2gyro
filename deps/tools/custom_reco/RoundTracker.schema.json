@@ -15,7 +15,7 @@
 		"properties": {
 			"custom_recognition_param": {
 				"$ref": "#/definitions/RoundTrackerParam",
-				"description": "RoundTracker 轮次追踪识别器参数\n\n在固定 ROI 内 OCR 识别\"当前轮次：xx\"，提取数字并与当前轮次比较\n\n逻辑：\n- 识别到的数字 > current_round → 更新类级全局变量 _round_state，返回 box=[0,0,1280,720], hit=True\n- 识别失败或数字 ≤ current_round → 返回 box=None, hit=False\n\n状态存储：current_round 通过类变量 _round_state 按节点名保存，生命周期跟随 Python 进程\n\n兼容变体：\n- 冒号可为中文\"：\"或英文\":\"\n- \"当前轮次\"与数字之间、冒号前后允许存在空格\n\n示例：\n{\n    \"current_round\": 1,\n    \"roi\": [0, 0, 350, 650]\n}\n\n字段说明：\n- current_round: 首次执行的轮次阈值，默认 1，后续由全局状态自动跟踪\n- roi: OCR 识别区域 [x, y, w, h]，基于 720p 坐标，默认 [0, 0, 350, 650]"
+				"description": "RoundTracker 轮次追踪识别器参数\n\n在固定 ROI 内 OCR 识别\"当前轮次：xx\"，提取数字并与当前轮次比较\n\n逻辑：\n- 识别到的数字 > current_round 且 ≤ 99 → 更新类级全局变量 _round_state，返回 box=[0,0,1280,720], hit=True\n- 识别失败、数字 ≤ current_round 或 > 99 → 返回 box=None, hit=False\n\n状态存储：current_round 通过类变量 _round_state 按节点名保存，生命周期跟随 Python 进程\n\n兼容变体：\n- 冒号可为中文\"：\"、英文\":\"或缺失\n- \"当前轮次\"与数字之间允许存在空格\n\n示例：\n{\n    \"current_round\": 0,\n    \"roi\": [0, 200, 270, 150],\n    \"logger_count\": 0\n}\n\n字段说明：\n- current_round: 首次执行的轮次阈值，默认 0，后续由全局状态自动跟踪\n- roi: OCR 识别区域 [x, y, w, h]，基于 720p 坐标，默认 [0, 200, 270, 150]\n- logger_count: 输出频率控制，默认 0（不输出）。0 或负数不输出，正整数 N 每 N 轮输出一次（轮次更新时判断，初次更新也会输出）"
 			}
 		}
 	},
@@ -25,7 +25,7 @@
 			"properties": {
 				"current_round": {
 					"type": "integer",
-					"default": 1,
+					"default": 0,
 					"description": "当前记录的轮次阈值。首次执行时使用此值，后续通过类级全局变量 _round_state 自动跟踪更新"
 				},
 				"roi": {
@@ -37,11 +37,16 @@
 					"maxItems": 4,
 					"default": [
 						0,
-						0,
-						350,
-						650
+						200,
+						270,
+						150
 					],
 					"description": "OCR 识别区域 [x, y, w, h]，基于 720p 坐标"
+				},
+				"logger_count": {
+					"type": "integer",
+					"default": 0,
+					"description": "输出频率控制，默认 0（不输出）\n\n- 0 或负数: 不输出轮次状态\n- 正整数 N: 每 N 轮输出一次（轮次更新时判断，初次从0更新也会输出）"
 				}
 			},
 			"additionalProperties": false

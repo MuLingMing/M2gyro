@@ -73,5 +73,10 @@
 		"type": "recognition",
 		"class": "MultiRecognition",
 		"file_path": "custom/recognition/MultiRecognition.py"
+	},
+	"SetGlobalState": {
+		"type": "action",
+		"class": "SetGlobalState",
+		"file_path": "custom/action/SetGlobalState.py"
 	}
 }

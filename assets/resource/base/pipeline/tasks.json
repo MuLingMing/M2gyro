@@ -1,4 +1,22 @@
 {
+    // 任务开始层，避免开始节点无法override任务参数配置的next
+    "任务开始层": {
+        "next": [
+            "任务参数配置"
+        ]
+    },
+    "任务参数配置": {
+        // 设置全局状态
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "SetGlobalState",
+                "custom_action_param": {}
+            }
+        },
+        // option重写next，设置任务参数配置后的下一个任务
+        "next": []
+    },
     //任务总层
     "迷津任务": {},
     "戏剧任务": {},
@@ -25,7 +43,7 @@
             "param": {
                 "custom_action": "Count",
                 "custom_action_param": {
-                    "logger_count": true,
+                    "logger_count": 10,
                     "count": 0,
                     "target_count": 0,
                     "else_node": "确认选择_倍率选择",
@@ -122,7 +140,7 @@
                     "next_node": [
                         "无尽继续挑战倍率选择"
                     ],
-                    "logger_count": false,
+                    "logger_count": 10,
                     "log_else": "当前波次为{count}",
                     "log_next": "已达到使用倍率书的波次，每{target_count}次使用倍率书"
                 }

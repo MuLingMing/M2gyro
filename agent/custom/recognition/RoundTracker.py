@@ -27,19 +27,23 @@ from maa.context import Context
 from maa.custom_recognition import CustomRecognition
 from maa.define import OCRResult, RectType
 from maa.pipeline import JOCR, JRecognitionType
+from param_merger import ParamMerger
 from utils.logger import logger
 
 # 默认识别区域 [x, y, w, h]，基于 720p
-DEFAULT_ROI: RectType = [0, 0, 350, 650]
+DEFAULT_ROI: RectType = [0,200,270,150]
 
 # 默认当前轮次
-DEFAULT_CURRENT_ROUND: int = 1
+DEFAULT_CURRENT_ROUND: int = 0
+
+# 最大轮次限制
+MAX_ROUND: int = 99
 
 # 全屏 box，用于返回识别成功
 SCREEN_BOX: RectType = (0, 0, 1280, 720)
 
-# 轮次文本匹配正则：兼容中英文冒号及空格
-_ROUND_PATTERN = re.compile(r"当前轮次\s*[：:]\s*(\d+)")
+# 轮次文本匹配正则：兼容中英文冒号及空格，冒号可选
+_ROUND_PATTERN = re.compile(r"当前轮次[：:\s]*(\d+)")
 
 
 class RoundTracker(CustomRecognition):
@@ -51,7 +55,8 @@ class RoundTracker(CustomRecognition):
     参数格式（custom_recognition_param）：
     {
         "current_round": 1,           // 当前记录的轮次，默认 1
-        "roi": [100, 100, 200, 50]    // 识别区域 [x, y, w, h]，默认 DEFAULT_ROI
+        "roi": [100, 100, 200, 50],   // 识别区域 [x, y, w, h]，默认 DEFAULT_ROI
+        "logger_count": 0             // 输出频率控制，默认 0（不输出）
     }
 
     状态说明：
@@ -61,6 +66,7 @@ class RoundTracker(CustomRecognition):
     字段说明：
     - current_round: 当前记录的轮次阈值，识别到更大的数字时更新
     - roi: OCR 识别区域，基于 720p 坐标
+    - logger_count: 输出频率控制，默认 0（不输出）。0 或负数不输出，正整数 N 每 N 轮输出一次（轮次更新时判断）
 
     返回值：
     - 识别成功且轮次增加:
@@ -86,6 +92,9 @@ class RoundTracker(CustomRecognition):
 
     # 类级全局状态：节点名 -> 当前轮次
     _round_state: Dict[str, int] = {}
+
+    # 类级全局状态：输出频率控制
+    _logger_count: int = 0
 
     def analyze(
         self,
@@ -118,6 +127,7 @@ class RoundTracker(CustomRecognition):
         params = self._parse_params_from_node(context, argv.node_name)
         current_round: int = params["current_round"]
         roi: tuple[int, int, int, int] = params["roi"]
+        logger_count: int = params["logger_count"] if params["logger_count"] > 0 else RoundTracker._logger_count
 
         detected_round = self._recognize_round(context, image, roi)
         if detected_round is None:
@@ -132,6 +142,12 @@ class RoundTracker(CustomRecognition):
 
         if detected_round > current_round:
             RoundTracker._set_current_round(argv.node_name, detected_round)
+
+            # 基于轮次判断是否输出（初次更新或达到指定倍数时输出）
+            if logger_count > 0 and (current_round == 0 or self._magnitude(detected_round, logger_count)):
+                logger.info(
+                    f"当前轮次为 {detected_round}"
+                )
 
             return CustomRecognition.AnalyzeResult(
                 box=SCREEN_BOX,
@@ -155,28 +171,44 @@ class RoundTracker(CustomRecognition):
     @staticmethod
     def _parse_params_from_node(context: Context, node_name: str) -> Dict[str, Any]:
         """
-        从节点配置和全局状态中解析参数
+        从节点配置、attach 参数和全局状态中解析参数
 
         - roi 从节点配置的 custom_recognition_param 读取
-        - current_round 从全局状态文件读取，无记录则使用节点配置的默认值
+        - current_round 从全局状态读取，无记录则使用节点配置的默认值
+        - 支持 attach 参数合并（通过 ParamMerger）
 
         参数:
         - context: 上下文对象
         - node_name: 当前节点名称
 
         返回值:
-        - dict: 包含 current_round 和 roi 的字典
+        - dict: 包含 current_round、roi 和 logger_count 的字典
         """
         node_data = context.get_node_data(node_name)
         node_reco_param = (
             node_data.get("recognition", {}).get("param", {}) if node_data else {}
         )
         raw_param = node_reco_param.get("custom_recognition_param", {})
+
+        # attach 参数合并
+        if isinstance(raw_param, dict) and node_data:
+            attach_params = node_data.get("attach", {})
+            if attach_params:
+                schema = {
+                    "current_round": int,
+                    "roi": (list, tuple),
+                    "logger_count": int,
+                }
+                raw_param = ParamMerger.merge(
+                    "recognition", raw_param, attach_params, schema
+                )
+
         parsed = RoundTracker._parse_params(raw_param)
 
         parsed["current_round"] = RoundTracker._get_current_round(
             node_name, parsed["current_round"]
         )
+
         return parsed
 
     @classmethod
@@ -205,6 +237,24 @@ class RoundTracker(CustomRecognition):
         cls._round_state[node_name] = value
 
     @staticmethod
+    def _magnitude(count: int, logger_count: int) -> bool:
+        """
+        判断是否需要输出轮次状态
+
+        参数:
+        - count: 当前轮次
+        - logger_count: 输出频率控制参数
+          - 0 或负数: 不输出
+          - 正整数: 每 logger_count 轮输出一次（含第 1 轮和第 logger_count 轮）
+
+        返回值:
+        - bool: 是否需要输出
+        """
+        if count <= 0 or logger_count <= 0:
+            return False
+        return count % logger_count == 0 or count == 1 or count == logger_count
+
+    @staticmethod
     def _parse_params(raw_param: Union[str, Dict[str, Any], None]) -> Dict[str, Any]:
         """
         解析 custom_recognition_param 参数
@@ -229,11 +279,17 @@ class RoundTracker(CustomRecognition):
 
         current_round = params.get("current_round", DEFAULT_CURRENT_ROUND)
         roi = params.get("roi", DEFAULT_ROI)
+        logger_count = params.get("logger_count", 0)
 
         try:
             current_round = int(current_round)
         except (ValueError, TypeError):
             current_round = DEFAULT_CURRENT_ROUND
+
+        try:
+            logger_count = int(logger_count)
+        except (ValueError, TypeError):
+            logger_count = 0
 
         if isinstance(roi, (list, tuple)) and len(roi) == 4:
             try:
@@ -243,7 +299,7 @@ class RoundTracker(CustomRecognition):
         else:
             roi = DEFAULT_ROI
 
-        return {"current_round": current_round, "roi": roi}
+        return {"current_round": current_round, "roi": roi, "logger_count": logger_count}
 
     @staticmethod
     def _recognize_round(
@@ -281,10 +337,15 @@ class RoundTracker(CustomRecognition):
                     text = r.text.strip().replace(" ", "")
                     match = _ROUND_PATTERN.search(text)
                     if match:
-                        return int(match.group(1))
+                        detected = int(match.group(1))
+                        if detected <= MAX_ROUND:
+                            return detected
 
             # 情况 2：同一行内多个结果被拆分，按行拼接后匹配
-            return RoundTracker._recognize_by_line(result.all_results)
+            detected = RoundTracker._recognize_by_line(result.all_results)
+            if detected is not None and detected <= MAX_ROUND:
+                return detected
+            return None
         except Exception as e:
             logger.error(f"RoundTracker: OCR 识别异常: {e}")
         return None
@@ -313,6 +374,7 @@ class RoundTracker(CustomRecognition):
                 {
                     "text": text,
                     "x": x,
+                    "w": w,
                     "center_y": y + h / 2,
                     "h": h,
                 }
@@ -321,29 +383,44 @@ class RoundTracker(CustomRecognition):
         if not items:
             return None
 
-        # 按竖直中心线排序并聚类成行
-        items.sort(key=lambda item: item["center_y"])
-        lines: List[List[Dict[str, Any]]] = []
-        current_line = [items[0]]
-        threshold = max(items[0]["h"] * 0.5, 10)
+        # 找到包含"轮次"的文本
+        round_keyword_item = None
+        for item in items:
+            if "轮次" in item["text"]:
+                round_keyword_item = item
+                break
 
-        for item in items[1:]:
-            last = current_line[-1]
-            if abs(item["center_y"] - last["center_y"]) <= threshold:
-                current_line.append(item)
-            else:
-                lines.append(current_line)
-                current_line = [item]
-                threshold = max(item["h"] * 0.5, 10)
-        lines.append(current_line)
+        if not round_keyword_item:
+            return None
 
-        # 对每行按 x 坐标排序、拼接文本、匹配正则
-        for line in lines:
-            line.sort(key=lambda item: item["x"])
-            text = "".join(item["text"] for item in line)
-            match = _ROUND_PATTERN.search(text)
-            if match:
-                return int(match.group(1))
+        # 在包含"轮次"的文本右侧附近查找数字（同一行，且在其右侧）
+        keyword_center_y = round_keyword_item["center_y"]
+        keyword_x_end = round_keyword_item["x"] + round_keyword_item["w"]
+        keyword_h = round_keyword_item["h"]
+        y_threshold = max(keyword_h * 0.5, 10)
+        x_threshold = keyword_h * 2  # x方向距离阈值，基于文本高度
+
+        # 收集同一行且在"轮次"文本右侧的数字
+        nearby_items = []
+        for item in items:
+            if item is round_keyword_item:
+                continue
+            # 检查是否在同一行（y坐标接近）
+            if abs(item["center_y"] - keyword_center_y) > y_threshold:
+                continue
+            # 检查是否在右侧（x坐标在关键词右侧附近）
+            if item["x"] < keyword_x_end - 5 or item["x"] > keyword_x_end + x_threshold:
+                continue
+            # 只收集纯数字
+            if item["text"].isdigit():
+                nearby_items.append(item)
+
+        # 按 x 坐标排序并拼接数字
+        nearby_items.sort(key=lambda item: item["x"])
+        digits = "".join(item["text"] for item in nearby_items)
+
+        if digits:
+            return int(digits)
 
         return None
 

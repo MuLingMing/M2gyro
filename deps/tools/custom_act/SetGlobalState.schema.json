@@ -1,0 +1,29 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "./custom_act/SetGlobalState.schema.json",
+	"if": {
+		"properties": {
+			"custom_action": {
+				"const": "SetGlobalState"
+			}
+		},
+		"required": [
+			"custom_action"
+		]
+	},
+	"then": {
+		"properties": {
+			"custom_action_param": {
+				"$ref": "#/definitions/SetGlobalStateParam",
+				"description": "SetGlobalState 设置类级全局状态参数（扁平格式，与 attach 格式一致）\n\n通过 setattr 设置自定义识别器/执行器的类级全局变量\n\n示例：\n{\n    \"RoundTracker._logger_count\": 5\n}\n\n字段说明：\n- 键: 格式为 \"类名.属性名\"，使用点分隔\n  - 类名必须在 _CLASS_REGISTRY 中注册（即 custom.json 中的 class 字段）\n  - 属性名建议以 _ 开头（类级全局状态惯例）\n- 值: 要设置的属性值，支持 int、float、str、bool、list、dict、null"
+			}
+		}
+	},
+	"definitions": {
+		"SetGlobalStateParam": {
+			"type": "object",
+			"additionalProperties": true,
+			"description": "扁平格式的属性设置字典，键为 \"类名.属性名\"，值为要设置的值\n\n可修改的类级变量：\n- RoundTracker\n  - _logger_count (int): 输出频率控制，默认 0（不输出）\n  - _round_state (Dict[str, int]): 节点名 -> 当前轮次，重置为 {}"
+		}
+	}
+}

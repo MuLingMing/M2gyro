@@ -1,250 +1,299 @@
 {
-    "interface_version": 2,
-    "name": "委托",
-    "controller": [],
-    "resource": [],
-    "task": [
-        {
-            "name": "角色经验",
-            "entry": "角色经验",
-            "description": "角色经验本，避险。仅支持50级副本。",
-            "option": [
-                "角色经验等级",
-                "通用设置"
-            ]
-        },
-        {
-            "name": "角色突破",
-            "entry": "角色突破",
-            "description": "角色突破本，探险/无尽。",
-            "option": [
-                "角色突破等级",
-                "通用设置",
-                "波次选择",
-                "使用倍率书的波次"
-            ]
-        },
-        {
-            "name": "武器经验",
-            "entry": "武器经验",
-            "description": "武器经验本，驱逐。仅支持50级副本。",
-            "option": [
-                "武器经验等级",
-                "通用设置"
-            ]
-        },
-        {
-            "name": "武器突破",
-            "entry": "武器突破",
-            "description": "武器突破本，调停。",
-            "option": [
-                "武器突破等级",
-                "通用设置",
-                "波次选择",
-                "使用倍率书的波次"
-            ]
-        },
-        {
-            "name": "魔之楔本",
-            "entry": "魔之楔本",
-            "description": "魔之楔本，驱离。",
-            "option": [
-                "魔之楔本等级",
-                "通用设置"
-            ]
-        },
-        {
-            "name": "深红凝珠",
-            "entry": "深红凝珠",
-            "description": "深红凝珠本，护送。仅支持50级副本。",
-            "option": [
-                "深红凝珠等级",
-                "通用设置"
-            ]
-        },
-        {
-            "name": "皎皎信物",
-            "entry": "皎皎信物",
-            "description": "皎皎信物本，扼守/无尽。仅支持50级副本。",
-            "option": [
-                "皎皎信物等级",
-                "通用设置",
-                "波次选择",
-                "使用倍率书的波次"
-            ]
-        }
-    ],
-    "option": {
-        "角色经验等级": {
-            "type": "select",
-            "label": "等级选择",
-            "description": "仅支持40级。",
-            "cases": [
-                {
-                    "name": "40",
-                    "pipeline_override": {
-                        "委托等级识别": {
-                            "expected": "40"
-                        }
-                    }
-                }
-            ]
-        },
-        "角色突破等级": {
-            "type": "select",
-            "label": "等级选择",
-            "description": "仅支持40级，主控黎瑟，需要手动选择水本。",
-            "cases": [
-                {
-                    "name": "40",
-                    "pipeline_override": {
-                        "委托等级识别": {
-                            "expected": "40",
-                            "next": "角色突破40探险"
-                        }
-                    }
-                }
-            ]
-        },
-        "武器经验等级": {
-            "type": "select",
-            "label": "等级选择",
-            "description": "仅支持50级，仅限赛琪。",
-            "cases": [
-                {
-                    "name": "50",
-                    "pipeline_override": {
-                        "委托等级识别": {
-                            "expected": "50",
-                            "next": "武器经验50驱逐"
-                        }
-                    }
-                }
-            ]
-        },
-        "武器突破等级": {
-            "type": "select",
-            "label": "等级选择",
-            "description": "仅支持50级。",
-            "cases": [
-                {
-                    "name": "50"
-                }
-            ]
-        },
-        "魔之楔本等级": {
-            "type": "select",
-            "label": "等级选择",
-            "description": "40、60、80、100。",
-            "cases": [
-                {
-                    "name": "40",
-                    "pipeline_override": {
-                        "委托等级识别": {
-                            "expected": "40"
-                        }
-                    }
-                },
-                {
-                    "name": "60",
-                    "pipeline_override": {
-                        "委托等级识别": {
-                            "expected": "60"
-                        }
-                    }
-                },
-                {
-                    "name": "80",
-                    "pipeline_override": {
-                        "委托等级识别": {
-                            "expected": "80"
-                        }
-                    }
-                },
-                {
-                    "name": "100",
-                    "pipeline_override": {
-                        "委托等级识别": {
-                            "expected": "100"
-                        }
-                    }
-                }
-            ]
-        },
-        "深红凝珠等级": {
-            "type": "select",
-            "label": "等级选择",
-            "description": "仅支持50级。",
-            "cases": [
-                {
-                    "name": "50"
-                }
-            ]
-        },
-        "皎皎信物等级": {
-            "type": "select",
-            "label": "等级选择",
-            "description": "仅支持50级和80级。",
-            "cases": [
-                {
-                    "name": "50",
-                    "pipeline_override": {
-                        "委托等级识别": {
-                            "expected": "50",
-                            "next": [
-                                "皎皎信物50扼守"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "80",
-                    "pipeline_override": {
-                        "委托等级识别": {
-                            "expected": "80",
-                            "next": [
-                                "皎皎信物80扼守"
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
-        "波次选择": {
-            "type": "input",
-            "inputs": [
-                {
-                    "name": "ocr_expected",
-                    "label": "波次选择",
-                    "description": "输入每次委托最大波次数，默认为99。",
-                    "pipeline_type": "string",
-                    "default": "99"
-                }
-            ],
-            "pipeline_override": {
-                "波次选择": {
-                    "expected": "{ocr_expected}"
-                }
-            }
-        },
-        "使用倍率书的波次": {
-            "type": "input",
-            "inputs": [
-                {
-                    "name": "target_count",
-                    "label": "倍率波次",
-                    "description": "输入倍率书的波次，默认为0，即不使用倍率书。\n选择指定波次使用倍率书时建议手动关闭自动波次。",
-                    "pipeline_type": "int",
-                    "default": "0"
-                }
-            ],
-            "pipeline_override": {
-                "无尽波次选择倍率书或密函": {
-                    "attach": {
-                        "target_count": "{target_count}"
-                    }
-                }
-            }
-        }
-    }
+	"interface_version": 2,
+	"name": "委托",
+	"controller": [],
+	"resource": [],
+	"task": [
+		{
+			"name": "角色经验",
+			"entry": "任务开始层",
+			"description": "角色经验本，避险。仅支持50级副本。",
+			"option": [
+				"角色经验等级",
+				"通用设置"
+			],
+			"pipeline_override": {
+				"任务参数配置": {
+					"next": [
+						"角色经验"
+					]
+				}
+			}
+		},
+		{
+			"name": "角色突破",
+			"entry": "任务开始层",
+			"description": "角色突破本，探险/无尽。",
+			"option": [
+				"角色突破等级",
+				"通用设置",
+				"波次选择",
+				"使用倍率书的波次"
+			],
+			"pipeline_override": {
+				"任务参数配置": {
+					"next": [
+						"角色突破"
+					]
+				}
+			}
+		},
+		{
+			"name": "武器经验",
+			"entry": "任务开始层",
+			"description": "武器经验本，驱逐。仅支持50级副本。",
+			"option": [
+				"武器经验等级",
+				"通用设置"
+			],
+			"pipeline_override": {
+				"任务参数配置": {
+					"next": [
+						"武器经验"
+					]
+				}
+			}
+		},
+		{
+			"name": "武器突破",
+			"entry": "任务开始层",
+			"description": "武器突破本，调停。",
+			"option": [
+				"武器突破等级",
+				"通用设置",
+				"波次选择",
+				"使用倍率书的波次"
+			],
+			"pipeline_override": {
+				"任务参数配置": {
+					"next": [
+						"武器突破"
+					]
+				}
+			}
+		},
+		{
+			"name": "魔之楔本",
+			"entry": "任务开始层",
+			"description": "魔之楔本，驱离。",
+			"option": [
+				"魔之楔本等级",
+				"通用设置"
+			],
+			"pipeline_override": {
+				"任务参数配置": {
+					"next": [
+						"魔之楔本"
+					]
+				}
+			}
+		},
+		{
+			"name": "深红凝珠",
+			"entry": "任务开始层",
+			"description": "深红凝珠本，护送。仅支持50级副本。",
+			"option": [
+				"深红凝珠等级",
+				"通用设置"
+			],
+			"pipeline_override": {
+				"任务参数配置": {
+					"next": [
+						"深红凝珠"
+					]
+				}
+			}
+		},
+		{
+			"name": "皎皎信物",
+			"entry": "任务开始层",
+			"description": "皎皎信物本，扼守/无尽。仅支持50级副本。",
+			"option": [
+				"皎皎信物等级",
+				"通用设置",
+				"波次选择",
+				"使用倍率书的波次"
+			],
+			"pipeline_override": {
+				"任务参数配置": {
+					"next": [
+						"皎皎信物"
+					]
+				}
+			}
+		}
+	],
+	"option": {
+		"角色经验等级": {
+			"type": "select",
+			"label": "等级选择",
+			"description": "仅支持40级。",
+			"cases": [
+				{
+					"name": "40",
+					"pipeline_override": {
+						"委托等级识别": {
+							"expected": "40"
+						}
+					}
+				}
+			]
+		},
+		"角色突破等级": {
+			"type": "select",
+			"label": "等级选择",
+			"description": "仅支持40级，主控黎瑟，需要手动选择水本。",
+			"cases": [
+				{
+					"name": "40",
+					"pipeline_override": {
+						"委托等级识别": {
+							"expected": "40",
+							"next": "角色突破40探险"
+						}
+					}
+				}
+			]
+		},
+		"武器经验等级": {
+			"type": "select",
+			"label": "等级选择",
+			"description": "仅支持50级，仅限赛琪。",
+			"cases": [
+				{
+					"name": "50",
+					"pipeline_override": {
+						"委托等级识别": {
+							"expected": "50",
+							"next": "武器经验50驱逐"
+						}
+					}
+				}
+			]
+		},
+		"武器突破等级": {
+			"type": "select",
+			"label": "等级选择",
+			"description": "仅支持50级。",
+			"cases": [
+				{
+					"name": "50"
+				}
+			]
+		},
+		"魔之楔本等级": {
+			"type": "select",
+			"label": "等级选择",
+			"description": "40、60、80、100。",
+			"cases": [
+				{
+					"name": "40",
+					"pipeline_override": {
+						"委托等级识别": {
+							"expected": "40"
+						}
+					}
+				},
+				{
+					"name": "60",
+					"pipeline_override": {
+						"委托等级识别": {
+							"expected": "60"
+						}
+					}
+				},
+				{
+					"name": "80",
+					"pipeline_override": {
+						"委托等级识别": {
+							"expected": "80"
+						}
+					}
+				},
+				{
+					"name": "100",
+					"pipeline_override": {
+						"委托等级识别": {
+							"expected": "100"
+						}
+					}
+				}
+			]
+		},
+		"深红凝珠等级": {
+			"type": "select",
+			"label": "等级选择",
+			"description": "仅支持50级。",
+			"cases": [
+				{
+					"name": "50"
+				}
+			]
+		},
+		"皎皎信物等级": {
+			"type": "select",
+			"label": "等级选择",
+			"description": "仅支持50级和80级。",
+			"cases": [
+				{
+					"name": "50",
+					"pipeline_override": {
+						"委托等级识别": {
+							"expected": "50",
+							"next": [
+								"皎皎信物50扼守"
+							]
+						}
+					}
+				},
+				{
+					"name": "80",
+					"pipeline_override": {
+						"委托等级识别": {
+							"expected": "80",
+							"next": [
+								"皎皎信物80扼守"
+							]
+						}
+					}
+				}
+			]
+		},
+		"波次选择": {
+			"type": "input",
+			"inputs": [
+				{
+					"name": "ocr_expected",
+					"label": "波次选择",
+					"description": "输入每次委托最大波次数，默认为99。",
+					"pipeline_type": "string",
+					"default": "99"
+				}
+			],
+			"pipeline_override": {
+				"波次选择": {
+					"expected": "{ocr_expected}"
+				}
+			}
+		},
+		"使用倍率书的波次": {
+			"type": "input",
+			"inputs": [
+				{
+					"name": "target_count",
+					"label": "倍率波次",
+					"description": "输入倍率书的波次，默认为0，即不使用倍率书。\n选择指定波次使用倍率书时建议手动关闭自动波次。",
+					"pipeline_type": "int",
+					"default": "0"
+				}
+			],
+			"pipeline_override": {
+				"无尽波次选择倍率书或密函": {
+					"attach": {
+						"target_count": "{target_count}"
+					}
+				}
+			}
+		}
+	}
 }

@@ -384,5 +384,18 @@
 				}
 			}
 		}
+	},
+	"test_SetGlobalState": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "SetGlobalState",
+				"custom_action_param": {
+					"RoundTracker": {
+						"_logger_count": 10
+					}
+				}
+			}
+		}
 	}
 }

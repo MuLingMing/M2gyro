@@ -7,7 +7,23 @@ Agent调试启动器
 import os
 import json
 import importlib
+from typing import Dict
 from maa.agent.agent_server import AgentServer
+
+# 全局类注册表：类名 -> 类对象
+# 供 SetGlobalState 等自定义动作查找目标类
+_CLASS_REGISTRY: Dict[str, type] = {}
+
+
+def get_class_registry() -> Dict[str, type]:
+    """
+    获取全局类注册表
+
+    返回值:
+    - Dict[str, type]: 类名到类对象的映射
+    """
+    return _CLASS_REGISTRY
+
 
 # 读取 custom.json 文件
 def load_custom_agents():
@@ -37,7 +53,10 @@ def load_custom_agents():
         
         # 动态创建代理类并注册
         agent_proxy_class = type(f"Agent_{class_name}", (agent_class,), {})
-        
+
+        # 注册到全局类注册表
+        _CLASS_REGISTRY[class_name] = agent_class
+
         if agent_info["type"] == "action":
             AgentServer.custom_action(agent_name)(agent_proxy_class)
         elif agent_info["type"] == "recognition":
