@@ -12,7 +12,7 @@
 - 距离信息读取（OCR）
 - 多目标选择（接口化，可扩展）
 - 自动移动（平台适配，复用 OperationRecording）
-- 卡住检测与处理（Pipeline self-loop）
+- 运动状态评估（到达 / 卡住 / 接近中）
 
 ### 1.3 技术栈
 
@@ -43,6 +43,7 @@
 │ • OCR 提取距离       │    ───►   │ • 调用 platform.move│
 │ • 选择最优目标       │           │ • release_all 释放  │
 │ • 计算移动方向       │           │                     │
+│ • 评估运动状态       │           │                     │
 └─────────────────────┘           └─────────────────────┘
         │                                   │
         └─────────────────┬─────────────────┘
@@ -61,23 +62,23 @@
 
 ### 2.2 设计原则
 
-- **Reco 职责**：根据截图返回信息（目标位置、距离、方向）
+- **Reco 职责**：根据截图返回信息（目标位置、距离、方向、运动状态）
 - **Action 职责**：根据 Reco 返回的信息执行移动操作
 - **选择器**：通过 `selector/` 目录下的可插拔类实现多目标选择策略
 - **平台层**：复用 OperationRecording 的 PlatformFactory，不重复实现
-- **卡住检测**：由 Pipeline self-loop 隐式完成，Action 内不做检测
+- **卡住/到达检测**：由 PathFindingReco 跨帧跟踪并在 `detail.state` 中返回，Pipeline 根据状态决定分支；Action 内不做检测
 
 ### 2.3 组件清单
 
-| 组件 | 类型 | 职责 |
-|------|------|------|
-| **PathFindingReco** | Custom Recognition | 识别目标、提取距离、计算方向、选择目标 |
-| **PathFinderAction** | Custom Action | 执行移动、释放按键 |
-| **TargetSelector** | Python 接口 | 目标选择策略（抽象基类） |
-| **PriorityTargetSelector** | 预置实现 | 按模板优先级选择 |
-| **NearestTargetSelector** | 预置实现 | 按距离最近选择 |
-| **CompositeTargetSelector** | 预置实现 | 按类型优先级 + 距离组合选择 |
-| **PlatformFactory** | 复用 | 平台操作适配（OperationRecording） |
+| 组件                        | 类型               | 职责                                                 |
+| --------------------------- | ------------------ | ---------------------------------------------------- |
+| **PathFindingReco**         | Custom Recognition | 识别目标、提取距离、计算方向、选择目标、评估运动状态 |
+| **PathFinderAction**        | Custom Action      | 执行移动、释放按键                                   |
+| **TargetSelector**          | Python 接口        | 目标选择策略（抽象基类）                             |
+| **PriorityTargetSelector**  | 预置实现           | 按模板优先级选择                                     |
+| **NearestTargetSelector**   | 预置实现           | 按距离最近选择                                       |
+| **CompositeTargetSelector** | 预置实现           | 按类型优先级 + 距离组合选择                          |
+| **PlatformFactory**         | 复用               | 平台操作适配（OperationRecording）                   |
 
 ---
 
@@ -119,17 +120,21 @@ assets/resource/image/
 
 ### 3.2 PathFindingReco 参数
 
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `expected_templates` | `list[str]` | `[]` | 期望匹配的模板列表（必填） |
-| `roi` | `list[int]` | `[0, 0, 1280, 720]` | 识别区域 [x, y, w, h] |
-| `threshold` | `float` | `0.8` | 匹配阈值 (0-1) |
-| `selector_type` | `str` | `"priority"` | 选择器类型：`priority` / `nearest` / `composite` |
-| `selector_priority` | `list[int\|str]` | `[]` | 选择器优先级（支持索引或名称格式） |
-| `distance_pattern` | `str` | `"(\d+)米"` | 距离 OCR 正则表达式 |
-| `distance_offset` | `list[int]` | `[10, 10, 20, 20]` | 距离 OCR 区域偏移 [left, top, right, bottom] |
-| `distance_threshold` | `float` | `0.3` | OCR 置信度阈值 |
-| `dead_zone` | `int` | `50` | 方向判断死区（像素，欧氏距离） |
+| 参数                       | 类型             | 默认值              | 说明                                                                      |
+| -------------------------- | ---------------- | ------------------- | ------------------------------------------------------------------------- |
+| `expected_templates`       | `list[str]`      | `[]`                | 期望匹配的模板列表（必填）                                                |
+| `roi`                      | `list[int]`      | `[0, 0, 1280, 720]` | 识别区域 [x, y, w, h]                                                     |
+| `threshold`                | `float`          | `0.8`               | 匹配阈值 (0-1)                                                            |
+| `selector_type`            | `str`            | `"priority"`        | 选择器类型：`priority` / `nearest` / `composite`                          |
+| `selector_priority`        | `list[int\|str]` | `[]`                | 选择器优先级（支持索引或名称格式）                                        |
+| `distance_pattern`         | `str`            | `"(\d+)米"`         | 距离 OCR 正则表达式                                                       |
+| `distance_offset`          | `list[int]`      | `[10, 10, 20, 20]`  | 距离 OCR 区域偏移 [left, top, right, bottom]                              |
+| `distance_threshold`       | `float`          | `0.3`               | OCR 置信度阈值                                                            |
+| `dead_zone`                | `int`            | `50`                | 方向判断死区（像素，欧氏距离），目标在死区内时返回 `direction="centered"` |
+| `arrival_distance`         | `int`            | `30`                | 到达判定距离阈值（像素），OCR 距离 ≤ 此值时 `state="arrived"`             |
+| `stuck_threshold`          | `int`            | `3`                 | 卡住判定连续帧数，连续达到此值时 `state="stuck"`                          |
+| `stuck_distance_tolerance` | `int`            | `5`                 | 卡住距离容差（像素），相邻两帧距离缩短值 ≤ 此值视为无进展                 |
+| `stuck_center_tolerance`   | `int`            | `10`                | 卡住中心偏移容差（像素），无距离信息时相邻两帧中心偏移 ≤ 此值视为无进展   |
 
 #### 返回值格式
 
@@ -147,7 +152,8 @@ assets/resource/image/
             "score": 0.95,
             "distance": 150            # 可选
         },
-        "direction": "forward",        # forward/backward/left/right
+        "direction": "forward",        # forward/backward/left/right/centered
+        "state": "approaching"         # approaching/arrived/stuck
     }
 }
 
@@ -163,9 +169,15 @@ assets/resource/image/
 
 ### 3.3 PathFinderAction 参数
 
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `move_duration` | `int` | `500` | 单次移动持续时间（毫秒） |
+| 参数                 | 类型  | 默认值 | 说明                                                      |
+| -------------------- | ----- | ------ | --------------------------------------------------------- |
+| `move_duration`      | `int` | `500`  | 无距离信息时的默认移动持续时间（毫秒）                    |
+| `move_duration_far`  | `int` | `1500` | 远距离移动持续时间（毫秒），距离 ≥ `distance_far` 时使用  |
+| `move_duration_near` | `int` | `300`  | 近距离移动持续时间（毫秒），距离 ≤ `distance_near` 时使用 |
+| `distance_far`       | `int` | `200`  | 远距离阈值（像素）                                        |
+| `distance_near`      | `int` | `50`   | 近距离阈值（像素）                                        |
+
+距离在 `(distance_near, distance_far)` 之间时，移动时长按线性插值计算；`distance` 为 `None` 时回退到 `move_duration`。
 
 ### 3.4 选择器类型
 
@@ -176,7 +188,10 @@ assets/resource/image/
 ```json
 {
     "selector_type": "priority",
-    "expected_templates": ["quest_icon.png", "npc_icon.png"]
+    "expected_templates": [
+        "quest_icon.png",
+        "npc_icon.png"
+    ]
 }
 ```
 
@@ -188,7 +203,12 @@ assets/resource/image/
 {
     "selector_type": "nearest",
     "distance_pattern": "(\\d+)米",
-    "distance_offset": [10, 10, 20, 20]
+    "distance_offset": [
+        10,
+        10,
+        20,
+        20
+    ]
 }
 ```
 
@@ -199,7 +219,10 @@ assets/resource/image/
 ```json
 {
     "selector_type": "composite",
-    "expected_templates": ["quest_icon.png", "npc_icon.png"],
+    "expected_templates": [
+        "quest_icon.png",
+        "npc_icon.png"
+    ],
     "distance_pattern": "(\\d+)米"
 }
 ```
@@ -209,21 +232,39 @@ assets/resource/image/
 支持**索引格式**和**名称格式**两种写法，用于调整 `expected_templates` 的优先级顺序。
 
 **索引格式**（0-based）：
+
 ```json
 {
-    "expected_templates": ["A", "B", "C"],
-    "selector_priority": [1, 2]
+    "expected_templates": [
+        "A",
+        "B",
+        "C"
+    ],
+    "selector_priority": [
+        1,
+        2
+    ]
 }
 ```
+
 优先级：B > C > A
 
 **名称格式**：
+
 ```json
 {
-    "expected_templates": ["A", "B", "C"],
-    "selector_priority": ["B", "C"]
+    "expected_templates": [
+        "A",
+        "B",
+        "C"
+    ],
+    "selector_priority": [
+        "B",
+        "C"
+    ]
 }
 ```
+
 优先级：B > C > A
 
 ---
@@ -293,9 +334,17 @@ assets/resource/image/
         "recognition": "Custom",
         "custom_recognition": "PathFindingReco",
         "custom_recognition_param": {
-            "expected_templates": ["quest_icon.png", "npc_icon.png", "shop_icon.png"],
+            "expected_templates": [
+                "quest_icon.png",
+                "npc_icon.png",
+                "shop_icon.png"
+            ],
             "selector_type": "composite",
-            "selector_priority": ["quest_icon.png", "npc_icon.png", "shop_icon.png"]
+            "selector_priority": [
+                "quest_icon.png",
+                "npc_icon.png",
+                "shop_icon.png"
+            ]
         },
         "next": ["PathFinderAction"]
     },
@@ -362,13 +411,13 @@ platform.release_all()                   # 释放所有操作
 
 ### 6.2 可用的平台操作
 
-| OperationRecording 方法 | AutoPathFinding 用途 |
-|------------------------|---------------------|
-| `platform.move(direction, duration)` | 移动角色（forward/backward/left/right） |
-| `platform.turn(angle)` | 调整视角使目标居中 |
-| `platform.click(x, y)` | 点击屏幕目标位置 |
-| `platform.swipe(...)` | 滑动操作 |
-| `platform.release_all()` | 释放所有操作 |
+| OperationRecording 方法              | AutoPathFinding 用途                                         |
+| ------------------------------------ | ------------------------------------------------------------ |
+| `platform.move(direction, duration)` | 移动角色（forward/backward/left/right），`centered` 时不调用 |
+| `platform.turn(angle)`               | 调整视角使目标居中                                           |
+| `platform.click(x, y)`               | 点击屏幕目标位置                                             |
+| `platform.swipe(...)`                | 滑动操作                                                     |
+| `platform.release_all()`             | 释放所有操作                                                 |
 
 ---
 
@@ -413,7 +462,14 @@ platform.release_all()                   # 释放所有操作
 ┌─────────────────────────────────────────────────────────┐
 │  5. 计算方向                                             │
 │     - 角度分箱 + 圆形死区                                 │
-│     - 返回 forward/backward/left/right                  │
+│     - 返回 forward/backward/left/right/centered         │
+└─────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│  6. 评估运动状态                                         │
+│     - 跨帧跟踪目标距离与中心位置                          │
+│     - 返回 approaching / arrived / stuck                │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -467,9 +523,9 @@ def _extract_distance(self, context, img, target, param):
     """提取目标下方的距离信息"""
     import re
 
-    distance_pattern = param.get("distance_pattern", r"(\d+)米")
-    distance_offset = param.get("distance_offset", [10, 10, 20, 20])
-    distance_threshold = param.get("distance_threshold", 0.3)
+    distance_pattern = param.distance_pattern
+    distance_offset = param.distance_offset
+    distance_threshold = param.distance_threshold
 
     # 计算 OCR 识别区域（基于 box 扩展 offset）
     x, y, w, h = target.bbox
@@ -525,7 +581,7 @@ def _extract_distance(self, context, img, target, param):
 import math
 
 def _calculate_direction(self, target_center, dead_zone):
-    """计算移动方向（forward/backward/left/right）"""
+    """计算移动方向（forward/backward/left/right/centered）"""
     tx, ty = target_center
     cx, cy = SCREEN_CENTER  # (640, 360)
 
@@ -533,8 +589,9 @@ def _calculate_direction(self, target_center, dead_zone):
     dy = ty - cy
 
     # 1. 圆形死区：欧氏距离（比矩形死区更自然）
+    # 目标已在屏幕中心死区内，无需移动
     if math.hypot(dx, dy) <= dead_zone:
-        return "forward"
+        return "centered"
 
     # 2. 角度分箱：用 -dy 翻转以匹配游戏方向（屏幕上方 = forward）
     angle = math.degrees(math.atan2(-dy, dx))
@@ -554,39 +611,77 @@ def _calculate_direction(self, target_center, dead_zone):
         return "backward"
 ```
 
-### 7.5 卡住检测
+### 7.5 运动状态检测
 
-**方案**：Pipeline self-loop 隐式检测
+**方案**：由 PathFindingReco 在识别阶段跨帧跟踪目标状态，并通过 `detail.state` 返回。
 
-不在 Action 内部做卡住检测（`controller.post_screencap` 会阻塞 controller）。
-由 Pipeline 的 self-loop 隐式完成：
+状态定义：
+
+- `approaching`：正在接近目标（默认状态）
+- `arrived`：OCR 距离 ≤ `arrival_distance`，判定已到达
+- `stuck`：连续 `stuck_threshold` 帧距离/中心几乎无变化，判定卡住
+
+判定逻辑（伪代码）：
+
+```python
+def _evaluate_movement_state(self, node_name, selected, param):
+    distance = selected.distance
+    if distance is not None and distance <= param.arrival_distance:
+        # 到达目标，清空该节点历史状态
+        self._path_state.pop(node_name, None)
+        return "arrived"
+
+    prev = self._path_state.get(node_name, {})
+    last_distance = prev.get("last_distance")
+    last_center = prev.get("last_center")
+    stuck_count = prev.get("stuck_count", 0)
+
+    if self._is_stuck(selected, last_distance, last_center, param):
+        stuck_count += 1
+    else:
+        stuck_count = 0
+
+    self._path_state[node_name] = {
+        "last_distance": selected.distance,
+        "last_center": selected.center,
+        "stuck_count": stuck_count,
+    }
+
+    if stuck_count >= param.stuck_threshold:
+        return "stuck"
+    return "approaching"
+```
+
+跨帧状态按 `node_name` 隔离，生命周期跟随 Python 进程。到达目标时会自动清空对应状态，避免切换节点后历史数据污染。
+
+### 7.6 状态处理
+
+PathFindingReco 返回的 `detail.state` 可与 Pipeline 分支配合使用，典型用法：
 
 ```json
 {
     "AutoPathFinding": {
         "recognition": "Custom",
         "custom_recognition": "PathFindingReco",
-        "action": "Custom",
-        "custom_action": "PathFinderAction",
-        "next": ["AutoPathFinding"]
+        "next": ["HandleState"]
+    },
+    "HandleState": {
+        "custom_action": "IfElseAction",
+        "custom_action_param": {
+            "if": ["ArrivedHandler"],
+            "else": ["PathFinderAction"]
+        }
     }
 }
 ```
 
-**原理**：
-- PathFindingReco 返回目标位置（含 OCR 距离）
-- PathFinderAction 移动一次
-- Pipeline self-loop 重新调用 PathFindingReco
-- 目标位置未变 → 继续移动（隐式重试）
-- 目标位置变化 → 移动有效，下次移动方向调整
-- 目标消失（出视野/到达）→ recognition hit=False，AutoPathFinding 节点失败，跳出循环
+> 说明：IfElseAction 默认按 `hit_node` 分支（命中目标为 `if`，未命中为 `else`）。如需按 `state` 分支，需要自定义 Action 读取 `reco_detail.best_result.detail.state`。
 
-### 7.6 卡住处理
+**处理建议**：
 
-**移除内部卡住处理逻辑**（`_handle_stuck` 已被删除）。
-卡住处理完全交由 Pipeline 调度：
-- 多次调用 PathFinderAction 但目标位置不变
-- 上层任务（如副本/活动逻辑）通过其他识别节点判断是否超时或主动放弃
+- `arrived`：结束寻路，执行后续任务（如交互、进入副本）
+- `stuck`：尝试脱卡（如释放方向键、跳一下、切换路径）
+- `approaching`：继续执行 `PathFinderAction` 移动
 
 ---
 
@@ -598,9 +693,11 @@ agent/AutoPathFinding/
 ├── README.md                       # 本文档
 ├── action/
 │   ├── __init__.py
+│   ├── param.py                    # PathFinderAction 参数数据类
 │   └── path_finder_action.py       # 自定义动作：执行移动
 ├── recognition/
 │   ├── __init__.py
+│   ├── param.py                    # PathFindingReco 参数数据类
 │   └── path_finding_reco.py        # 自定义识别：识别目标
 └── selector/
     ├── __init__.py
@@ -638,7 +735,7 @@ def _extract_distance(self, context, img, target, param):
     import re
 
     x, y, w, h = target.bbox
-    left, top, right, bottom = param.get("distance_offset", [10, 10, 20, 20])
+    left, top, right, bottom = param.distance_offset
     roi = (
         max(0, x - left),
         max(0, y - top),
@@ -648,9 +745,9 @@ def _extract_distance(self, context, img, target, param):
 
     try:
         reco_param = JOCR(
-            expected=[param.get("distance_pattern", r"(\d+)米")],
+            expected=[param.distance_pattern],
             roi=roi,
-            threshold=param.get("distance_threshold", 0.3),
+            threshold=param.distance_threshold,
         )
         reco_detail = context.run_recognition_direct(
             JRecognitionType.OCR,
@@ -663,7 +760,7 @@ def _extract_distance(self, context, img, target, param):
             if isinstance(best_result, OCRResult):
                 text = best_result.text
                 if text:
-                    match = re.search(param.get("distance_pattern", r"(\d+)米"), text)
+                    match = re.search(param.distance_pattern, text)
                     if match and match.group(1).isdigit():
                         return TargetInfo(
                             template=target.template,
@@ -706,8 +803,9 @@ class PathFindingReco(CustomRecognition):
 ```
 
 **关键 API 使用**：
+
 - `argv.image`: 获取输入图片
-- `argv.custom_recognition_param`: 获取自定义参数（JSON 字符串）
+- `argv.custom_recognition_param`: 获取自定义参数（JSON 字符串或 dict）
 - `context.run_recognition_direct()`: 调用 MaaFramework 内置识别器（TemplateMatch、OCR 等）
 - `CustomRecognition.AnalyzeResult(box=..., detail={...})`: 返回识别结果
 
@@ -736,6 +834,7 @@ if reco_detail is not None and reco_detail.hit:
 ```
 
 **RecognitionResult 联合类型**：
+
 - `TemplateMatchResult`: box, score
 - `OCRResult`: box, score, text
 - `FeatureMatchResult`: box, count
@@ -755,7 +854,7 @@ class PathFinderAction(CustomAction):
         """
         参数:
         - context: MaaFramework 上下文对象
-        - argv: 运行参数，包含 reco_detail 和 box
+        - argv: 运行参数，包含识别结果和自定义参数
 
         返回值:
         - CustomAction.RunResult: 执行结果
@@ -763,6 +862,7 @@ class PathFinderAction(CustomAction):
 ```
 
 **关键 API 使用**：
+
 - `argv.custom_action_param`: 获取自定义参数（JSON 字符串）
 - `argv.reco_detail.best_result.detail`: 获取前序识别器返回的 detail 字典
 - `context.tasker.stopping`: 检查是否收到停止信号
@@ -794,6 +894,7 @@ PathFindingReco 返回的 `detail` 字典包含 `hit_node` 字段，可与 IfEls
 ```
 
 **返回值映射**：
+
 - `hit=True, hit_node="if"` → IfElseAction 执行 `if` 分支
 - `hit=False, hit_node="else"` → IfElseAction 执行 `else` 分支
 
@@ -801,13 +902,16 @@ PathFindingReco 返回的 `detail` 字典包含 `hit_node` 字段，可与 IfEls
 
 ## 11. 风险评估
 
-| 风险 | 概率 | 影响 | 应对措施 |
-|------|------|------|----------|
-| 模板匹配误识别 | 中 | 中 | 动态阈值 + `green_mask` 过滤任务追踪标记 |
-| OCR 识别不准确 | 中 | 中 | 正则匹配 + `isdigit` 容错处理 |
-| 1 像素抖动导致方向频繁切换 | 低 | 中 | 角度分箱 + 圆形死区（`math.hypot`） |
-| 平台操作不兼容 | 低 | 高 | 复用 OperationRecording，已验证 |
-| 平台实例重复创建 | 低 | 中 | `PlatformFactory` 内部 `WeakKeyDictionary` 缓存 |
+| 风险                         | 概率 | 影响 | 应对措施                                             |
+| ---------------------------- | ---- | ---- | ---------------------------------------------------- |
+| 模板匹配误识别               | 中   | 中   | 动态阈值 + `green_mask` 过滤任务追踪标记             |
+| OCR 识别不准确               | 中   | 中   | 正则匹配 + `isdigit` 容错处理                        |
+| 1 像素抖动导致方向频繁切换   | 低   | 中   | 角度分箱 + 圆形死区（`math.hypot`）                  |
+| 目标在死区内仍继续前进       | 低   | 中   | 死区内返回 `direction="centered"`，Action 不执行移动 |
+| 平台操作不兼容               | 低   | 高   | 复用 OperationRecording，已验证                      |
+| 平台实例重复创建             | 低   | 中   | `PlatformFactory` 内部 `WeakKeyDictionary` 缓存      |
+| 距离缺失导致卡住误判         | 低   | 中   | 无距离时回退到中心偏移判断                           |
+| 到达阈值设置不当导致提前结束 | 低   | 中   | 按实际游戏距离调整 `arrival_distance`                |
 
 ---
 

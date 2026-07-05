@@ -1,39 +1,60 @@
 {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "./custom_act/PathFinderAction.schema.json",
-    "if": {
-        "properties": {
-            "custom_action": {
-                "const": "PathFinderAction"
-            }
-        },
-        "required": [
-            "custom_action"
-        ]
-    },
-    "then": {
-        "properties": {
-            "custom_action_param": {
-                "$ref": "#/definitions/PathFinderActionParam",
-                "description": "PathFinderAction 自动寻路执行器参数\n\n功能：\n1. 根据识别结果执行 platform.move() 操作\n2. 复用 OperationRecording 的平台层（PlatformFactory 缓存）\n3. 卡住检测由 Pipeline self-loop 隐式完成\n\n使用方式（Pipeline JSON）：\n{\n    \"custom_action\": \"PathFinderAction\",\n    \"next\": [\"AutoPathFinding\"]\n}\n\n参数示例：\n{\n    \"move_duration\": 500\n}"
-            }
-        },
-        "required": [
-            "custom_action_param"
-        ]
-    },
-    "definitions": {
-        "PathFinderActionParam": {
-            "type": "object",
-            "properties": {
-                "move_duration": {
-                    "type": "integer",
-                    "default": 500,
-                    "minimum": 0,
-                    "description": "单次移动持续时间（毫秒），默认 500\n\n每次 platform.move() 的持续时间"
-                }
-            },
-            "additionalProperties": false
-        }
-    }
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "./custom_act/PathFinderAction.schema.json",
+	"if": {
+		"properties": {
+			"custom_action": {
+				"const": "PathFinderAction"
+			}
+		},
+		"required": [
+			"custom_action"
+		]
+	},
+	"then": {
+		"properties": {
+			"custom_action_param": {
+				"$ref": "#/definitions/PathFinderActionParam",
+				"description": "PathFinderAction 自动寻路执行器参数\n\n功能：\n1. 根据识别结果执行 platform.move() 操作\n2. 支持基于目标距离动态调整移动时长（线性插值）\n3. 复用 OperationRecording 的平台层（PlatformFactory 缓存）\n4. 运动状态检测由 PathFindingReco 在识别阶段完成\n\n前置依赖：\n- 前序识别器需返回 detail.direction\n- direction=\"centered\" 时表示目标已在屏幕中心死区内，不执行移动\n- 推荐前序识别器为 PathFindingReco，以使用 distance 驱动的移动时长\n\n使用方式（Pipeline JSON）：\n{\n    \"custom_action\": \"PathFinderAction\",\n    \"next\": [\"AutoPathFinding\"]\n}\n\n参数示例：\n{\n    \"move_duration\": 500,\n    \"move_duration_far\": 1500,\n    \"move_duration_near\": 300,\n    \"distance_far\": 200,\n    \"distance_near\": 50\n}\n\n说明：\n- 当 detail.target.distance 存在且在 (distance_near, distance_far) 之间时，\n  移动时长按线性插值计算；≥ distance_far 使用 move_duration_far；\n  ≤ distance_near 使用 move_duration_near。\n- 当 distance 为 None 或 distance_far ≤ distance_near 时，回退到 move_duration。"
+			}
+		}
+	},
+	"definitions": {
+		"PathFinderActionParam": {
+			"type": "object",
+			"properties": {
+				"move_duration": {
+					"type": "integer",
+					"default": 500,
+					"minimum": 0,
+					"description": "默认移动持续时间（毫秒），默认 500\n\n无距离信息时，每次 platform.move() 使用此时长"
+				},
+				"move_duration_far": {
+					"type": "integer",
+					"default": 1500,
+					"minimum": 0,
+					"description": "远距离移动持续时间（毫秒），默认 1500\n\n距离 ≥ distance_far 时使用此时长"
+				},
+				"move_duration_near": {
+					"type": "integer",
+					"default": 300,
+					"minimum": 0,
+					"description": "近距离移动持续时间（毫秒），默认 300\n\n距离 ≤ distance_near 时使用此时长"
+				},
+				"distance_far": {
+					"type": "integer",
+					"default": 200,
+					"minimum": 0,
+					"description": "远距离阈值（像素），默认 200\n\n距离 ≥ 此值时使用 move_duration_far"
+				},
+				"distance_near": {
+					"type": "integer",
+					"default": 50,
+					"minimum": 0,
+					"description": "近距离阈值（像素），默认 50\n\n距离 ≤ 此值时使用 move_duration_near"
+				}
+			},
+			"additionalProperties": false
+		}
+	}
 }
