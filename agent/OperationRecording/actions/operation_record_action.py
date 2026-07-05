@@ -59,33 +59,39 @@ class OperationRecordAction(CustomAction):
     5. interact - 交互动作
        参数：
        - interaction_type: 交互类型（可选，默认 "default"）
-    6. charge_attack - 蓄力攻击动作
+    6. melee_attack - 近战攻击动作（原蓄力攻击）
        参数：
+       - duration: 蓄力时间（秒，可选，默认 1.0）
        - x: 目标X坐标（可选）
        - y: 目标Y坐标（可选）
-    7. crouch - 下蹲动作
-    8. spiral_leap - 螺旋飞跃动作
-    9. wait - 等待动作
+    7. ranged_attack - 远程攻击动作
+       参数：
+       - duration: 按住时间（秒，可选，默认 0.5）
+       - x: 目标X坐标（可选，默认使用配置坐标 953, 529）
+       - y: 目标Y坐标（可选，默认使用配置坐标 953, 529）
+    8. crouch - 下蹲动作
+    9. spiral_leap - 螺旋飞跃动作
+    10. wait - 等待动作
        参数：
        - duration: 等待时间（秒，默认 1.0）
        - until: 目标时间点（秒，相对于时间线开始，仅限时间线模式）
          - 如果提供了 until，则忽略 duration
          - 如果当前时间 >= until，则不等待
-    10. run_node - 执行节点动作
+    11. run_node - 执行节点动作
        参数：
        - node: 节点名称（必填）
-    11. swipe - 滑动动作
+    12. swipe - 滑动动作
        参数：
        - start_x: 起始X坐标（必填）
        - start_y: 起始Y坐标（必填）
        - end_x: 结束X坐标（必填）
        - end_y: 结束Y坐标（必填）
        - duration: 滑动持续时间（秒，可选，默认 0.5）
-    12. click - 点击动作
+    13. click - 点击动作
        参数：
        - x: X坐标（必填）
        - y: Y坐标（必填）
-    13. press_key - 按键动作
+    14. press_key - 按键动作
        参数：
        - key: 按键名称（必填）
        - duration: 持续时间（秒，可选，默认 0.1）

@@ -10,7 +10,8 @@ from .jump_action import JumpAction
 from .dodge_action import DodgeAction
 from .turn_action import TurnAction
 from .interact_action import InteractAction
-from .charge_attack_action import ChargeAttackAction
+from .melee_attack_action import MeleeAttackAction
+from .ranged_attack_action import RangedAttackAction
 from .crouch_action import CrouchAction
 from .wait_action import WaitAction
 from .run_node_action import RunNodeAction
@@ -24,7 +25,8 @@ __all__ = [
     "DodgeAction",
     "TurnAction",
     "InteractAction",
-    "ChargeAttackAction",
+    "MeleeAttackAction",
+    "RangedAttackAction",
     "CrouchAction",
     "WaitAction",
     "RunNodeAction",

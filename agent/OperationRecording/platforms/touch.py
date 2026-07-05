@@ -171,7 +171,8 @@ class TouchPlatform(PlatformBase):
         }
 
     def _hold_button(self, position_name: str, contact_name: str, duration: float,
-                     x: Optional[int] = None, y: Optional[int] = None) -> bool:
+                     x: Optional[int] = None, y: Optional[int] = None,
+                     action_name: Optional[str] = None) -> bool:
         controller = self._get_valid_controller()
         if controller is None:
             return False
@@ -183,14 +184,15 @@ class TouchPlatform(PlatformBase):
             y = max(0, min(y, 719))
             contact = self._get_contact(contact_name)
 
+            active_key = action_name if action_name is not None else contact_name
             controller.post_touch_down(x, y, contact, 1).wait()
-            self._active_contacts[contact_name] = contact
+            self._active_contacts[active_key] = contact
 
             if duration > 0:
                 time.sleep(duration)
                 controller.post_touch_up(contact).wait()
-                if contact_name in self._active_contacts:
-                    del self._active_contacts[contact_name]
+                if active_key in self._active_contacts:
+                    del self._active_contacts[active_key]
             return True
         except Exception:
             return False
@@ -532,10 +534,15 @@ class TouchPlatform(PlatformBase):
             duration = self._get_default_duration("crouch_button")
         return self._hold_button("crouch_button", "crouch_button", duration)
 
-    def charge_attack(self, duration: Optional[float] = None, x: Optional[int] = None, y: Optional[int] = None) -> bool:
+    def melee_attack(self, duration: Optional[float] = None, x: Optional[int] = None, y: Optional[int] = None) -> bool:
         if duration is None:
-            duration = self._get_default_duration("charge_attack_button")
-        return self._hold_button("charge_attack_button", "charge_attack_button", duration, x, y)
+            duration = self._get_default_duration("melee_attack_button")
+        return self._hold_button("melee_attack_button", "melee_attack_button", duration, x, y, action_name="melee_attack")
+
+    def ranged_attack(self, duration: Optional[float] = None, x: Optional[int] = None, y: Optional[int] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("ranged_attack_button")
+        return self._hold_button("ranged_attack_button", "ranged_attack_button", duration, x, y, action_name="ranged_attack")
 
     # ===== 释放方法 =====
 

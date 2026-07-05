@@ -38,10 +38,16 @@
 		"contact": 4,
 		"default_duration": 0.1
 	},
-	"charge_attack_button": {
+	"melee_attack_button": {
 		"x": 1090,
 		"y": 507,
 		"contact": 1,
+		"default_duration": 0.5
+	},
+	"ranged_attack_button": {
+		"x": 953,
+		"y": 529,
+		"contact": 6,
 		"default_duration": 0.5
 	},
 	"grappling_hook_button": {

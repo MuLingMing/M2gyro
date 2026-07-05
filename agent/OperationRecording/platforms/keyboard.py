@@ -12,7 +12,7 @@
     @register_platform("desktop")
     class DesktopPlatform(KeyboardPlatform):
         _key_codes = {"W": 0x57, "A": 0x41, ...}
-        _action_key_map = {"move": ["W","A","S","D"], "crouch": ["C"], "charge_attack": ["MouseLeft"]}
+        _action_key_map = {"move": ["W","A","S","D"], "crouch": ["C"], "melee_attack": ["MouseLeft"], "ranged_attack": ["MouseRight"]}
 """
 
 import json
@@ -351,10 +351,15 @@ class KeyboardPlatform(PlatformBase):
             duration = self._get_default_duration("crouch")
         return self.press_key("C", duration)
 
-    def charge_attack(self, duration: Optional[float] = None, x: Optional[int] = None, y: Optional[int] = None) -> bool:
+    def melee_attack(self, duration: Optional[float] = None, x: Optional[int] = None, y: Optional[int] = None) -> bool:
         if duration is None:
-            duration = self._get_default_duration("charge_attack")
+            duration = self._get_default_duration("melee_attack")
         return self.press_key("MouseLeft", duration)
+
+    def ranged_attack(self, duration: Optional[float] = None, x: Optional[int] = None, y: Optional[int] = None) -> bool:
+        if duration is None:
+            duration = self._get_default_duration("ranged_attack")
+        return self.press_key("MouseRight", duration)
 
     def cleanup_direction(self, action_name: str, old_direction: str, new_direction: Optional[str] = None) -> bool:
         """

@@ -10,7 +10,7 @@
     @register_platform("mac")
     class MacPlatform(KeyboardPlatform):
         _key_codes = {"W": 0x0D, "A": 0x00, ...}  # macOS keyCode
-        _action_key_map = {"move": ["W","A","S","D"], "crouch": ["C"], "charge_attack": ["MouseLeft"]}
+        _action_key_map = {"move": ["W","A","S","D"], "crouch": ["C"], "melee_attack": ["MouseLeft"], "ranged_attack": ["MouseRight"]}
 """
 
 from ..keyboard import KeyboardPlatform

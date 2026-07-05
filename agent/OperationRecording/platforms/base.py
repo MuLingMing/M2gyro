@@ -33,7 +33,8 @@ class PlatformBase(ABC):
     - interact: 交互（支持 duration）
     - spiral_leap: 螺旋飞跃
     - crouch: 下蹲
-    - charge_attack: 蓄力攻击
+    - melee_attack: 近战攻击
+    - ranged_attack: 远程攻击
     - hold_key: 按住按键（duration=0 只按不松）
     - release_interact: 释放交互按键/触点
     - touch_hold: 按住屏幕坐标
@@ -157,8 +158,11 @@ class PlatformBase(ABC):
     def crouch(self, duration: float = 0.1) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 crouch()，请继承 KeyboardPlatform 或 TouchPlatform")
 
-    def charge_attack(self, duration: float, x: Optional[int] = None, y: Optional[int] = None) -> bool:
-        raise NotImplementedError(f"{self.__class__.__name__} 未实现 charge_attack()，请继承 KeyboardPlatform 或 TouchPlatform")
+    def melee_attack(self, duration: float, x: Optional[int] = None, y: Optional[int] = None) -> bool:
+        raise NotImplementedError(f"{self.__class__.__name__} 未实现 melee_attack()，请继承 KeyboardPlatform 或 TouchPlatform")
+
+    def ranged_attack(self, duration: float, x: Optional[int] = None, y: Optional[int] = None) -> bool:
+        raise NotImplementedError(f"{self.__class__.__name__} 未实现 ranged_attack()，请继承 KeyboardPlatform 或 TouchPlatform")
 
     def hold_key(self, key: str, duration: float) -> bool:
         """按住按键，duration=0 时只按不松"""

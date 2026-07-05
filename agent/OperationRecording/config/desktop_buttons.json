@@ -13,7 +13,8 @@
 		"E": 69,
 		"R": 82,
 		"Z": 90,
-		"MouseLeft": 1
+		"MouseLeft": 1,
+		"MouseRight": 2
 	},
 	"action_key_map": {
 		"move": [
@@ -25,8 +26,11 @@
 		"jump_button": [
 			"Space"
 		],
-		"charge_attack": [
+		"melee_attack": [
 			"MouseLeft"
+		],
+		"ranged_attack": [
+			"MouseRight"
 		],
 		"crouch": [
 			"C"
@@ -40,7 +44,8 @@
 		"q_skill": 0.1,
 		"pet": 0.1,
 		"crouch": 0.1,
-		"charge_attack": 0.5,
+		"melee_attack": 0.5,
+		"ranged_attack": 0.5,
 		"spiral_leap": 0.1
 	},
 	"turn_config": {

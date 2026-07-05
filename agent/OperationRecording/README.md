@@ -34,7 +34,8 @@ OperationRecording/
 │   │   ├── dodge_action.py
 │   │   ├── turn_action.py
 │   │   ├── interact_action.py
-│   │   ├── charge_attack_action.py
+│   │   ├── melee_attack_action.py
+│   │   ├── ranged_attack_action.py
 │   │   ├── crouch_action.py
 │   │   ├── wait_action.py
 │   │   ├── run_node_action.py
@@ -256,7 +257,7 @@ PlatformBase (抽象基类)
 @register_platform("desktop")
 class DesktopPlatform(KeyboardPlatform):
     _key_codes = {"W": 0x57, "A": 0x41, "S": 0x53, "D": 0x44, "Space": 0x20, ...}
-    _action_key_map = {"move": ["W", "A", "S", "D"], "crouch": ["C"], "charge_attack": ["MouseLeft"]}
+    _action_key_map = {"move": ["W", "A", "S", "D"], "crouch": ["C"], "melee_attack": ["MouseLeft"], "ranged_attack": ["MouseRight"]}
 ```
 
 ### TouchPlatform
@@ -299,7 +300,8 @@ class AdbPlatform(TouchPlatform):
 | :----- | :--- | :--- | :--- |
 | `move` | 持续 | `direction`: forward/backward/left/right/forward_left/forward_right/backward_left/backward_right, `duration`: 秒 | 移动，`smooth_transition=True` |
 | `crouch` | 持续 | `duration`: 秒 | 下蹲，`release_method="crouch"` |
-| `charge_attack` | 持续 | `duration`: 秒, `x`/`y`: 可选坐标 | 蓄力攻击，`release_method="charge_attack"` |
+| `melee_attack` | 持续 | `duration`: 秒, `x`/`y`: 可选坐标 | 近战攻击（原蓄力攻击），`release_method="melee_attack"` |
+| `ranged_attack` | 持续 | `duration`: 秒, `x`/`y`: 可选坐标 | 远程攻击，`release_method="ranged_attack"` |
 | `jump` | 瞬时 | — | 跳跃 |
 | `dodge` | 瞬时 | `direction`: 可选方向 | 闪避 |
 | `turn` | 瞬时 | `start_x/y`, `end_x/y`: 起止坐标, `duration`: 毫秒 | 转向 |

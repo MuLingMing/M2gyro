@@ -121,7 +121,25 @@
 				"custom_action_param": {
 					"operations": [
 						{
-							"action": "charge_attack",
+							"action": "melee_attack",
+							"params": {
+								"duration": 1.0
+							}
+						}
+					]
+				}
+			}
+		}
+	},
+	"test_远程攻击": {
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "OperationRecordAction",
+				"custom_action_param": {
+					"operations": [
+						{
+							"action": "ranged_attack",
 							"params": {
 								"duration": 1.0
 							}
