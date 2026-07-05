@@ -6,7 +6,8 @@
         "post_delay": 0,
         "post_wait_freezes": 0,
         "next": [
-            "[JumpBack]角色经验识别",
+            "角色经验识别",
+            "[JumpBack]深境委托-普通委托",
             "[JumpBack]委托-迁移-向左三次",
             "[JumpBack]委托-向右",
             "[JumpBack]委托-委托",
@@ -20,7 +21,8 @@
         "post_delay": 0,
         "post_wait_freezes": 0,
         "next": [
-            "[JumpBack]角色突破识别",
+            "角色突破识别",
+            "[JumpBack]深境委托-普通委托",
             "[JumpBack]委托-迁移-向左三次",
             "[JumpBack]委托-向右",
             "[JumpBack]委托-委托",
@@ -34,7 +36,8 @@
         "post_delay": 0,
         "post_wait_freezes": 0,
         "next": [
-            "[JumpBack]武器经验识别",
+            "武器经验识别",
+            "[JumpBack]深境委托-普通委托",
             "[JumpBack]委托-迁移-向左三次",
             "[JumpBack]委托-向右",
             "[JumpBack]委托-委托",
@@ -48,7 +51,8 @@
         "post_delay": 0,
         "post_wait_freezes": 0,
         "next": [
-            "[JumpBack]武器突破识别",
+            "武器突破识别",
+            "[JumpBack]深境委托-普通委托",
             "[JumpBack]委托-迁移-向左三次",
             "[JumpBack]委托-向右",
             "[JumpBack]委托-委托",
@@ -63,8 +67,8 @@
         "post_delay": 0,
         "post_wait_freezes": 0,
         "next": [
-            "驱离",
-            "[JumpBack]魔之楔本识别",
+            "魔之楔本识别",
+            "[JumpBack]深境委托-普通委托",
             "[JumpBack]委托-迁移-向左三次",
             "[JumpBack]委托-向右",
             "[JumpBack]委托-委托",
@@ -78,7 +82,8 @@
         "post_delay": 0,
         "post_wait_freezes": 0,
         "next": [
-            "[JumpBack]深红凝珠识别",
+            "深红凝珠识别",
+            "[JumpBack]深境委托-普通委托",
             "[JumpBack]委托-迁移-向左三次",
             "[JumpBack]委托-向右",
             "[JumpBack]委托-委托",
@@ -92,7 +97,8 @@
         "post_delay": 0,
         "post_wait_freezes": 0,
         "next": [
-            "[JumpBack]皎皎信物识别",
+            "皎皎信物识别",
+            "[JumpBack]深境委托-普通委托",
             "[JumpBack]委托-迁移-向左三次",
             "[JumpBack]委托-向右",
             "[JumpBack]委托-委托",
@@ -337,7 +343,11 @@
                 "template": "主页面/历练/委托/普通委托/跳转图标"
             }
         },
-        "action": "Click"
+        "action": "Click",
+        "post_delay": 200,
+        "next": [
+            "空"
+        ]
     },
     "委托-迁移-向左三次": {
         //判断在委托最右端，则左滑三次
