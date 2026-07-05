@@ -140,7 +140,8 @@ class RoundTracker(CustomRecognition):
                 },
             )
 
-        if detected_round > current_round:
+        # 轮次更新规则：识别到更大轮次，或识别到第 1 轮时均触发更新
+        if detected_round > current_round or detected_round == 1:
             RoundTracker._set_current_round(argv.node_name, detected_round)
 
             # 基于轮次判断是否输出（初次更新或达到指定倍数时输出）
