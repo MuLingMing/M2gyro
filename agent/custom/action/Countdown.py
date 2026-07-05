@@ -193,6 +193,8 @@ class Countdown(CustomAction):
         if parsed_over:
             image = context.tasker.controller.post_screencap().wait().get()
             for config in parsed_over:
+                if context.tasker.stopping:
+                    return CustomAction.RunResult(success=False)
                 if not config.name:
                     continue
                 try:
@@ -311,6 +313,8 @@ class Countdown(CustomAction):
             # 仅在需要执行任务时才进行二次确认
             if config.delay > 0 and self._should_confirm(config):
                 time.sleep(config.delay)
+                if context.tasker.stopping:
+                    return None
                 confirm_image = context.tasker.controller.post_screencap().wait().get()
                 result = context.run_recognition(config.name, image=confirm_image)
                 if not result or not result.hit:

@@ -133,7 +133,8 @@
 					"name": "40",
 					"pipeline_override": {
 						"委托等级识别": {
-							"expected": "40"
+							"expected": "40",
+							"next": "夜航手册80级-避险"
 						}
 					}
 				}
@@ -165,7 +166,7 @@
 					"pipeline_override": {
 						"委托等级识别": {
 							"expected": "50",
-							"next": "武器经验50驱逐"
+							"next": "夜航手册60驱逐-舍身.*?萼蚀"
 						}
 					}
 				}
@@ -242,6 +243,17 @@
 							"expected": "50",
 							"next": [
 								"皎皎信物50扼守"
+							]
+						}
+					}
+				},
+				{
+					"name": "70",
+					"pipeline_override": {
+						"委托等级识别": {
+							"expected": "70",
+							"next": [
+								"皎皎信物70扼守"
 							]
 						}
 					}

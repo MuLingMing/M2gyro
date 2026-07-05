@@ -15,7 +15,7 @@
 		"properties": {
 			"custom_action_param": {
 				"$ref": "#/definitions/OperationRecordActionParam",
-				"description": "OperationRecordAction 参数\n\n示例：\n{\n    \"operations\": [\n        {\"action\": \"move\", \"params\": {\"direction\": \"forward\", \"duration\": 2.0}},\n        {\"action\": \"jump\", \"params\": {}},\n        {\"action\": \"turn\", \"params\": {\"start_x\": 1000, \"start_y\": 150, \"end_x\": 1210, \"end_y\": 150}},\n        {\"action\": \"wait\", \"params\": {\"duration\": 1.0}}\n    ],\n    \"loop_count\": 1\n}\n\n字段说明：\n- operations: 操作列表（必填），支持普通模式和时间线模式\n- loop_count: 循环执行次数（默认 1，>= 1）\n\n支持的动作：\n- move: 移动（direction, duration, overlays）\n- jump: 跳跃（duration, overlays）\n- dodge: 闪避（direction, duration, overlays）\n- turn: 转向（start_x, start_y, end_x, end_y, duration, overlays）\n- interact: 交互（interaction_type, duration, overlays）\n- charge_attack: 蓄力攻击（duration, x, y, overlays）\n- crouch: 下蹲（duration, overlays）\n- spiral_leap: 螺旋飞跃（duration, overlays）\n- wait: 等待（duration 或 until）\n- run_node: 执行节点（node）\n\n时间线模式：在 params 中设置 duration 启用，overlays 支持并行动作叠加"
+				"description": "OperationRecordAction 参数\n\n示例：\n{\n    \"operations\": [\n        {\"action\": \"move\", \"params\": {\"direction\": \"forward\", \"duration\": 2.0}},\n        {\"action\": \"jump\", \"params\": {}},\n        {\"action\": \"turn\", \"params\": {\"start\": [1000, 150], \"end\": [1210, 150]}},\n        {\"action\": \"wait\", \"params\": {\"duration\": 1.0}}\n    ],\n    \"loop_count\": 1\n}\n\n字段说明：\n- operations: 操作列表（必填），支持普通模式和时间线模式\n- loop_count: 循环执行次数（默认 1，>= 1）\n\n支持的动作：\n- move: 移动（direction, duration, overlays）\n- jump: 跳跃（duration, overlays）\n- dodge: 闪避（direction, duration, overlays）\n- turn: 转向（start, end, duration, overlays）\n- interact: 交互（interaction_type, duration, overlays）\n- charge_attack: 蓄力攻击（duration, x, y, overlays）\n- crouch: 下蹲（duration, overlays）\n- spiral_leap: 螺旋飞跃（duration, overlays）\n- wait: 等待（duration 或 until）\n- run_node: 执行节点（node）\n\n时间线模式：在 params 中设置 duration 启用，overlays 支持并行动作叠加"
 			}
 		},
 		"required": [
@@ -395,26 +395,28 @@
 		"TurnParams": {
 			"type": "object",
 			"properties": {
-				"start_x": {
-					"type": "number",
-					"description": "滑动起点 X 坐标（720p 基准），必填"
+				"start": {
+					"type": "array",
+					"items": {
+						"type": "number"
+					},
+					"minItems": 2,
+					"maxItems": 2,
+					"description": "滑动起点坐标 [x, y]（720p 基准），必填"
 				},
-				"start_y": {
-					"type": "number",
-					"description": "滑动起点 Y 坐标（720p 基准），必填"
-				},
-				"end_x": {
-					"type": "number",
-					"description": "滑动终点 X 坐标（720p 基准），必填"
-				},
-				"end_y": {
-					"type": "number",
-					"description": "滑动终点 Y 坐标（720p 基准），必填"
+				"end": {
+					"type": "array",
+					"items": {
+						"type": "number"
+					},
+					"minItems": 2,
+					"maxItems": 2,
+					"description": "滑动终点坐标 [x, y]（720p 基准），必填"
 				},
 				"duration": {
 					"type": "number",
 					"minimum": 0,
-					"description": "滑动时长（毫秒），可选，不填使用平台默认值"
+					"description": "滑动时长（秒），可选，不填使用平台默认值"
 				},
 				"overlays": {
 					"type": "array",
@@ -425,13 +427,11 @@
 				}
 			},
 			"required": [
-				"start_x",
-				"start_y",
-				"end_x",
-				"end_y"
+				"start",
+				"end"
 			],
 			"additionalProperties": false,
-			"description": "turn 动作参数\n\n字段：\n- start_x: 起点 X 坐标（720p，必填）\n- start_y: 起点 Y 坐标（720p，必填）\n- end_x: 终点 X 坐标（720p，必填）\n- end_y: 终点 Y 坐标（720p，必填）\n- duration: 滑动时长毫秒（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{\"start_x\": 1000, \"start_y\": 150, \"end_x\": 1210, \"end_y\": 150}"
+			"description": "turn 动作参数\n\n字段：\n- start: 起点坐标 [x, y]（720p，必填）\n- end: 终点坐标 [x, y]（720p，必填）\n- duration: 滑动时长秒数（可选）\n- overlays: 叠加动作列表（可选）\n\n示例：\n{\"start\": [1000, 150], \"end\": [1210, 150]}"
 		},
 		"InteractParams": {
 			"type": "object",

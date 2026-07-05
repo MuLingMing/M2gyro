@@ -491,7 +491,8 @@ class TouchPlatform(PlatformBase):
         if controller is None:
             return False
         try:
-            swipe_duration_ms = int(duration) if duration is not None else int(self._turn_config.get("swipe_duration_ms", 70))
+            # duration 参数是秒，转换为毫秒
+            swipe_duration_ms = int(duration * 1000) if duration is not None else int(self._turn_config.get("swipe_duration_ms", 70))
             controller.post_swipe(start_x, start_y, end_x, end_y, swipe_duration_ms).wait()
             return True
         except Exception:

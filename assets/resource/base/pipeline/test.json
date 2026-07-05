@@ -141,10 +141,14 @@
 						{
 							"action": "turn",
 							"params": {
-								"start_x": 1000,
-								"start_y": 150,
-								"end_x": 1210,
-								"end_y": 150
+								"start": [
+									1000,
+									150
+								],
+								"end": [
+									1210,
+									150
+								]
 							}
 						}
 					]
@@ -325,7 +329,7 @@
 			}
 		}
 	},
-	"test_50驱逐": {
+	"test_转动视角_扼守右下角": {
 		"action": {
 			"type": "Custom",
 			"param": {
@@ -333,40 +337,17 @@
 				"custom_action_param": {
 					"operations": [
 						{
-							"action": "wait",
+							"action": "turn",
 							"params": {
-								"duration": 1.5
-							}
-						},
-						{
-							"action": "interact",
-							"params": {
-								"interaction_type": "Q_skill",
-								"duration": 4.2
-							}
-						},
-						{
-							"action": "move",
-							"params": {
-								"direction": "forward",
-								"duration": 24,
-								"overlays": [
-									{
-										"action": "jump",
-										"at": 0.93,
-										"params": {
-											"duration": 3.21
-										}
-									},
-									{
-										"action": "move",
-										"params": {
-											"direction": "right",
-											"duration": 18
-										},
-										"at": 5.52
-									}
-								]
+								"start": [
+									898,
+									85
+								],
+								"end": [
+									1092,
+									85
+								],
+								"duration": 0.3
 							}
 						}
 					]
@@ -374,26 +355,28 @@
 			}
 		}
 	},
-	"test_round_tracker": {
-		"recognition": {
-			"type": "Custom",
-			"param": {
-				"custom_recognition": "RoundTracker",
-				"custom_recognition_param": {
-					"current_round": 6
-				}
-			}
-		}
-	},
-	"test_SetGlobalState": {
+	"test_转动视角_扼守右下角转过来": {
 		"action": {
 			"type": "Custom",
 			"param": {
-				"custom_action": "SetGlobalState",
+				"custom_action": "OperationRecordAction",
 				"custom_action_param": {
-					"RoundTracker": {
-						"_logger_count": 10
-					}
+					"operations": [
+						{
+							"action": "turn",
+							"params": {
+								"start": [
+									1092,
+									85
+								],
+								"end": [
+									898,
+									85
+								],
+								"duration": 0.3
+							}
+						}
+					]
 				}
 			}
 		}
