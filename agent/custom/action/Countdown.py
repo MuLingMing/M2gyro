@@ -114,6 +114,12 @@ class Countdown(CustomAction):
         if not isinstance(Over, list):
             Over = [Over]
 
+        if not self._is_validated(context, argv.node_name):
+            self._validate_nodes(context, argv.node_name, Over, "Over")
+            self._validate_nodes(context, argv.node_name, Interrupt, "Interrupt")
+            self._validate_nodes(context, argv.node_name, Continue, "Continue")
+            self._mark_validated(context, argv.node_name)
+
         start_time = time.monotonic()
 
         interrupt_trackers = [
@@ -386,6 +392,87 @@ class Countdown(CustomAction):
             )
         except Exception as e:
             logger.error(f"Countdown: 保存 reco_stats 失败: {e}")
+
+    def _is_validated(self, context: Context, node_name: str) -> bool:
+        """
+        判断节点是否已完成首次校验
+
+        通过 attach._validated 标记识别持久化校验状态。
+        - 标记缺失或为 False → 视为首次执行，需要校验。
+        - 标记为 True → 跳过校验，避免每次启动都重复探测。
+
+        参数:
+        - context: MaaFramework 上下文
+        - node_name: 调用方节点名
+        """
+        node_data = context.get_node_data(node_name) or {}
+        attach = node_data.get("attach", {}) or {}
+        return bool(attach.get("_validated"))
+
+    def _mark_validated(self, context: Context, node_name: str) -> None:
+        """
+        标记节点已完成首次校验，写回 attach._validated = true
+
+        通过 override_pipeline 将标记合并进 attach，持久化在内存 Pipeline 中。
+        Pipeline 重新加载后标记会重置，下次首次执行时再次校验（符合预期：节点变更后需重新探测）。
+
+        参数:
+        - context: MaaFramework 上下文
+        - node_name: 调用方节点名
+        """
+        try:
+            context.override_pipeline(
+                {node_name: {"attach": {"_validated": True}}}
+            )
+        except Exception as e:
+            logger.error(f"Countdown: 标记 {node_name} 已校验失败: {e}")
+
+    def _validate_nodes(
+        self,
+        context: Context,
+        owner_node: str,
+        nodes: list,
+        category: str,
+    ) -> None:
+        """
+        启动期校验节点列表中的节点名是否在 Pipeline 中定义
+
+        实现方式：调用框架接口 context.get_node_data(name)，节点不存在时返回 None。
+        该接口只做定义查询，不会执行识别 / 截图 / 触发节点，因此不会造成节点阻塞。
+
+        参数:
+        - context: MaaFramework 上下文
+        - owner_node: 调用方节点名（用于日志定位）
+        - nodes: 待校验的节点参数列表（支持 str / dict 格式）
+        - category: 节点分类（"Over" / "Interrupt" / "Continue"）
+
+        行为:
+        - 节点缺失仅记录 logger.warning 提示，不阻断流程
+        """
+        for node in nodes:
+            name = self._extract_node_name(node)
+            if not name:
+                continue
+            if name == owner_node:
+                logger.warning(
+                    f"Countdown: {owner_node} 的 {category} 节点引用自身，可能导致递归循环"
+                )
+                continue
+            if context.get_node_data(name) is None:
+                logger.warning(
+                    f"Countdown: {owner_node} 的 {category} 节点 {name} 在 Pipeline 中不存在，"
+                    f"该条目将永远不会命中，建议修正节点名"
+                )
+
+    @staticmethod
+    def _extract_node_name(node: str | dict | None) -> str:
+        """从 str / dict 格式中提取节点名"""
+        if isinstance(node, str):
+            return node
+        if isinstance(node, dict):
+            name = node.get("name", "")
+            return name if isinstance(name, str) else ""
+        return ""
 
     def _parse_node(self, param: str | dict | None) -> "NodeConfig":
         """解析节点参数为 NodeConfig"""
