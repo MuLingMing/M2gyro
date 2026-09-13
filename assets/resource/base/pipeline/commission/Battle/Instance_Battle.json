@@ -268,21 +268,23 @@
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "副本/角色/水母E.png"
+                    "角色/丽蓓卡/技能E/"
                 ]
             }
         },
         "action": "Click"
     },
     "释放状态Q": {
-        //仅识别菲娜、赛琪、黎瑟Q
+        //技能状态Q，黎瑟、菲娜、赛琪、芙罗拉、伊薇
         "recognition": {
             "type": "TemplateMatch",
             "param": {
                 "template": [
-                    "副本/角色/菲娜Q.png",
-                    "副本/角色/赛琪Q.png",
-                    "副本/角色/黎瑟Q.png"
+                    "角色/黎瑟/技能Q/",
+                    "角色/菲娜/技能Q/",
+                    "角色/赛琪/技能Q/",
+                    "角色/芙罗拉/技能Q/",
+                    "角色/伊薇/技能Q/"
                 ],
                 "threshold": 0.9
             }
@@ -293,31 +295,6 @@
         //     "技能Q状态",
         //     "空"
         // ]
-    },
-    "技能Q状态": {
-        //技能Q蓝耗为0证明开着，反转结果后，点击
-        "inverse": true,
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "副本/角色/持续技能蓝耗0.png"
-                ],
-                "roi": "释放状态Q",
-                "roi_offset": [
-                    -17,
-                    -45,
-                    50,
-                    75
-                ]
-            }
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": "释放状态Q"
-            }
-        }
     },
     //局内复位
     "局内复位": {
