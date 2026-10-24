@@ -11,7 +11,9 @@
 					"selector_type": "priority",
 					"selector_priority": [
 						"副本/目标点"
-					]
+					],
+					"move_duration_s": 1.2,
+					"enable_turning": true
 				}
 			}
 		},
@@ -19,10 +21,7 @@
 			"type": "Custom",
 			"param": {
 				"custom_action": "PathFinderAction",
-				"custom_action_param": {
-					"move_duration": 1200,
-					"enable_turning": true
-				}
+				"custom_action_param": {}
 			}
 		},
 		"next": [
@@ -45,7 +44,15 @@
 						"副本/NPC"
 					],
 					"enable_turning": true,
-					"max_turn_attempts": 3
+					"max_turn_attempts": 3,
+					"move_duration_s": 0.8,
+					"move_duration_far_s": 1.5,
+					"move_duration_near_s": 0.3,
+					"distance_far": 200,
+					"distance_near": 50,
+					"max_move_time_s": 5.0,
+					"dodge_at_start": "once_per_target",
+					"dodge_direction": "forward"
 				}
 			}
 		},
@@ -53,17 +60,7 @@
 			"type": "Custom",
 			"param": {
 				"custom_action": "PathFinderAction",
-				"custom_action_param": {
-					"move_duration": 800,
-					"move_duration_far": 1500,
-					"move_duration_near": 300,
-					"distance_far": 200,
-					"distance_near": 50,
-					"max_move_time": 5000,
-					"dodge_at_start": "once_per_target",
-					"dodge_direction": "forward",
-					"enable_turning": true
-				}
+				"custom_action_param": {}
 			}
 		},
 		"next": [

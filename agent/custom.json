@@ -29,6 +29,11 @@
 		"class": "Countdown",
 		"file_path": "custom/action/Countdown.py"
 	},
+	"CountdownRecognition": {
+		"type": "recognition",
+		"class": "Countdown",
+		"file_path": "custom/recognition/Countdown.py"
+	},
 	"IfElseAction": {
 		"type": "action",
 		"class": "IfElseAction",
@@ -63,6 +68,16 @@
 		"type": "action",
 		"class": "PathFinderAction",
 		"file_path": "AutoPathFinding/action/path_finder_action.py"
+	},
+	"PathFindingInit": {
+		"type": "action",
+		"class": "PathFindingInit",
+		"file_path": "AutoPathFinding/action/navigation_session_action.py"
+	},
+	"PathFindingRelease": {
+		"type": "action",
+		"class": "PathFindingRelease",
+		"file_path": "AutoPathFinding/action/navigation_session_action.py"
 	},
 	"OperationRecordAction": {
 		"type": "action",

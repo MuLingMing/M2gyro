@@ -1,0 +1,22 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "./custom_act/PathFindingInit.schema.json",
+	"if": {
+		"properties": {
+			"custom_action": {
+				"const": "PathFindingInit"
+			}
+		},
+		"required": [
+			"custom_action"
+		]
+	},
+	"then": {
+		"properties": {
+			"custom_action_param": {
+				"$ref": "./custom_reco/PathFindingReco.schema.json#/definitions/NavigationParams",
+				"description": "PathFindingInit 导航会话初始化\n\n功能：按节点名创建（或重置）导航会话并应用 NavigationParams。\n每个导航节点独立会话，互不串状态。\n\n参数字段与 PathFindingReco 的 custom_recognition_param 完全一致（同一 NavigationParams）。\n\n用法：任务开始时先执行本节点，再进入 PathFindingReco + PathFinderAction 导航循环，\n结束（或中断兜底）时执行 PathFindingRelease。"
+			}
+		}
+	}
+}

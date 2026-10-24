@@ -20,4 +20,23 @@ __all__ = [
     "NearestTargetSelector",
     "CompositeTargetSelector",
     "TargetInfo",
+    "create_selector",
 ]
+
+
+def create_selector(
+    selector_type: str = "priority",
+    priority: list | None = None,
+) -> TargetSelector:
+    """按类型构造选择器。
+
+    参数:
+    - selector_type: priority / nearest / composite
+    - priority: 模板优先级列表（priority/composite 模式使用）
+    """
+    priority = list(priority) if priority else []
+    if selector_type == "nearest":
+        return NearestTargetSelector(fallback_to_first=True)
+    if selector_type == "composite":
+        return CompositeTargetSelector(type_priority=priority)
+    return PriorityTargetSelector(priority=priority)

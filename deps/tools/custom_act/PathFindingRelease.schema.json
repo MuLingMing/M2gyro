@@ -1,0 +1,35 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "./custom_act/PathFindingRelease.schema.json",
+	"if": {
+		"properties": {
+			"custom_action": {
+				"const": "PathFindingRelease"
+			}
+		},
+		"required": [
+			"custom_action"
+		]
+	},
+	"then": {
+		"properties": {
+			"custom_action_param": {
+				"$ref": "#/definitions/PathFindingReleaseParam",
+				"description": "PathFindingRelease 导航会话释放\n\n功能：释放导航会话并松开所有按键（兜底释放）。\n默认释放当前节点的会话；传 {\"all\": true} 释放全部会话。\n\n用法：导航任务结束或中断兜底分支中执行。"
+			}
+		}
+	},
+	"definitions": {
+		"PathFindingReleaseParam": {
+			"type": "object",
+			"properties": {
+				"all": {
+					"type": "boolean",
+					"default": false,
+					"description": "true 时释放全部导航会话（进程级兜底）"
+				}
+			},
+			"additionalProperties": false
+		}
+	}
+}

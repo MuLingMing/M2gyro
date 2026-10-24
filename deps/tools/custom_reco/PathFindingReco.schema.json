@@ -14,13 +14,13 @@
 	"then": {
 		"properties": {
 			"custom_recognition_param": {
-				"$ref": "#/definitions/PathFindingRecoParam",
-				"description": "PathFindingReco 自动寻路识别器参数\n\n功能：\n1. 识别游戏画面中的目标图标（模板匹配）\n2. 提取目标图标下方的距离信息（OCR）\n3. 计算目标相对于屏幕中心的方向\n4. 选择最优目标（支持插件式选择器）\n5. 评估运动状态（approaching / arrived / stuck）\n6. 目标锁定/追踪/解锁，保证选择连贯性\n7. 距离缺失时计算转向坐标（turn_start / turn_end）\n\n返回值格式（兼容 IfElseAction）：\n- hit=True, hit_node=\"if\": 识别到目标，detail 包含目标信息、方向、运动状态、lock_id 和转向坐标\n- hit=False, hit_node=\"else\": 未识别到目标\n\ndetail 字段：\n- hit_node: \"if\" 或 \"else\"，用于 IfElseAction 分支\n- target: 目标信息\n  - template: 命中的模板名\n  - center: 目标中心 [x, y]\n  - bbox: 目标边界 [x, y, w, h]\n  - score: 匹配分数\n  - distance: 距离值（可选）\n- direction: 移动方向，可选值：forward / backward / left / right / centered\n  - centered 表示目标已在屏幕中心死区内，无需移动\n- state: 运动状态，可选值：approaching / arrived / stuck\n  - approaching: 正在接近目标\n  - arrived: 距离 ≤ arrival_distance，判定已到达\n  - stuck: 连续 stuck_threshold 帧距离/中心几乎无变化，判定卡住\n- lock_id: 当前锁定目标的唯一标识，用于 PathFinderAction 的 once_per_target 闪避\n- turn_start / turn_end: 转向滑动起止坐标 [x, y]，仅在 enable_turning=true 且距离缺失时返回\n- phase: 阶段状态机，可选值：seeking / tracking / approaching / turning / stuck / lost\n  - seeking: 搜索阶段，未锁定目标\n  - tracking: 追踪阶段，已锁定目标但距离缺失\n  - approaching: 接近阶段，已锁定且有距离信息\n  - turning: 转向阶段，正在执行转向\n  - stuck: 卡住阶段，连续多帧无进展\n  - lost: 丢失阶段，目标识别失败\n- turn_grade: 转向分级，可选值：fine_tune / large_turn\n  - fine_tune: 微调（小角度偏差）\n  - large_turn: 大幅调整（大角度偏差），Action 端会先释放按键再滑\n\n示例：\n{\n    \"expected_templates\": [\"quest_icon.png\", \"shop_icon.png\"],\n    \"roi\": [0, 0, 1280, 720],\n    \"threshold\": 0.8,\n    \"selector_type\": \"priority\",\n    \"selector_priority\": [\"quest_icon.png\", \"shop_icon.png\"],\n    \"distance_pattern\": \"(\\\\d+)米\",\n    \"distance_offset\": [10, 10, 20, 20],\n    \"dead_zone\": 50\n}"
+				"$ref": "#/definitions/NavigationParams",
+				"description": "PathFindingReco 自动寻路识别器参数（NavigationParams，与动作侧共用同一份参数）\n\n功能（navigation 包四层：感知→估计→决策→执行）：\n1. 模板匹配收集目标（priority 模式命中首个模板即止）\n2. 目标锁定/IOU 追踪/超时解锁，锁定帧收缩 ROI 加速\n3. OCR 提取目标下方距离\n4. 8 向方向分箱 + 滞回；按目标偏离屏幕中心的偏差角分级转向\n5. 纯函数状态机决策：search / track / approach / recover / arrive / fail\n\n返回 detail（供 PathFinderAction 执行与 pipeline 分支）：\n- phase: search / track / approach / recover / arrive / fail\n  - arrive: 距离 ≤ arrival_distance，判定到达\n  - fail: 卡住超过 stuck_timeout_ms，识别不命中（hit=False），pipeline 可走兜底分支\n- commands: 命令序列，action 侧按序执行\n- distance / direction / deviation / in_dead_zone / turn_attempt / locked / stuck_duration_ms / elapsed_ms\n\n示例：\n{\n    \"expected_templates\": [\"quest_icon\"],\n    \"roi\": [0, 0, 1280, 720],\n    \"threshold\": 0.8,\n    \"selector_type\": \"priority\",\n    \"distance_pattern\": \"(\\\\d+)米\",\n    \"dead_zone\": 50\n}"
 			}
 		}
 	},
 	"definitions": {
-		"PathFindingRecoParam": {
+		"NavigationParams": {
 			"type": "object",
 			"properties": {
 				"expected_templates": {
@@ -28,7 +28,31 @@
 					"items": {
 						"type": "string"
 					},
-					"description": "期望匹配的模板列表（必填）\n\n模板文件位于 assets/resource/image 目录下\n支持单张图片路径或文件夹路径；文件夹内所有图片等效为同一个模板，选择器和优先级均按文件夹名处理\n示例：[\"quest_icon.png\", \"icons/shop\"]"
+					"description": "期望匹配的模板列表（必填）\n\n模板文件位于 assets/resource/image 目录下\n支持单张图片路径或文件夹路径；文件夹内所有图片等效为同一个模板，按文件夹名处理\n示例：[\"quest_icon.png\", \"icons/shop\"]"
+				},
+				"selector_type": {
+					"type": "string",
+					"enum": [
+						"priority",
+						"nearest",
+						"composite"
+					],
+					"default": "priority",
+					"description": "目标选择器类型：priority 按模板优先级 / nearest 按距离最近 / composite 优先级+距离组合"
+				},
+				"selector_priority": {
+					"type": "array",
+					"items": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "integer"
+							}
+						]
+					},
+					"description": "选择优先级（模板名数组或索引数组，两种格式二选一）"
 				},
 				"roi": {
 					"type": "array",
@@ -47,41 +71,15 @@
 				},
 				"threshold": {
 					"type": "number",
-					"default": 0.8,
 					"minimum": 0,
 					"maximum": 1,
-					"description": "匹配阈值，默认 0.8"
-				},
-				"selector_type": {
-					"type": "string",
-					"enum": [
-						"priority",
-						"nearest",
-						"composite"
-					],
-					"default": "priority",
-					"description": "选择器类型：\n- priority: 按模板优先级排序（默认）\n- nearest: 选择距离最近的目标\n- composite: 先按优先级，同优先级选最近"
-				},
-				"selector_priority": {
-					"type": "array",
-					"items": {
-						"oneOf": [
-							{
-								"type": "integer",
-								"description": "索引格式（0-based），如 1 表示 expected_templates 的第 2 个模板"
-							},
-							{
-								"type": "string",
-								"description": "名称格式，如 \"quest_icon.png\""
-							}
-						]
-					},
-					"description": "选择器优先级列表（selector_type=priority 或 composite 时生效）\n\n支持索引格式和名称格式，按顺序优先级递减。未显式指定的模板按原顺序排在后面\n示例：[\"quest_icon.png\", 1]"
+					"default": 0.8,
+					"description": "模板匹配阈值"
 				},
 				"distance_pattern": {
 					"type": "string",
 					"default": "(\\d+)米",
-					"description": "距离 OCR 正则表达式，必须包含一个捕获组用于提取数字\n\n默认 \"(\\\\d+)米\"，适配 \"150米\" 等中文距离文本"
+					"description": "距离 OCR 正则（须含一个捕获组），默认匹配\"12米\""
 				},
 				"distance_offset": {
 					"type": "array",
@@ -96,160 +94,398 @@
 						47,
 						57
 					],
-					"description": "距离 OCR 区域偏移 [x, y, w, h]，默认 [-26, -30, 47, 57]\n\n最终 ROI = [box.x + x, box.y + y, box.w + w, box.h + h]"
+					"description": "距离 OCR 区域相对目标 bbox 的偏移 [dx, dy, dw, dh]"
 				},
 				"distance_threshold": {
 					"type": "number",
+					"minimum": 0,
+					"maximum": 1,
 					"default": 0.3,
-					"minimum": 0,
-					"maximum": 1,
-					"description": "OCR 置信度阈值，默认 0.3"
-				},
-				"target_lock_timeout": {
-					"type": "integer",
-					"default": 3,
-					"minimum": 1,
-					"description": "目标连续丢失多少帧后解锁，默认 3"
-				},
-				"target_lock_center_tolerance": {
-					"type": "integer",
-					"default": 100,
-					"minimum": 0,
-					"description": "锁定目标跨帧匹配中心容差（像素），默认 100"
-				},
-				"target_lock_score_threshold": {
-					"type": "number",
-					"default": 0.75,
-					"minimum": 0,
-					"maximum": 1,
-					"description": "锁定目标跨帧匹配最低置信度，默认 0.75"
-				},
-				"enable_turning": {
-					"type": "boolean",
-					"default": true,
-					"description": "是否计算并返回转向坐标，默认 true\n\nfalse 时即使目标距离缺失也不返回 turn_start/turn_end"
-				},
-				"max_turn_attempts": {
-					"type": "integer",
-					"default": 3,
-					"minimum": 0,
-					"description": "连续转向后仍未识别到距离，则停止转向，默认 3\n\n第 max_turn_attempts + 1 帧起直接移动"
-				},
-				"min_turn_distance": {
-					"type": "integer",
-					"default": 50,
-					"minimum": 0,
-					"description": "最短转向滑动距离（像素），默认 50"
-				},
-				"max_turn_distance": {
-					"type": "integer",
-					"default": 400,
-					"minimum": 0,
-					"description": "最长转向滑动距离（像素），默认 400"
-				},
-				"distance_missing_turn_scale": {
-					"type": "number",
-					"default": 0.5,
-					"minimum": 0,
-					"maximum": 1,
-					"description": "连续未识别到距离时转向滑动距离衰减系数，默认 0.5\n\n第 2 次起的滑动距离 = 前一次 × 此系数"
-				},
-				"turn_min_floor_ratio": {
-					"type": "number",
-					"default": 0.5,
-					"minimum": 0,
-					"maximum": 1,
-					"description": "转向滑动距离下限比例，默认 0.5\n\n连续衰减时滑动距离不得低于 min_turn_distance × 此值，避免距离过小导致转向失效"
-				},
-				"turn_speed_factor": {
-					"type": "number",
-					"default": 0.7,
-					"minimum": 0,
-					"maximum": 2,
-					"description": "滑动距离相对 offset_norm 的比例，默认 0.7（动态自适应算法核心）\n\nbase_distance = offset_norm × 此值；小于 1.0 保证滑动后目标朝屏幕中心移动而不越过中心到反方向"
-				},
-				"direction_hysteresis": {
-					"type": "number",
-					"default": 15.0,
-					"minimum": 0,
-					"maximum": 180,
-					"description": "方向分箱的角度滞回阈值（度），默认 15.0\n\n在 45° 边界附近的目标抖动时抑制方向切换；设为 0 关闭滞回"
-				},
-				"fast_path_miss_limit": {
-					"type": "integer",
-					"default": 3,
-					"minimum": 1,
-					"description": "锁定态快速通道连续 miss 阈值，默认 3\n\n连续此帧 miss 后强制回退到全 ROI 扫描，避免锁定目标丢失后死循环"
-				},
-				"rotation_lower_threshold": {
-					"type": "number",
-					"default": 8.0,
-					"minimum": 0,
-					"description": "微调阈值（度），默认 8.0\n\n偏差（与上一帧 angle 的差）低于此值视为 FINE_TUNE 微调"
-				},
-				"rotation_upper_threshold": {
-					"type": "number",
-					"default": 60.0,
-					"minimum": 0,
-					"description": "大幅调整阈值（度），默认 60.0\n\n偏差超过此值视为 LARGE_TURN 大幅转向，Action 端会先释放按键再滑"
-				},
-				"rotation_adaptive_enabled": {
-					"type": "boolean",
-					"default": true,
-					"description": "是否启用自适应转向距离（借鉴 MapTracker EMA），默认 true\n\n开启后使用历史偏差动态调整滑动距离"
-				},
-				"stuck_timeout_ms": {
-					"type": "integer",
-					"default": 10000,
-					"minimum": 0,
-					"description": "卡住阶段最长持续时间（毫秒），默认 10000\n\n超过此时长后判定导航失败；0 表示不限制"
+					"description": "距离 OCR 阈值"
 				},
 				"dead_zone": {
 					"type": "integer",
-					"default": 50,
 					"minimum": 0,
-					"description": "方向判断死区（像素），默认 50\n\n目标中心与屏幕中心欧氏距离 ≤ dead_zone 时，direction 返回 \"centered\""
+					"default": 50,
+					"description": "屏幕中心死区半径（像素），目标落入死区视为已对准"
+				},
+				"direction_hysteresis": {
+					"type": "number",
+					"default": 15,
+					"description": "方向滞回角（度）：与上一方向中心角偏差小于该值时维持上一方向，防抖动"
 				},
 				"arrival_distance": {
 					"type": "integer",
+					"minimum": 0,
 					"default": 30,
-					"minimum": 0,
-					"description": "到达判定距离阈值（像素），默认 30\n\nOCR 距离 ≤ arrival_distance 时，state 返回 \"arrived\""
+					"description": "到达判定距离（米），OCR 距离 ≤ 该值判定 ARRIVE"
 				},
-				"stuck_threshold": {
+				"interact_on_arrive": {
+					"type": "boolean",
+					"default": true,
+					"description": "到达时是否自动执行 interact 交互"
+				},
+				"target_lock_timeout": {
 					"type": "integer",
-					"default": 3,
 					"minimum": 1,
-					"description": "卡住判定连续帧数，默认 3\n\n连续 stuck_threshold 帧距离/中心几乎无变化时，state 返回 \"stuck\""
+					"default": 3,
+					"description": "目标锁定丢失帧数超过该值才解锁（期间用旧位置占位继续转向找回）"
 				},
-				"stuck_distance_tolerance": {
+				"target_lock_center_tolerance": {
 					"type": "integer",
-					"default": 5,
 					"minimum": 0,
-					"description": "卡住距离容差（像素），默认 5\n\n相邻两帧距离缩短值 ≤ 此值时视为无进展"
+					"default": 100,
+					"description": "锁定追踪允许的中心移动距离（像素）"
 				},
-				"stuck_center_tolerance": {
-					"type": "integer",
-					"default": 10,
+				"target_lock_score_threshold": {
+					"type": "number",
 					"minimum": 0,
-					"description": "卡住中心偏移容差（像素），默认 10\n\n无距离信息时，相邻两帧目标中心偏移 ≤ 此值时视为无进展"
+					"maximum": 1,
+					"default": 0.75,
+					"description": "锁定追踪的候选分数下限"
+				},
+				"target_lock_iou_threshold": {
+					"type": "number",
+					"minimum": 0,
+					"maximum": 1,
+					"default": 0.3,
+					"description": "锁定追踪的 IOU 下限"
 				},
 				"enable_locked_fast_path": {
 					"type": "boolean",
 					"default": true,
-					"description": "是否启用锁定态快速通道，默认 true\n\n开启后，已锁定目标的下一帧识别会基于上一帧 bbox 缩到小 ROI，显著提升识别速度；丢失或未锁定时回退全 ROI"
+					"description": "锁定存在时是否收缩识别 ROI 加速"
 				},
 				"lock_roi_padding": {
 					"type": "integer",
-					"default": 200,
 					"minimum": 0,
-					"description": "锁定态 ROI 相对上一帧 bbox 的扩展像素（单边），默认 200\n\n最终 ROI 边长 ≈ bbox + 2 × padding"
+					"default": 200,
+					"description": "锁定 ROI 外扩像素"
 				},
 				"fast_path_max_turn_padding": {
 					"type": "integer",
-					"default": 400,
 					"minimum": 0,
-					"description": "距离缺失时快速通道 ROI 的额外扩展（像素），默认 400\n\n距离为空时 padding += 此值，确保转向后目标不会移出视野"
+					"default": 400,
+					"description": "距离缺失时锁定 ROI 额外外扩像素（转向找回需要更大范围）"
+				},
+				"fast_path_miss_limit": {
+					"type": "integer",
+					"minimum": 1,
+					"default": 3,
+					"description": "fast path 连续未命中该次数后强制全 ROI"
+				},
+				"enable_turning": {
+					"type": "boolean",
+					"default": true,
+					"description": "是否启用视角转向（滑动）"
+				},
+				"max_turn_attempts": {
+					"type": "integer",
+					"minimum": 1,
+					"default": 3,
+					"description": "同一次对准的最大连续转向尝试次数"
+				},
+				"min_turn_distance": {
+					"type": "integer",
+					"minimum": 1,
+					"default": 50,
+					"description": "单次转向滑动距离下限（像素）"
+				},
+				"max_turn_distance": {
+					"type": "integer",
+					"minimum": 1,
+					"default": 400,
+					"description": "单次转向滑动距离上限（像素）"
+				},
+				"distance_missing_turn_scale": {
+					"type": "number",
+					"minimum": 0,
+					"maximum": 1,
+					"default": 0.5,
+					"description": "距离缺失时第 2 次起转向距离衰减系数"
+				},
+				"turn_min_floor_ratio": {
+					"type": "number",
+					"minimum": 0,
+					"maximum": 1,
+					"default": 0.5,
+					"description": "转向距离下限比例（min_turn_distance × 该值为实际下限）"
+				},
+				"turn_speed_factor": {
+					"type": "number",
+					"minimum": 0,
+					"maximum": 1,
+					"default": 0.7,
+					"description": "转向距离系数（滑动距离 = 偏移量 × 该值，避免越过中心）"
+				},
+				"turn_duration_s": {
+					"type": "number",
+					"minimum": 0,
+					"default": 0.2,
+					"description": "转向滑动时长（秒）"
+				},
+				"large_turn_release_s": {
+					"type": "number",
+					"minimum": 0,
+					"default": 0.1,
+					"description": "大幅转向（large_turn）前松键后的等待时长（秒）"
+				},
+				"rotation_lower_threshold": {
+					"type": "number",
+					"default": 8,
+					"description": "转向分级下阈值（度）：偏差角低于该值为轻微偏差"
+				},
+				"rotation_upper_threshold": {
+					"type": "number",
+					"default": 60,
+					"description": "转向分级上阈值（度）：偏差角 ≥ 该值为 large_turn（大幅转向，先松键再滑）"
+				},
+				"rotation_adaptive_enabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "是否启用 EMA 自适应转向速度（偏差大转快、偏差小转慢）"
+				},
+				"move_duration_s": {
+					"type": "number",
+					"minimum": 0,
+					"default": 0.5,
+					"description": "默认移动时长（秒），距离未知时使用"
+				},
+				"move_duration_far_s": {
+					"type": "number",
+					"minimum": 0,
+					"default": 1.5,
+					"description": "远距离移动时长（秒），distance ≥ distance_far 时"
+				},
+				"move_duration_near_s": {
+					"type": "number",
+					"minimum": 0,
+					"default": 0.3,
+					"description": "近距离移动时长（秒），distance ≤ distance_near 时"
+				},
+				"distance_far": {
+					"type": "integer",
+					"minimum": 1,
+					"default": 200,
+					"description": "远距离阈值（米）"
+				},
+				"distance_near": {
+					"type": "integer",
+					"minimum": 1,
+					"default": 50,
+					"description": "近距离阈值（米）"
+				},
+				"max_move_time_s": {
+					"type": "number",
+					"minimum": 0,
+					"default": 0,
+					"description": "单次移动时长上限（秒），0 表示不限制"
+				},
+				"dodge_at_start": {
+					"type": "string",
+					"enum": [
+						"never",
+						"always",
+						"once_per_target"
+					],
+					"default": "never",
+					"description": "起步闪避策略：never 不闪避 / always 每次都闪避 / once_per_target 每个锁定目标仅一次"
+				},
+				"dodge_direction": {
+					"type": "string",
+					"default": "backward",
+					"description": "起步闪避方向（平台方向词，如 backward / forward / left / right）"
+				},
+				"dodge_follows_direction": {
+					"type": "boolean",
+					"default": true,
+					"description": "闪避方向是否跟随当前移动方向"
+				},
+				"dodge_release_s": {
+					"type": "number",
+					"minimum": 0,
+					"default": 0.05,
+					"description": "闪避后的释放等待（秒）"
+				},
+				"stuck_threshold": {
+					"type": "integer",
+					"minimum": 1,
+					"default": 3,
+					"description": "连续无进展帧数达到该值判定卡住（进入 RECOVER）"
+				},
+				"stuck_distance_tolerance": {
+					"type": "number",
+					"minimum": 0,
+					"default": 5,
+					"description": "距离变化容差（米），变化 ≤ 该值视为无进展"
+				},
+				"stuck_center_tolerance": {
+					"type": "number",
+					"minimum": 0,
+					"default": 10,
+					"description": "目标中心位移容差（像素），位移 ≤ 该值视为无进展"
+				},
+				"stuck_timeout_ms": {
+					"type": "integer",
+					"minimum": 1000,
+					"default": 10000,
+					"description": "卡住持续超过该时长（毫秒）判定 FAIL（识别不命中，走兜底分支）"
+				},
+				"recover_dodge_direction": {
+					"type": "string",
+					"default": "backward",
+					"description": "RECOVER 脱困闪避方向"
+				},
+				"recover_turn_step_px": {
+					"type": "integer",
+					"minimum": 0,
+					"default": 120,
+					"description": "SEARCH 无目标时的环视转向步长（像素）"
+				},
+				"enable_minimap": {
+					"type": "boolean",
+					"default": false,
+					"description": "启用小地图自状态感知（朝向+速度）。默认关闭；启用前需实机截图标定 minimap_roi 与清洗阈值"
+				},
+				"minimap_roi": {
+					"type": "array",
+					"items": {"type": "integer"},
+					"minItems": 4,
+					"maxItems": 4,
+					"default": [
+						0,
+						0,
+						0,
+						0
+					],
+					"description": "小地图 ROI [x, y, w, h]（720p 基准；w/h 为 0 视为未标定，禁用小地图）"
+				},
+				"minimap_border_margin": {
+					"type": "integer",
+					"minimum": 0,
+					"default": 4,
+					"description": "圆形小地图边框内缩裕量（像素）"
+				},
+				"minimap_ui_v_min": {
+					"type": "integer",
+					"minimum": 0,
+					"maximum": 255,
+					"default": 200,
+					"description": "HSV 清洗：V 不低于该值且 S 偏低视为白色 UI，剔除"
+				},
+				"minimap_ui_s_max": {
+					"type": "integer",
+					"minimum": 0,
+					"maximum": 255,
+					"default": 60,
+					"description": "HSV 清洗：S 不高于该值配合 ui_v_min 判白色 UI"
+				},
+				"minimap_icon_diff_threshold": {
+					"type": "integer",
+					"minimum": 0,
+					"default": 30,
+					"description": "彩色图标剔除阈值（min(R,G)-B 超过该值视为黄/绿色图标）"
+				},
+				"minimap_dark_v_max": {
+					"type": "integer",
+					"minimum": 0,
+					"maximum": 255,
+					"default": 60,
+					"description": "HSV 清洗：V 不高于该值视为未探索暗区，剔除"
+				},
+				"minimap_arrow_center_ratio": {
+					"type": "number",
+					"minimum": 0.1,
+					"maximum": 0.9,
+					"default": 0.4,
+					"description": "玩家箭头搜索窗口半径占小地图半径比例（箭头恒居中）"
+				},
+				"minimap_arrow_v_min": {
+					"type": "integer",
+					"minimum": 0,
+					"maximum": 255,
+					"default": 180,
+					"description": "箭头亮度下限（中心窗口内 V 不低于该值的轮廓视为箭头候选）"
+				},
+				"minimap_arrow_min_area": {
+					"type": "integer",
+					"minimum": 1,
+					"default": 12,
+					"description": "箭头轮廓最小面积（像素²），过滤噪声"
+				},
+				"heading_ema_alpha": {
+					"type": "number",
+					"exclusiveMinimum": 0,
+					"maximum": 1,
+					"default": 0.5,
+					"description": "朝向 EMA 平滑系数（环绕感知差分）"
+				},
+				"speed_ema_alpha": {
+					"type": "number",
+					"exclusiveMinimum": 0,
+					"maximum": 1,
+					"default": 0.4,
+					"description": "速度 EMA 平滑系数"
+				},
+				"speed_min_dt_s": {
+					"type": "number",
+					"minimum": 0,
+					"default": 0.016,
+					"description": "速度采样最小帧间隔（秒），小于该值不采信"
+				},
+				"speed_max_dt_s": {
+					"type": "number",
+					"minimum": 0,
+					"default": 0.5,
+					"description": "速度采样最大帧间隔（秒），超过该值不采信"
+				},
+				"speed_stuck_px_s": {
+					"type": "number",
+					"minimum": 0,
+					"default": 2.0,
+					"description": "小地图速度不高于该值（px/s）视为原地（卡住判据，优先于中心/距离判据）"
+				},
+				"turn_px_per_deg": {
+					"type": "number",
+					"exclusiveMinimum": 0,
+					"default": 7.9,
+					"description": "转向像素/度标定（MaaEnd-2 经验值，实机微调）"
+				},
+				"steer_kp": {
+					"type": "number",
+					"exclusiveMinimum": 0,
+					"default": 0.3,
+					"description": "P 控制转向比例系数（有朝向反馈时生效）"
+				},
+				"steer_deadband_deg": {
+					"type": "number",
+					"minimum": 0,
+					"default": 2.6,
+					"description": "转向死区（度），误差不超过该值不转"
+				},
+				"steer_max_deg_moving": {
+					"type": "number",
+					"minimum": 0,
+					"default": 28.0,
+					"description": "行进中单次转向限幅（度）"
+				},
+				"steer_max_deg_in_place": {
+					"type": "number",
+					"minimum": 0,
+					"default": 70.0,
+					"description": "原地单次转向限幅（度）"
+				},
+				"search_scan_step_deg": {
+					"type": "number",
+					"minimum": 5,
+					"default": 30.0,
+					"description": "SEARCH 环视固定步长（度，有朝向反馈时生效）"
+				},
+				"search_scan_deg": {
+					"type": "number",
+					"minimum": 90,
+					"default": 360.0,
+					"description": "SEARCH 环视累计转角上限（度），转满仍未发现目标 → FAIL"
 				}
 			},
 			"required": [
