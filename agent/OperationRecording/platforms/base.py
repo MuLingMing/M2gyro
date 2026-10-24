@@ -140,7 +140,7 @@ class PlatformBase(ABC):
     def move(self, direction: str, duration: float) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 move()，请继承 KeyboardPlatform 或 TouchPlatform")
 
-    def jump(self, duration: float = 0.1) -> bool:
+    def jump(self, duration: Optional[float] = None) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 jump()，请继承 KeyboardPlatform 或 TouchPlatform")
 
     def dodge(self, direction: Optional[str] = None) -> bool:
@@ -149,19 +149,19 @@ class PlatformBase(ABC):
     def turn(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: Optional[float] = None) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 turn()，请继承 KeyboardPlatform 或 TouchPlatform")
 
-    def interact(self, interaction_type: str = "default", duration: float = 0.1) -> bool:
+    def interact(self, interaction_type: str = "default", duration: Optional[float] = None) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 interact()，请继承 KeyboardPlatform 或 TouchPlatform")
 
     def spiral_leap(self) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 spiral_leap()，请继承 KeyboardPlatform 或 TouchPlatform")
 
-    def crouch(self, duration: float = 0.1) -> bool:
+    def crouch(self, duration: Optional[float] = None) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 crouch()，请继承 KeyboardPlatform 或 TouchPlatform")
 
-    def melee_attack(self, duration: float, x: Optional[int] = None, y: Optional[int] = None) -> bool:
+    def melee_attack(self, duration: Optional[float] = None, x: Optional[int] = None, y: Optional[int] = None) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 melee_attack()，请继承 KeyboardPlatform 或 TouchPlatform")
 
-    def ranged_attack(self, duration: float, x: Optional[int] = None, y: Optional[int] = None) -> bool:
+    def ranged_attack(self, duration: Optional[float] = None, x: Optional[int] = None, y: Optional[int] = None) -> bool:
         raise NotImplementedError(f"{self.__class__.__name__} 未实现 ranged_attack()，请继承 KeyboardPlatform 或 TouchPlatform")
 
     def hold_key(self, key: str, duration: float) -> bool:

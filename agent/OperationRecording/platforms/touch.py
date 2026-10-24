@@ -194,7 +194,8 @@ class TouchPlatform(PlatformBase):
                 if active_key in self._active_contacts:
                     del self._active_contacts[active_key]
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[TouchPlatform._hold_button] {type(e).__name__}: {e}")
             return False
 
     def _click_button(self, x: int, y: int, contact: int, hold_time: float = 0.05) -> bool:
@@ -208,7 +209,8 @@ class TouchPlatform(PlatformBase):
             time.sleep(hold_time)
             controller.post_touch_up(contact).wait()
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[TouchPlatform._click_button] {type(e).__name__}: {e}")
             return False
 
     def _release_button(self, contact_name: str) -> bool:
@@ -223,7 +225,8 @@ class TouchPlatform(PlatformBase):
                 del self._active_contacts[contact_name]
                 return True
             return False
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[TouchPlatform._release_button] {type(e).__name__}: {e}")
             return False
 
     def _joystick_move(self, x: int, y: int, duration: float) -> bool:
@@ -250,7 +253,8 @@ class TouchPlatform(PlatformBase):
                     del self._active_contacts["joystick"]
 
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[TouchPlatform._joystick_move] {type(e).__name__}: {e}")
             return False
 
     def _joystick_center(self) -> bool:
@@ -263,7 +267,8 @@ class TouchPlatform(PlatformBase):
                 controller.post_touch_up(contact).wait()
                 del self._active_contacts["joystick"]
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[TouchPlatform._joystick_center] {type(e).__name__}: {e}")
             return False
 
     def _calculate_joystick_position(self, active_directions: set) -> Tuple[int, int]:
@@ -367,7 +372,8 @@ class TouchPlatform(PlatformBase):
                 del self._active_contacts[contact_name]
                 return True
             return False
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[TouchPlatform.release_key] {type(e).__name__}: {e}")
             return False
 
     def click(self, x: int, y: int) -> bool:
@@ -382,7 +388,8 @@ class TouchPlatform(PlatformBase):
                 start_x, start_y, end_x, end_y, int(duration * 1000)
             ).wait()
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[TouchPlatform.swipe] {type(e).__name__}: {e}")
             return False
 
     def release_all(self) -> bool:
@@ -394,7 +401,8 @@ class TouchPlatform(PlatformBase):
                 controller.post_touch_up(contact).wait()
             self._active_contacts.clear()
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[TouchPlatform.release_all] {type(e).__name__}: {e}")
             return False
 
     # ===== 业务方法默认实现（触控语义） =====
@@ -452,7 +460,8 @@ class TouchPlatform(PlatformBase):
             if duration > 0:
                 time.sleep(duration)
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[TouchPlatform.move] {type(e).__name__}: {e}")
             self._active_directions.discard(direction)
             return False
 
@@ -485,7 +494,8 @@ class TouchPlatform(PlatformBase):
             else:
                 x, y = self._get_position("sprint_button", 1166, 620)
                 return self._click_button(x, y, self._get_contact("sprint_button"))
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[TouchPlatform.dodge] {type(e).__name__}: {e}")
             return False
 
     def turn(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: Optional[float] = None) -> bool:
@@ -497,7 +507,8 @@ class TouchPlatform(PlatformBase):
             swipe_duration_ms = int(duration * 1000) if duration is not None else int(self._turn_config.get("swipe_duration_ms", 70))
             controller.post_swipe(start_x, start_y, end_x, end_y, swipe_duration_ms).wait()
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[TouchPlatform.turn] {type(e).__name__}: {e}")
             return False
 
     def interact(self, interaction_type: str = "default", duration: Optional[float] = None) -> bool:
@@ -571,7 +582,8 @@ class TouchPlatform(PlatformBase):
                     x, y = self._calculate_joystick_position(self._active_directions)
                     contact = self._active_contacts["joystick"]
                     controller.post_touch_move(x, y, contact, 1).wait()
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"[TouchPlatform.cleanup_direction] {type(e).__name__}: {e}")
                     return False
             return True
         return False
@@ -618,7 +630,8 @@ class TouchPlatform(PlatformBase):
                 del self._active_contacts[action_name]
                 return True
             return False
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[TouchPlatform.release_action] {type(e).__name__}: {e}")
             return False
 
     def release_interact(self, interaction_type: str = "default") -> bool:

@@ -21,6 +21,7 @@ import time
 from typing import Dict, List, Optional, Any
 from maa.controller import Controller
 from .base import PlatformBase
+from utils.logger import logger
 
 # 配置文件目录
 _CONFIG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config")
@@ -117,7 +118,8 @@ class KeyboardPlatform(PlatformBase):
                 controller.post_key_up(key_code).wait()
                 self._active_keys.discard(key_code)
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[KeyboardPlatform.hold_key] {type(e).__name__}: {e}")
             return False
 
     def release_interact(self, interaction_type: str = "default") -> bool:
@@ -151,7 +153,8 @@ class KeyboardPlatform(PlatformBase):
             controller.post_key_up(key_code).wait()
             self._active_keys.discard(key_code)
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[KeyboardPlatform.release_key] {type(e).__name__}: {e}")
             return False
 
     def touch_hold(self, x: int, y: int, duration: float = 0) -> bool:
@@ -169,7 +172,8 @@ class KeyboardPlatform(PlatformBase):
                 controller.post_touch_up(self._generic_contact).wait()
                 self._active_touch = False
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[KeyboardPlatform.touch_hold] {type(e).__name__}: {e}")
             return False
 
     def release_touch(self) -> bool:
@@ -183,7 +187,8 @@ class KeyboardPlatform(PlatformBase):
                 self._active_touch = False
                 return True
             return False
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[KeyboardPlatform.release_touch] {type(e).__name__}: {e}")
             return False
 
     def click(self, x: int, y: int) -> bool:
@@ -193,7 +198,8 @@ class KeyboardPlatform(PlatformBase):
         try:
             controller.post_click(x, y).wait()
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[KeyboardPlatform.click] {type(e).__name__}: {e}")
             return False
 
     def swipe(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: float) -> bool:
@@ -203,7 +209,8 @@ class KeyboardPlatform(PlatformBase):
         try:
             controller.post_swipe(start_x, start_y, end_x, end_y, int(duration * 1000)).wait()
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[KeyboardPlatform.swipe] {type(e).__name__}: {e}")
             return False
 
     def release_all(self) -> bool:
@@ -218,7 +225,8 @@ class KeyboardPlatform(PlatformBase):
                 controller.post_touch_up(self._generic_contact).wait()
                 self._active_touch = False
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[KeyboardPlatform.release_all] {type(e).__name__}: {e}")
             return False
 
     # ===== 业务方法默认实现（键盘语义） =====
@@ -298,7 +306,8 @@ class KeyboardPlatform(PlatformBase):
                 return False
             else:
                 return self.press_key("Shift", 0.1)
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[KeyboardPlatform.dodge] {type(e).__name__}: {e}")
             return False
 
     def turn(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: Optional[float] = None) -> bool:
@@ -307,7 +316,8 @@ class KeyboardPlatform(PlatformBase):
             return False
         try:
             if duration is not None:
-                duration_ms = int(duration)
+                # duration 参数单位为秒，与 TouchPlatform 保持一致
+                duration_ms = int(duration * 1000)
             else:
                 min_dur = int(self._turn_config.get("min_duration_ms", 50))
                 max_dur = int(self._turn_config.get("max_duration_ms", 500))
@@ -315,7 +325,8 @@ class KeyboardPlatform(PlatformBase):
                 duration_ms = max(min_dur, min(dx * 2, max_dur))
             controller.post_swipe(start_x, start_y, end_x, end_y, duration_ms).wait()
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[KeyboardPlatform.turn] {type(e).__name__}: {e}")
             return False
 
     def interact(self, interaction_type: str = "default", duration: Optional[float] = None) -> bool:
@@ -449,5 +460,6 @@ class KeyboardPlatform(PlatformBase):
                         self._active_keys.discard(key_code)
                         released = True
                 return released
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[KeyboardPlatform.release_action] {type(e).__name__}: {e}")
             return False
