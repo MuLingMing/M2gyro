@@ -470,3 +470,6 @@ MapLocator
 MapTracker
 MapNavigator
 OperationRecorder
+# DSH 会话工具（本地，不提交）
+.dsh-acl-reports/
+PROJECT_MEMORY.md
