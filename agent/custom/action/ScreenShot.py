@@ -28,6 +28,9 @@ class ScreenShot(CustomAction):
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
 
+        if context.tasker.stopping:
+            return CustomAction.RunResult(success=True)
+
         # image array(BGR)
         screen_array = context.tasker.controller.cached_image
 
@@ -48,7 +51,11 @@ class ScreenShot(CustomAction):
 
         img = Image.fromarray(rgb_array)
 
-        save_dir = json.loads(argv.custom_action_param)["save_dir"]
+        try:
+            save_dir = json.loads(argv.custom_action_param).get("save_dir", "screenshots")
+        except (json.JSONDecodeError, AttributeError) as e:
+            logger.error(f"ScreenShot: 参数解析失败，使用默认目录 screenshots: {e}")
+            save_dir = "screenshots"
         os.makedirs(save_dir, exist_ok=True)
         now = datetime.now()
         img.save(f"{save_dir}/{self._get_format_timestamp(now)}.png")

@@ -202,8 +202,8 @@ class RewardSelector(CustomRecognition):
             )
 
         if context.tasker.stopping:
-            return self._build_result(
-                index=0, category="unknown", decision_path="stopping"
+            return CustomRecognition.AnalyzeResult(
+                box=None, detail={"hit": False, "reason": "stopping"}
             )
 
         part_cards = self._match_all_parts(context, MERGED_ICON_ROI, image)
@@ -224,11 +224,14 @@ class RewardSelector(CustomRecognition):
             )
 
         if context.tasker.stopping:
-            return self._build_result(
-                index=0, category="unknown", decision_path="stopping"
+            return CustomRecognition.AnalyzeResult(
+                box=None, detail={"hit": False, "reason": "stopping"}
             )
 
         counts = self._recognize_counts_merged(context, image, part_cards)
+
+        if not counts:
+            return self._build_result(index=0, category="unknown", decision_path="fallback")
 
         min_count = min(counts.values())
         for card_idx, count in counts.items():

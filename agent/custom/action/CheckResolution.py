@@ -15,6 +15,9 @@ class CheckResolution(CustomAction):
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
 
+        if context.tasker.stopping:
+            return CustomAction.RunResult(success=True)
+
         width, height = context.tasker.controller.resolution
         aspect_ratio = width / height
         target_ratio = 16 / 9

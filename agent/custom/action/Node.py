@@ -22,6 +22,9 @@ class DisableNode(CustomAction):
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
 
+        if context.tasker.stopping:
+            return CustomAction.RunResult(success=True)
+
         node_name = json.loads(argv.custom_action_param)["node_name"]
 
         context.override_pipeline({f"{node_name}": {"enabled": False}})
@@ -45,6 +48,9 @@ class NodeOverride(CustomAction):
         context: Context,
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
+
+        if context.tasker.stopping:
+            return CustomAction.RunResult(success=True)
 
         ppover = json.loads(argv.custom_action_param)
 

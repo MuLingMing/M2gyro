@@ -213,34 +213,39 @@ class Countdown(CustomRecognition):
                     logger.debug(f"Countdown: {argv.node_name} 任务被停止")
                 return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
             
-            # 一次性获取截图，避免重复获取
-            image = context.tasker.controller.post_screencap().wait().get()
-            
-            # 检查 Interrupt 节点
-            for tracker in interrupt_trackers:
-                if not tracker.should_check(current_time, elapsed):
-                    continue
-                
-                tracker.on_check(current_time)
-                result = self._run_recognition(context, tracker.parsed, image)
-                if result and result.hit:
+            # 仅在有节点到达检查时间时才截图识别，避免每轮无条件 post_screencap
+            if any(
+                tracker.should_check(current_time, elapsed)
+                for tracker in interrupt_trackers + continue_trackers
+            ):
+                # 一次性获取截图，避免重复获取
+                image = context.tasker.controller.post_screencap().wait().get()
+
+                # 检查 Interrupt 节点
+                for tracker in interrupt_trackers:
+                    if not tracker.should_check(current_time, elapsed):
+                        continue
+
+                    tracker.on_check(current_time)
+                    result = self._run_recognition(context, tracker.parsed, image)
+                    if result and result.hit:
+                        if logger_enable:
+                            logger.debug(f"Countdown: {argv.node_name} 识别到中断节点 {tracker.parsed.get('name')}")
+                        return CustomRecognition.AnalyzeResult(
+                            box=result.box,
+                            detail={"hit": True}
+                        )
+
+                # 检查 Continue 节点
+                for tracker in continue_trackers:
+                    if not tracker.should_check(current_time, elapsed):
+                        continue
+
                     if logger_enable:
-                        logger.debug(f"Countdown: {argv.node_name} 识别到中断节点 {tracker.parsed.get('name')}")
-                    return CustomRecognition.AnalyzeResult(
-                        box=result.box,
-                        detail={"hit": True}
-                    )
-            
-            # 检查 Continue 节点
-            for tracker in continue_trackers:
-                if not tracker.should_check(current_time, elapsed):
-                    continue
-                
-                if logger_enable:
-                    logger.debug(f"Countdown: {argv.node_name} 检查继续节点 {tracker.parsed.get('name')}")
-                tracker.on_check(current_time)
-                self._run_recognition(context, tracker.parsed, image)
-                if logger_enable:
+                        logger.debug(f"Countdown: {argv.node_name} 检查继续节点 {tracker.parsed.get('name')}")
+                    tracker.on_check(current_time)
+                    self._run_recognition(context, tracker.parsed, image)
+                    if logger_enable:
                         logger.debug(f"Countdown: {argv.node_name} 识别到继续节点 {tracker.parsed.get('name')}")
             
             # 计算下次检查时间

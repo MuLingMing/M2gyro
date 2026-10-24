@@ -95,10 +95,9 @@ class Count(CustomAction):
         """
 
         # 未命中任何节点，直接返回成功
-        if reco_datail := argv.reco_detail:
-            if hit := reco_datail.hit:
-                if not hit:
-                    return CustomAction.RunResult(success=True)
+        reco_detail = argv.reco_detail
+        if reco_detail is None or not reco_detail.hit:
+            return CustomAction.RunResult(success=True)
 
         # 解析参数
         try:
@@ -239,16 +238,19 @@ class Count(CustomAction):
             # get_node_data 返回值为 node_data: {"action": {"param": {"custom_action_param"}}}
             node_data = context.get_node_data(node)
             if not node_data:
-                return
+                logger.warning(f"Count._reset_nodes: 节点 {node} 无数据，跳过")
+                continue
             node_action_param = node_data.get("action", {}).get("param", {})
             if (
                 not node_action_param.get("custom_action", "")
             ) or node_action_param.get("custom_action", "") != "Count":
-                return
+                logger.warning(f"Count._reset_nodes: 节点 {node} 非 Count 动作，跳过")
+                continue
 
             node_custom_action_param = node_action_param.get("custom_action_param", {})
             if not node_custom_action_param:
-                return
+                logger.warning(f"Count._reset_nodes: 节点 {node} 无动作参数，跳过")
+                continue
 
             # 直接修改 node_custom_action_param 防止漏掉或新增参数
             node_custom_action_param["count"] = reset_count

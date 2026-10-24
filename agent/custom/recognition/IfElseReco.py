@@ -92,7 +92,7 @@ class IfElseReco(CustomRecognition):
         self,
         context: Context,
         argv: CustomRecognition.AnalyzeArg,
-    ) -> Union[CustomRecognition.AnalyzeResult, Optional[RectType]]:
+    ) -> CustomRecognition.AnalyzeResult:
         """
         执行条件分支识别主流程
 

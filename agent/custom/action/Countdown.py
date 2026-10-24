@@ -384,11 +384,17 @@ class Countdown(CustomAction):
         - node_name: 识别成功的节点名称
         """
         try:
-            reco_stats = params.get("reco_stats", {})
+            # 剥离 attach 合并进来的键，仅持久化节点自身参数，避免固化 attach 配置
+            node_data = context.get_node_data(argv.node_name) or {}
+            attach_params = node_data.get("attach", {}) or {}
+            persist_params = {
+                k: v for k, v in params.items() if k not in attach_params
+            }
+            reco_stats = dict(persist_params.get("reco_stats", params.get("reco_stats", {})))
             reco_stats[node_name] = reco_stats.get(node_name, 0) + 1
-            params["reco_stats"] = reco_stats
+            persist_params["reco_stats"] = reco_stats
             context.override_pipeline(
-                {argv.node_name: {"custom_action_param": params}}
+                {argv.node_name: {"custom_action_param": persist_params}}
             )
         except Exception as e:
             logger.error(f"Countdown: 保存 reco_stats 失败: {e}")

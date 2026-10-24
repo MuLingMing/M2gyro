@@ -245,6 +245,11 @@ class MultiRecognition(CustomRecognition):
         node_results: Dict[str, Optional[List[int]]] = {}
         for i, node_name in enumerate(nodes):
             index_key = f"${i}"
+
+            if session.context.tasker.stopping:
+                node_results[index_key] = None
+                continue
+
             reco_detail = session.context.run_recognition(node_name, session.argv.image)
 
             if reco_detail and reco_detail.hit and reco_detail.box is not None:
